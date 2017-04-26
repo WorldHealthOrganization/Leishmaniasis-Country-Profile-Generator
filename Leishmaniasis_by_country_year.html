@@ -1,0 +1,775 @@
+
+<!--
+	/****************************************************************************************************
+ 	 **********		   																		   **********
+ 	 **********                      Report App for DHIS2 Leishmaniasis 2017               	   **********
+ 	 **********		   																		   **********
+	 ****************************************************************************************************/
+
+
+	 	* @author  Ramon Jose Jimenez Pomareta 
+		* @email ramon@pomareta.ch
+ 		* @version 1.0 
+		* @date 26/04/2017
+
+
+		* Sections of the code. 
+		1. CSS styles
+		2. JavaScript
+			JavaScript imports
+			CONSTANTS
+			FUNCTIONS CALLING THE API 
+			FILLING LOGICAL STRUCTURES (ARRAYS)
+			AUXILIARY FUNCTIONS
+			CHARTS FUNCTIONS
+		3. HTML Code
+-->
+<style type="text/css">
+/****************************************************************************************************
+ **********		   																		   **********
+ **********                                1. CSS STYLES                                   **********
+ **********		   																		   **********
+ ****************************************************************************************************/
+@media print {
+	/* @page { size: auto;  margin: 0mm; }
+		removes footer, date and page number but there's no longer nice
+			*/
+   .non-printable {
+       display: none;
+    }
+    
+}
+
+/* selectable */
+ #selectable .ui-selecting { background: #FECA40; }
+  #selectable .ui-selected { background: #F39814; color: white; }
+  #selectable { list-style-type: none; margin: 0; padding: 0; width: 60%; }
+  #selectable li { margin: 3px; padding: 0.4em; font-size: 1.4em; height: 18px; }
+
+
+.section
+{
+	border-bottom: 1px solid #ccc;
+	margin-bottom: 50px; 
+	padding-bottom: 50px;
+	width: 930px;
+	font-size: 15px;
+}
+
+.links
+{
+	font-size: 15px;
+	margin-left: 30px;
+}
+.head_logo{
+	width:160px;
+}
+
+
+img.center {
+    display: block;
+    margin: 0 auto;
+}
+
+.center_text{
+	text-align: center;
+}
+.align_to_right{
+	text-align:right;
+}
+
+/* Organize content of div in equal-sized colons*/
+.container {
+  display: flex;
+}
+.container > div {
+  flex: 1; /*grow*/
+}
+
+
+.footNoted {
+  /*  color: red; */	
+}
+</style>
+
+<!-- 
+
+/****************************************************************************************************
+ **********		   																		   **********
+ **********                            		2. JavaScript                                  **********
+ **********		   																		   **********
+ ****************************************************************************************************/
+	
+/****************************************************************************************************
+ **********                             JavaScript imports                                 **********
+ ****************************************************************************************************/
+ -->
+<script type="text/javascript" src ="https://cdn.rawgit.com/Rjjp/plugins/master/jquery-te-1.4.0-oms.js"></script>
+<script type="text/javascript" src ="https://cdn.rawgit.com/Rjjp/plugins/master/jquery-ui/jquery-ui.js"></script>
+<script type="text/javascript" src="//dhis2-cdn.org/v226/plugin/chart.js"></script>
+
+<script type="text/javascript">
+$( document ).ready( function() {
+
+	/* Adds jQueryTE and jquery-ui css' */
+	$('head').append('<link rel="stylesheet" href="https://rawgit.com/Rjjp/plugins/master/jquery-te-1.4.0.css" type="text/css" />');
+	$('head').append('<link rel="stylesheet" href="https://cdn.rawgit.com/Rjjp/plugins/master/jquery-ui/jquery-ui.css" type="text/css" />');
+
+
+	/****************************************************************************************************
+ 	 **********                      	       CONSTANTS            	              	       **********
+	 ****************************************************************************************************/
+	var API_URL = "../api/";
+	var DATA_VALUE = "dataValueSets";
+	var WHEN_UNDEFINED = "No data";
+	var WHEN_DIV_0 = "-";
+	var ERROR = "Error!";
+
+	var PUBLISHED_TEXT = "Published in ";
+
+	var MONTHS = [	"January",
+					"February",
+					"March",
+					"April",
+					"May",
+					"June",
+					"July",
+					"August",
+					"September",
+					"October",
+					"November",
+					"December" ];
+
+	var MONTHS_ABBREV = [	"JAN",
+							"FEB",
+							"MAR",
+							"APR",
+							"MAY",
+							"JUN",
+							"JUL",
+							"AUG",
+							"SEP",
+							"OCT",
+							"NOV",
+							"DEC"];
+
+	
+	var DATASET = {
+		CL : "tnek2LjfuIm",
+		VL : "fdBM4sWSuPR",
+		CL_MONTHLY : "pWGPGaE6knJ"
+
+	}
+
+	var COMBO_NEW_CASES = "psVSPLclyFj";
+	var COMBO_RELAPSE = "KPn9RHNrd8R";
+	var COMBO_UNSPECIFIED = "IRW4YrOtk5q";
+
+	var COMBO_MEN = "GpQZH8hC7jY";
+	var COMBO_WOMEN = "TtoYCIVcBA3";
+
+	var AGE_5 = "hKq5WASZw8q";
+	var AGE_5_14 = "mTyLqDjpQ5b";
+	var AGE_14 = "DDliBAHqwGV";
+	var AGE_TOTAL = "OWKZMKxVCnh";
+
+	var ORIGIN_AUTOC_NEW = "WynvvdELtqm";
+	var ORIGIN_AUTOC_REL = "LUVeZjOsibr";
+	var ORIGIN_AUTOC_UNS = "wYB0E3USJ7L";
+	var ORIGIN_IMPORT_NEW = "pWZT12mjhUC";
+	var ORIGIN_IMPORT_REL = "QO2kKL8ySPc";
+	var ORIGIN_IMPORT_UNS = "A5TSwm9Wivn";
+	var ORIGIN_UNKNOWN_NEW = "Lx8tyhhseZZ";
+	var ORIGIN_UNKNOWN_REL = "lGFgLYweSNS";
+	var ORIGIN_UNKNOWN_UNS = "EGvT9lj2BOy";
+
+	/* Epidemiology table constants */
+	var VL_COLUMN = 1;
+	var CL_COLUMN = 2;
+	var PKDL_COLUMN = 3;
+	var MCL_COLUMN = 4;
+
+	var ENDEMICITY_ROW = 0;
+	var NEW_ROW = 1;
+	var RELAPSE_ROW = 2;
+	var TOTAL_ROW = 3;
+	var IMPORTED_ROW = 4;
+	var SEX_ROW = 5;
+	var AGE_ROW = 6;
+	var INCD_ROW = 7;
+	var THIRD_LEVEL_ROW = 8;
+	var RISK_ROW = 9;
+	var OUTBK_ROW = 10;
+	var FOCI_ROW = 11;
+	var UNSP_ROW = 12;
+
+	/* Monthly distribution table constants */
+	var VL_ROW = 1;
+	var CL_ROW = 2;
+
+
+	var date = dhis2.report.date;
+	var year = date.slice(0,4);
+
+	var orgUnit = dhis2.report.organisationUnit;
+	var country_name =orgUnit.name;
+
+	console.log(dhis2);
+	console.log(dhis2.report);
+	console.log(orgUnit);
+	console.log(country_name);
+
+	/* Set Epidemiology table values
+	*/
+	$( "#vl_head" ).text("VL");
+	$( "#cl_head" ).text("CL");
+	$( "#pkdl_head" ).text("PKDL");
+	$( "#mcl_head" ).text("MCL");
+
+
+	var editingElement;
+
+	/*** TEST AREA ****/
+	$("#editor").jqte();	
+
+	$( "#selectable" ).selectable();
+
+ dialog = $( "#dialog-editor" ).dialog({
+      autoOpen: false,
+      height: 350,
+      width: 650,
+      modal: true,
+      buttons: {
+        "Save changes": saveChanges,
+		"Save changes and close": saveChangesAndClose,
+        Cancel: function() {
+          dialog.dialog( "close" );
+        }
+      },
+      close: function() {
+       
+        //allFields.removeClass( "ui-state-error" );
+      }
+    });
+
+	function saveChanges(){
+		editingElement.innerHTML = $("#editor").jqteVal();
+	}
+	function saveChangesAndClose(){
+		editingElement.innerHTML = $("#editor").jqteVal();
+		dialog.dialog( "close" );
+	}
+	
+
+	$(".editableElement").click(function(){
+		dialog.dialog( "open" );	
+		var test = this.innerHTML;
+		editingElement = this;
+		$("#editor").jqteVal(editingElement.innerHTML);
+
+	});
+
+
+	/**** END TEST AREA ****/
+
+
+
+
+	var footNoteCounter = 0;
+	
+	var table = 	$("#example");
+	var tableBody = 	$("#tbody3");
+	var monthlyDistributionTableBody = $("monthlyDistributionTableBody");
+
+	var rowTitles = [	"Endemicity status:",
+						"Number of new cases (incidence):",
+						"Number of relapse cases:",
+						"Total number of cases:",
+						"Imported cases (#, %):",
+						"Gender distribution (%F):",
+						"Age group distribution (%, <5/5-14/>14):",
+						"Incidence rate (cases/10 000 population in endemic areas):",
+						"Number of endemic 3rd sub-national administrative level divisions (n):",
+						"Population at risk (%, n/total):",
+						"Was there anz outbreak?",
+						"Number of new foci:",
+						"(EXTRA) Unspecified cases:"
+						]
+
+
+
+	var rowMonthlyTitles = ["VL",
+							"CL"];
+	var array = create_2_dim_array(13, rowTitles);
+
+	var monthlyArray = create_2_dim_array(3, rowMonthlyTitles);
+
+	
+	/* Set charts*/
+	$( "#a01" ).attr( "src", API_URL+"charts/Ox5bv6fKEWg/data?width=450&height=300&date=" + date );
+	$( "#a02" ).attr( "src", API_URL+"charts/Ox5bv6fKEWg/data?width=450&height=300&date=" + date );
+	$( "#a03" ).attr( "src", API_URL+"charts/Ox5bv6fKEWg/data?width=450&height=300&date=" + date );
+	$( "#a04" ).attr( "src", API_URL+"charts/XGEAenGcRaB/data?width=450&height=300&date=" + date );
+
+	$( "#table1" ).load( API_URL+"reportTables/emMtuwdfwb1/data.html?date=" + date );
+
+	$( "#b01" ).attr( "src", API_URL+"maps/uFcRuF2LsOo/data?width=450&date=" + date );
+	$( "#b02" ).attr( "src", API_URL+"maps/xPc4t89kEXl/data?width=450&date=" + date );
+
+
+
+	$( "#country_name" ).text(country_name);
+	$( "#year" ).text(year);
+	$( "#published_date").text(getDatePublished());
+
+
+
+	var params = {
+		dataSet: "", //i.e. DATASET.CL,
+		period: year,
+		orgUnit: orgUnit.id
+		
+		};
+
+	var builtUrl;
+
+	/****************************************************************************************************
+ 	 **********                    	    FUNCTIONS CALLING THE API         	           	       **********
+	 ****************************************************************************************************/
+	function get_cl_monthly_cases() {
+
+		params.dataSet = DATASET.CL_MONTHLY;
+
+		for (var i=1;i<=12;i++){
+			var monthNumber = numberToTwoDigits(i);
+			params.period = year + monthNumber;
+			builtUrl = buildAPIUrl(DATA_VALUE, params);
+			return $.ajax({
+				url: builtUrl
+			}).then(function(data) {
+					fillMonthlyArray(data.dataValues, CL_ROW, monthNumber);
+			});
+		}
+		
+	}
+
+	/* getting cl cases from API */
+	function get_cl_cases() {
+
+		params.dataSet = DATASET.CL;
+		builtUrl = buildAPIUrl(DATA_VALUE, params);
+		return $.ajax({
+			url: builtUrl
+		}).then(function(data) {
+				fillArray(data.dataValues, CL_COLUMN);
+		});
+	}
+
+	/* getting vl cases from API */
+	function get_vl_cases() {
+		params.dataSet = DATASET.VL;
+		builtUrl = buildAPIUrl(DATA_VALUE, params);
+		return $.ajax({
+			url: builtUrl
+		}).then(function(data) {
+				fillArray(data.dataValues, VL_COLUMN);
+		});
+	}
+
+
+	/****************************************************************************************************
+ 	 **********                      FILLING LOGICAL STRUCTURES (ARRAYS)               	       **********
+	 ****************************************************************************************************/
+	function fillMonthlyArray(dataValues, column, monthNumber) {
+		var new_cases = getValueForKey(dataValues,"categoryOptionCombo",COMBO_NEW_CASES,"value");
+		monthlyArray[0][monthNumber] = new_cases+"("+monthNumber+")";
+	}
+
+	function fillArray(dataValues, column) {
+		var new_cases = getValueForKey(dataValues,"categoryOptionCombo",COMBO_NEW_CASES,"value");
+		array[NEW_ROW][column] = new_cases;
+		var relapse = getValueForKey(dataValues,"categoryOptionCombo",COMBO_RELAPSE,"value");
+		array[RELAPSE_ROW][column] = relapse;
+		var unspecified = getValueForKey(dataValues,"categoryOptionCombo",COMBO_UNSPECIFIED,"value");
+		array[UNSP_ROW][column] = unspecified;
+		array[TOTAL_ROW][column] = add([new_cases, relapse, unspecified]);
+
+		// sex distribution  TODO onlz news!
+		var men = getValueForKey(dataValues,"categoryOptionCombo", COMBO_MEN,"value");
+		var women = getValueForKey(dataValues,"categoryOptionCombo",COMBO_WOMEN,"value");
+		array[SEX_ROW][column] = percentageText(women, add([men, women]));
+		
+		//age distribution TODO onlz news!
+		// Todo Age Unknown	
+		var age_5 = getValueForKey(dataValues,"categoryOptionCombo", AGE_5,"value");
+		var age_5_14 = getValueForKey(dataValues,"categoryOptionCombo", AGE_5_14,"value");
+		var age_14 = getValueForKey(dataValues,"categoryOptionCombo", AGE_14,"value");
+		var total_age_cases = add([age_5, age_5_14, age_14]);
+
+		array[AGE_ROW][column] = "(" +	percentageText(age_5, total_age_cases) + " / "
+										+	percentageText(age_5_14, total_age_cases) + " / "
+										+	percentageText(age_14, total_age_cases) + ")";
+											
+
+		//origin distribution
+		var origin_autoc = add([
+			getValueForKey(dataValues,"categoryOptionCombo", ORIGIN_AUTOC_NEW,"value"),
+			getValueForKey(dataValues,"categoryOptionCombo", ORIGIN_AUTOC_REL,"value"),
+			getValueForKey(dataValues,"categoryOptionCombo", ORIGIN_AUTOC_UNS,"value")
+		]);
+		var origin_imported = add([
+			getValueForKey(dataValues,"categoryOptionCombo", ORIGIN_IMPORT_NEW,"value"),
+			getValueForKey(dataValues,"categoryOptionCombo", ORIGIN_IMPORT_REL,"value"),
+			getValueForKey(dataValues,"categoryOptionCombo", ORIGIN_IMPORT_UNS,"value")
+		]);
+		var origin_unknown = add([
+			getValueForKey(dataValues,"categoryOptionCombo", ORIGIN_UNKNOWN_NEW,"value"),
+			getValueForKey(dataValues,"categoryOptionCombo", ORIGIN_UNKNOWN_REL,"value"),
+			getValueForKey(dataValues,"categoryOptionCombo", ORIGIN_UNKNOWN_UNS,"value")
+		]);
+		var total_origin_cases = add([origin_autoc, origin_imported, origin_unknown]);
+		array[IMPORTED_ROW][column] = origin_imported 
+									+ ", "
+									+	percentageText(origin_imported, total_origin_cases);
+
+	}
+	
+
+	// Code to execute after API calls have been done.
+	// $.when(ajax1(), ajax2(), ajax3(), ajax4()).done(function(a1, a2, a3, a4){
+	// http://stackoverflow.com/questions/3709597/wait-until-all-jquery-ajax-requests-are-done
+	$.when(get_cl_cases(), get_vl_cases(), get_cl_monthly_cases()).done(function(cl, vl, mc1){
+		// the code here will be executed when all four ajax requests resolve.
+		// a1, a2, a3 and a4 are lists of length 3 containing the response text,
+		// status, and jqXHR object for each of the four ajax calls respectively.
+		writeTable(tableBody, array);
+		writeTable(monthlyDistributionTableBody, monthlyArray);
+
+
+		makeElementsFootnotables();
+
+
+	});
+
+
+
+
+
+	/****************************************************************************************************
+ 	 **********                     		 AUXILIARY FUNCTIONS          	    		       **********
+	 ****************************************************************************************************/
+
+	/* return a text about publishing date with the current month and year*/
+	function getDatePublished(){
+		var d = new Date();
+    	var thisMonth = d.getMonth();
+		var thisYear = d.getFullYear();
+		return PUBLISHED_TEXT+" "+MONTHS[thisMonth]+" "+thisYear;
+	}
+
+	function writeTable(htmlObject, array) {
+		// declare html variable (a string holder):
+		var html = '';
+		var count = 0;
+		for (var i = 0; i < array.length; i++) {
+			// add opening <tr> tag to the string:
+			html += '<tr>';
+			for (var j = 0; j < array[i].length; j++) {
+				// add <td> elements to the string:
+				html += '<td>' + '<span class="footnotable editableElement" >' + array[i][j] + '</span>' + '</td>';
+				count++;
+			}
+			// add closing </tr> tag to the string:
+			html += '</tr>';
+		}
+		//append created html to the table body:
+	
+		htmlObject.append(html);
+		// reset the count:
+		count = 0;
+	}	
+
+	function makeElementsFootnotables(){
+		$(".footnotable").mousedown(function(event) {
+			if (event.which === 3){
+				if ($(this).hasClass('footNoted')) {
+					$(this).text($(this).html().substring(0,$(this).html().length - 11 - footNoteCounter.toString().length));
+					footNoteCounter--;
+				} else {
+					footNoteCounter++;
+					$(this).append("<sup>"+footNoteCounter+"</sup>");
+				}
+
+				event.preventDefault();
+				$(this).toggleClass('footNoted');
+			}
+		});
+
+		$('.footnotable').contextmenu(function() {
+			return false;
+		});
+	}
+	/*	Returns a url for the API
+
+	*/
+	function buildAPIUrl(page, params){
+		return API_URL+page+"?"+$.param(params, true);
+	}
+
+	function numberToTwoDigits( number){
+		return ("0" + number).slice(-2);
+	}
+
+	/* 	Searchs for a custom value for a customKey with a custom value through an array
+			array : the array
+			keyName : the name of the key to check
+			keyValue : the target value of the keyName
+			valueName : the name of the key of the value to return
+	*/
+	function getValueForKey(array, keyName, keyValue, valueName){
+		var returnValue;
+		if (array === undefined){
+			return returnValue;
+		}
+
+		$.each( array, function( index, object ) {
+			if(object[keyName]===keyValue){
+				returnValue = object[valueName];
+				return false;
+			} 
+		});
+		return returnValue;
+	}
+
+	/*	Returns a percentage with no decimals 
+
+	*/
+	function percentageText(numerator, denominator){
+		if (denominator === 0 && numerator === 0){
+			return WHEN_DIV_0;
+		} else if (denominator === WHEN_UNDEFINED){
+			return WHEN_UNDEFINED;
+		} else if (denominator === 0){
+			return ERROR;
+		}
+		return Math.round((numerator / (denominator))*100) + "%";
+	}
+
+	/* Returns the addition of the elements of the array if they are not 
+	*/
+	function add(arrayOfNumbers){
+		var addition = 0;
+		var counter = 0;
+		for (var number of arrayOfNumbers) {
+			if (typeof number !== "undefined" && number != WHEN_UNDEFINED){
+				addition = addition + +number;
+				counter++;
+			} 
+
+		}
+		if (counter === 0){
+			return WHEN_UNDEFINED;
+		} else {
+			return addition;
+		}
+
+	}
+
+	function  create_2_dim_array(rowsNum, rowsTitles) {
+		var array = []
+		for(var i = 0; i<rowsNum; i++){
+			array[i] = [];
+			array[i][0] = rowsTitles[i];
+		}
+		return array;
+
+
+	}
+
+	/****************************************************************************************************
+	 **********                               CHARTS functions                                 **********
+	 ****************************************************************************************************/
+
+	function setChartPlugin(){
+		chartPlugin.url = "https://extranet-uat.who.int/dhis2-dev";
+		chartPlugin.username = "ramon2";
+		chartPlugin.password = "1234Abcd";
+		return chartPlugin;
+	}
+
+	function setChartParams(columnDimension, dataId, dataName, orgUnitId, chatType, url, htmlElement){
+
+		chartTestParams = {
+		"columns": [
+			{
+			"dimension": columnDimension,
+			"items": [
+				{
+				"id": dataId,
+				"name": dataName
+				}
+			]
+			}
+		],
+		
+		"rows": [
+			{
+			"dimension": "pe",
+			"items": []
+			}
+		],
+		"filters": [
+			{
+			"dimension": "ou",
+			"items": [
+				{
+				"id": orgUnit.id
+				}
+			]
+			}
+		],
+		"type": "line",
+		"url": "https://extranet-uat.who.int/dhis2-dev",
+		"el": "chart"
+		}
+		var items = generateChartRowParams();
+		chartTestParams["rows"][0]["items"] = items;
+		return chartTestParams;
+	}
+
+	function generateChartRowParams(){
+		var itemsArray = [];
+		var rows = [{ 
+      "dimension": "pe",
+      "items": itemsArray}];
+	  	var element = {};
+		  for(var i = 0; i<MONTHS.length;i++){
+			element = {};
+			element.id = year+""+numberToTwoDigits(i+1);
+			element.name = MONTHS_ABBREV[i];
+			itemsArray[i] = element;
+		  }
+		  return itemsArray;
+	}
+	/*** TEST ZONE ***/
+
+var chartPlugin = setChartPlugin();
+var chartTestParams = setChartParams("B9bBfRcF6jb", "aD1KD82UFB1", "New", orgUnit.id, "line", chartPlugin.url, "chart");
+
+
+chartPlugin.load([chartTestParams]);
+
+
+
+	
+} );
+</script>
+
+<!--
+	/****************************************************************************************************
+     **********		   																		   **********
+ 	 **********            	  		  	      3. HTML CODE              	    			   **********
+ 	**********		   																		   **********
+	 ****************************************************************************************************/
+	-->
+<div class="non-printable">Configuration Area - Wont be printed<br>
+
+	<ol id="selectable">
+	<li class="ui-widget-content">Item 1</li>
+	<li class="ui-widget-content">Item 2</li>
+	<li class="ui-widget-content">Item 3</li>
+	<li class="ui-widget-content">Item 4</li>
+	<li class="ui-widget-content">Item 5</li>
+	<li class="ui-widget-content">Item 6</li>
+	<li class="ui-widget-content">Item 7</li>
+	</ol>
+
+
+
+</div>
+<div class="section">
+    <img class="head_logo center" src="http://www.who.int/about/Logo-WHO.jpg" />
+	<br>
+	
+	<div class="container">
+	
+		<div class="editableElement">Leishmaniasis</div>
+		<div class="center_text editableElement" id="country_name"></div>
+		<div class="align_to_right">
+			<div class="editableElement" id="year"></div>
+			<div class="editableElement" id="published_date"></div>
+		</div>
+	</div>
+</div>
+
+<div class="section">
+	<h4 class="editableElement footnotable">Country General Information </h4>
+	
+</div>
+
+<div class="section">
+	<h4 class="editableElement footnotable">Epidemiology</h4>
+
+
+	<table id="example" class="display" cellspacing="0" width="100%">
+			<thead>
+				<tr>
+					<th></th>
+					<th><span class="footnotable editableElement" id="vl_head"></span></th>
+					<th><span class="footnotable editableElement" id="cl_head"></span></th>
+					<th><span class="footnotable editableElement" id="pkdl_head"></span></th>
+					<th><span class="footnotable editableElement" id="mcl_head"></span></th>
+				</tr>
+			</thead>
+			<tbody id="tbody3"></tbody>
+	</table>
+
+
+</div>
+
+
+<div class="section">
+	<h4 class="editableElement footnotable" >Monthly distribution of new cases January-December</h4>
+	<div id="table1"></div>
+
+
+	<table id="monthlyDistributionTable" class="display" cellspacing="0" width="100%">
+			<thead>
+				<tr>
+					<th></th>
+					<th><span id="JAN"></span>JAN</th>
+					<th><span id="FEB"></span>FEB</th>
+					<th><span id=""></span>MAR</th>
+					<th><span id=""></span></th>
+				</tr>
+			</thead>
+			<tbody id="monthlyDistributionTableBody"></tbody>
+	</table>
+
+</div>
+
+<div class="section">
+	<img id="a01">
+	<img id="a02">
+	<img id="a03">
+	<img id="a04">
+</div>
+
+
+
+<div class="section">
+	<img id="b01" style="margin-right: 20px">
+	<img id="b02">
+
+	<div id="dialog-editor">
+		<textarea id="editor" title="Edit field"></textarea>
+	</div>
+
+</div>
+
+
+
+
+
+<div id="chart1"></div>
+<div id="chart2"></div>
