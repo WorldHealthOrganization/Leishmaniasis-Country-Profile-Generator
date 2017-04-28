@@ -13,6 +13,13 @@
 		* @date 26/04/2017
 
 
+		* Some comments
+			Since this App has to be made in only one file, all is here.
+			When needed external js plugins, i.e. jquery-te and jquery-ui, I have stored a version in 
+			https://github.com/Rjjp/plugins
+			In order to share raw files, I have used https://rawgit.com/
+
+
 		* Sections of the code. 
 		1. CSS styles
 		2. JavaScript
@@ -590,10 +597,11 @@ $( document ).ready( function() {
 	 **********                               CHARTS functions                                 **********
 	 ****************************************************************************************************/
 
-	function setChartPlugin(){
-		chartPlugin.url = "https://extranet-uat.who.int/dhis2-dev";
+	function setChartPlugin(chartPlugin){
+	 	chartPlugin.url = "https://extranet-uat.who.int/dhis2-dev";
 		chartPlugin.username = "ramon2";
 		chartPlugin.password = "1234Abcd";
+
 		return chartPlugin;
 	}
 
@@ -628,9 +636,9 @@ $( document ).ready( function() {
 			]
 			}
 		],
-		"type": "line",
-		"url": "https://extranet-uat.who.int/dhis2-dev",
-		"el": "chart"
+		"type": chatType,
+		"url": url,
+		"el": htmlElement
 		}
 		var items = generateChartRowParams();
 		chartTestParams["rows"][0]["items"] = items;
@@ -653,11 +661,9 @@ $( document ).ready( function() {
 	}
 	/*** TEST ZONE ***/
 
-var chartPlugin = setChartPlugin();
-var chartTestParams = setChartParams("B9bBfRcF6jb", "aD1KD82UFB1", "New", orgUnit.id, "line", chartPlugin.url, "chart");
-
-
-chartPlugin.load([chartTestParams]);
+	chartPlugin = setChartPlugin(chartPlugin);
+	var chartTestParams = setChartParams("B9bBfRcF6jb", "aD1KD82UFB1", "New", orgUnit.id, "line", chartPlugin.url, "chart1");
+	chartPlugin.load([chartTestParams]);
 
 
 
