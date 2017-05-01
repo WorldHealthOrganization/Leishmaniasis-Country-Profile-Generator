@@ -112,8 +112,9 @@ img.center {
  ****************************************************************************************************/
  -->
 <script type="text/javascript" src ="https://cdn.rawgit.com/Rjjp/plugins/master/jquery-te-1.4.0-oms.js"></script>
-<script type="text/javascript" src ="https://cdn.rawgit.com/Rjjp/plugins/master/jquery-ui/jquery-ui.js"></script>
+<script type="text/javascript" src ="https://cdn.rawgit.com/Rjjp/plugins/master/jquery-ui/jquery-ui.js">//TODO:use the cdn officiel</script>
 <script type="text/javascript" src="//dhis2-cdn.org/v226/plugin/chart.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.js"></script>
 
 <script type="text/javascript">
 $( document ).ready( function() {
@@ -127,10 +128,13 @@ $( document ).ready( function() {
  	 **********                      	       CONSTANTS            	              	       **********
 	 ****************************************************************************************************/
 	var API_URL = "../api/";
-	var DATA_VALUE = "dataValueSets";
+	var DATA_VALUE_SETS = "dataValueSets";
 	var WHEN_UNDEFINED = "No data";
 	var WHEN_DIV_0 = "-";
 	var ERROR = "Error!";
+
+	var LABELS_ON_ROWS = 0;
+	var LABELS_ON_COLUMNS = 1;
 
 	var PUBLISHED_TEXT = "Published in ";
 
@@ -160,17 +164,27 @@ $( document ).ready( function() {
 							"NOV",
 							"DEC"];
 
+	var COLORS = {
+		green : 'rgba(153, 204, 0, 1)',
+		soft_green : 'rgba(153, 204, 0, 0.2)',
+		blue: 'rgba(51, 153, 255, 1)',
+		soft_blue: 'rgba(51, 153, 255, 0.2)',
+		violet :'rgba(153, 0, 255, 1)',
+		soft_violet :'rgba(153, 0, 255, 0.2)'
+	}
 	
 	var DATASET = {
 		CL : "tnek2LjfuIm",
 		VL : "fdBM4sWSuPR",
-		CL_MONTHLY : "pWGPGaE6knJ"
+		CL_MONTHLY : "pWGPGaE6knJ",
+		VL_MONTHLY : "GW4lVTTLWfW",
+		ACL_MONTHLY : "YfnF9NPpP4c"
 
 	}
 
-	var COMBO_NEW_CASES = "psVSPLclyFj";
-	var COMBO_RELAPSE = "KPn9RHNrd8R";
-	var COMBO_UNSPECIFIED = "IRW4YrOtk5q";
+	var TYPE_NEW_CASES = "psVSPLclyFj";
+	var TYPE_RELAPSE = "KPn9RHNrd8R";
+	var TYPE_UNSPECIFIED = "IRW4YrOtk5q";
 
 	var COMBO_MEN = "GpQZH8hC7jY";
 	var COMBO_WOMEN = "TtoYCIVcBA3";
@@ -210,9 +224,6 @@ $( document ).ready( function() {
 	var FOCI_ROW = 11;
 	var UNSP_ROW = 12;
 
-	/* Monthly distribution table constants */
-	var VL_ROW = 1;
-	var CL_ROW = 2;
 
 
 	var date = dhis2.report.date;
@@ -286,7 +297,7 @@ $( document ).ready( function() {
 	
 	var table = 	$("#example");
 	var tableBody = 	$("#tbody3");
-	var monthlyDistributionTableBody = $("monthlyDistributionTableBody");
+	var monthlyDistributionTableBody = $("#monthlyDistributionTableBody");
 
 	var rowTitles = [	"Endemicity status:",
 						"Number of new cases (incidence):",
@@ -303,13 +314,29 @@ $( document ).ready( function() {
 						"(EXTRA) Unspecified cases:"
 						]
 
+	var array = create_2_dim_array(rowTitles.length, rowTitles, LABELS_ON_COLUMNS);
 
+	/* Monthly distribution table constants */
+	var VL_ROW = 0;
+	var CL_ROW = 1;
+	var VL_PREVIOUS_YEAR_ROW = 2;
+	var CL_PREVIOUS_YEAR_ROW = 3;
+	var ACL_ROW = 4;
+	var ZCL_ROW = 5;
+	var ACL_PREVIOUS_YEAR_ROW = 6;
+	var ZCL_PREVIOUS_YEAR_ROW = 7;
 
 	var rowMonthlyTitles = ["VL",
-							"CL"];
-	var array = create_2_dim_array(13, rowTitles);
+							"CL",
+							"VL (previous year)",
+							"CL (previous year)",
+							"ACL",
+							"ZCL",
+							"ACL (previous year)",
+							"ZCL (previous year)"
+							];
 
-	var monthlyArray = create_2_dim_array(3, rowMonthlyTitles);
+	var monthlyArray = create_2_dim_array(rowMonthlyTitles.length, rowMonthlyTitles, LABELS_ON_COLUMNS);
 
 	
 	/* Set charts*/
@@ -338,33 +365,69 @@ $( document ).ready( function() {
 		
 		};
 
+
 	var builtUrl;
 
 	/****************************************************************************************************
  	 **********                    	    FUNCTIONS CALLING THE API         	           	       **********
 	 ****************************************************************************************************/
-	function get_cl_monthly_cases() {
+	function get_monthly_cases_for(dataset, row, year) {
+		var params = {
+			dataSet: dataset,
+			period: [],
+	
+			orgUnit: orgUnit.id
 
-		params.dataSet = DATASET.CL_MONTHLY;
+		}
 
 		for (var i=1;i<=12;i++){
 			var monthNumber = numberToTwoDigits(i);
-			params.period = year + monthNumber;
-			builtUrl = buildAPIUrl(DATA_VALUE, params);
-			return $.ajax({
-				url: builtUrl
-			}).then(function(data) {
-					fillMonthlyArray(data.dataValues, CL_ROW, monthNumber);
-			});
+			params.period[i] = year + monthNumber;
 		}
+
+	//	params.dataSet = DATASET.CL_MONTHLY;
+
+		//var monthNumber = numberToTwoDigits(i);
+	//	params.period = year + monthNumber;
+		builtUrl = buildAPIUrl(DATA_VALUE_SETS, params);
+		return $.ajax({
+			url: builtUrl
+		}).then(function(data) {
+			fillMonthlyArray(row, data.dataValues);
+		});
+	
 		
 	}
+
+
+	function get_monthly_cases_for_cl_current_year() {
+			get_monthly_cases_for(DATASET.CL_MONTHLY, CL_ROW, year);
+	}
+	function get_monthly_cases_for_cl_previous_year() {
+			get_monthly_cases_for(DATASET.CL_MONTHLY, CL_PREVIOUS_YEAR_ROW, year-1);
+
+	}
+	function get_monthly_cases_for_vl_current_year() {
+			get_monthly_cases_for(DATASET.VL_MONTHLY, VL_ROW, year);
+	}
+	function get_monthly_cases_for_vl_previous_year() {
+			get_monthly_cases_for(DATASET.VL_MONTHLY, VL_PREVIOUS_YEAR_ROW, year-1);
+
+	}
+	function get_monthly_cases_for_azcl_current_year() {
+			get_monthly_cases_for(DATASET.ACL_MONTHLY, ACL_ROW, year);
+	}
+	function get_monthly_cases_for_azcl_previous_year() {
+			get_monthly_cases_for(DATASET.ACL_MONTHLY, ACL_ROW, year-1);
+
+	}
+	
 
 	/* getting cl cases from API */
 	function get_cl_cases() {
 
 		params.dataSet = DATASET.CL;
-		builtUrl = buildAPIUrl(DATA_VALUE, params);
+		builtUrl = buildAPIUrl(DATA_VALUE_SETS, params);
 		return $.ajax({
 			url: builtUrl
 		}).then(function(data) {
@@ -375,7 +438,7 @@ $( document ).ready( function() {
 	/* getting vl cases from API */
 	function get_vl_cases() {
 		params.dataSet = DATASET.VL;
-		builtUrl = buildAPIUrl(DATA_VALUE, params);
+		builtUrl = buildAPIUrl(DATA_VALUE_SETS, params);
 		return $.ajax({
 			url: builtUrl
 		}).then(function(data) {
@@ -387,17 +450,33 @@ $( document ).ready( function() {
 	/****************************************************************************************************
  	 **********                      FILLING LOGICAL STRUCTURES (ARRAYS)               	       **********
 	 ****************************************************************************************************/
-	function fillMonthlyArray(dataValues, column, monthNumber) {
-		var new_cases = getValueForKey(dataValues,"categoryOptionCombo",COMBO_NEW_CASES,"value");
-		monthlyArray[0][monthNumber] = new_cases+"("+monthNumber+")";
+
+	 /***
+
+	 */
+	function fillMonthlyArray(row, dataValues) {
+		var new_cases_by_month = getValuesForKeyByMonth(dataValues,"categoryOptionCombo",TYPE_NEW_CASES,"value");
+		var relapses_by_month = getValuesForKeyByMonth(dataValues,"categoryOptionCombo",TYPE_RELAPSE,"value");
+		var unspecified_by_month = getValuesForKeyByMonth(dataValues,"categoryOptionCombo",TYPE_UNSPECIFIED,"value");
+
+		var total_cases_by_month;
+		var starting_column = monthlyArray[row].length;
+
+		for (var i=starting_column; i<new_cases_by_month.length+starting_column; i++){
+			total_cases_by_month = add([	new_cases_by_month[i-starting_column],
+										relapses_by_month[i-starting_column],
+										unspecified_by_month[i-starting_column] ]);
+			monthlyArray[row][i] = total_cases_by_month;
+		}
+		
 	}
 
 	function fillArray(dataValues, column) {
-		var new_cases = getValueForKey(dataValues,"categoryOptionCombo",COMBO_NEW_CASES,"value");
+		var new_cases = getValueForKey(dataValues,"categoryOptionCombo",TYPE_NEW_CASES,"value");
 		array[NEW_ROW][column] = new_cases;
-		var relapse = getValueForKey(dataValues,"categoryOptionCombo",COMBO_RELAPSE,"value");
+		var relapse = getValueForKey(dataValues,"categoryOptionCombo",TYPE_RELAPSE,"value");
 		array[RELAPSE_ROW][column] = relapse;
-		var unspecified = getValueForKey(dataValues,"categoryOptionCombo",COMBO_UNSPECIFIED,"value");
+		var unspecified = getValueForKey(dataValues,"categoryOptionCombo",TYPE_UNSPECIFIED,"value");
 		array[UNSP_ROW][column] = unspecified;
 		array[TOTAL_ROW][column] = add([new_cases, relapse, unspecified]);
 
@@ -445,7 +524,13 @@ $( document ).ready( function() {
 	// Code to execute after API calls have been done.
 	// $.when(ajax1(), ajax2(), ajax3(), ajax4()).done(function(a1, a2, a3, a4){
 	// http://stackoverflow.com/questions/3709597/wait-until-all-jquery-ajax-requests-are-done
-	$.when(get_cl_cases(), get_vl_cases(), get_cl_monthly_cases()).done(function(cl, vl, mc1){
+	$.when(get_cl_cases(), get_vl_cases(), 
+		get_monthly_cases_for_cl_current_year(),
+		get_monthly_cases_for_cl_previous_year(),
+		get_monthly_cases_for_vl_current_year(),
+		get_monthly_cases_for_vl_previous_year(),
+		get_monthly_cases_for_azcl_current_year(),
+		get_monthly_cases_for_azcl_previous_year()).done(function(cl, vl, m1,m2,m3,m4,m5,m6){
 		// the code here will be executed when all four ajax requests resolve.
 		// a1, a2, a3 and a4 are lists of length 3 containing the response text,
 		// status, and jqXHR object for each of the four ajax calls respectively.
@@ -456,7 +541,9 @@ $( document ).ready( function() {
 		makeElementsFootnotables();
 
 
+		call_chart_test();
 	});
+
 
 
 
@@ -548,6 +635,30 @@ $( document ).ready( function() {
 		return returnValue;
 	}
 
+		/* 	Searchs for a custom value for a customKey with a custom value through an array
+			array : the array
+			keyName : the name of the key to check
+			keyValue : the target value of the keyName
+			valueName : the name of the key of the value to return
+	*/
+	function getValuesForKeyByMonth(array, keyName, keyValue, valueName){
+		var returnValue =  new Array(12); // Void array of size 12
+		if (array === undefined){
+			return returnValue;
+		}
+
+		var index, period;
+
+		$.each( array, function( index, object ) {
+			if(object[keyName]===keyValue){
+				period = object["period"];
+				index = Number(period.slice(period.length-2, period.length)) - 1;
+				returnValue[index] = object[valueName];
+			} 
+		});
+		return returnValue;
+	}
+
 	/*	Returns a percentage with no decimals 
 
 	*/
@@ -582,12 +693,32 @@ $( document ).ready( function() {
 
 	}
 
-	function  create_2_dim_array(rowsNum, rowsTitles) {
+	/** Creates a 2 dimension array with labels.
+		rowsNum: Length of first array dimension (number of rows)
+		rowsTitles : labels for 
+		mode : the place for labels in array. Options : LABELS_ON_COLUMNS or LABELS_ON_ROWS
+	
+
+	*/
+	function  create_2_dim_array(rowsNum, rowsTitles, mode) {
 		var array = []
-		for(var i = 0; i<rowsNum; i++){
-			array[i] = [];
-			array[i][0] = rowsTitles[i];
+		
+		if(mode === LABELS_ON_ROWS) {
+			array[0] = [];
+			for(var i = 0; i<rowsTitles.length; i++){
+				array[0][i] = rowsTitles[i];
+			}
+			for(var i = 1; i<rowsNum; i++){
+				array[i] = [];
+			}
+		} else {
+			for(var i = 0; i<rowsNum; i++){
+				array[i] = [];
+				array[i][0] = rowsTitles[i];
+			}
 		}
+		
+		
 		return array;
 
 
@@ -596,6 +727,59 @@ $( document ).ready( function() {
 	/****************************************************************************************************
 	 **********                               CHARTS functions                                 **********
 	 ****************************************************************************************************/
+
+
+	 	/* 	Generates an any-lines-number line graph. 
+		htmlElementID: the id of the canvas/html element where put the graph
+		x_labels: The labels for the x-axis  
+		dataLabelArray: an array with the label of each data line
+		dataArray: the data
+		colorArray: an Array of rgba colors
+		previousYearMode: true if wanted to put previous years in dotted colors.
+						  currentYear data must be preceed the previousYear data
+		Note: All the array must have same size !
+	*/
+	function lineChart(	htmlElementID, x_labels, dataLabelArray, dataArray, colorArray, previousYearMode){
+
+		
+		var theDataSets = [];
+		var aDataSet = {};
+		for (var i = 0; i<dataLabelArray.length; i++){
+			aDataSet = {};
+			aDataSet.label = dataLabelArray[i];
+			aDataSet.fill = false;
+			aDataSet.data = dataArray[i];
+			aDataSet.backgroundColor = colorArray[i];
+			aDataSet.borderColor = colorArray[i];
+			aDataSet.borderWidth = 2;
+			if (previousYearMode && i%2 == 1){
+				// previousYearMode Enabled
+				aDataSet.borderDash = [5];
+				aDataSet.backgroundColor = aDataSet.backgroundColor.slice(0, -2)+"0.2)";
+			}
+			theDataSets[i] = aDataSet;
+		}
+		
+		var ctx = document.getElementById(htmlElementID);
+		var myChart = new Chart(ctx, {
+		type: 'line',
+		data: {
+			labels: x_labels,
+			datasets: theDataSets
+			},
+			options: {
+				scales: {
+					yAxes: [{
+						ticks: {
+							beginAtZero:true
+						}
+					}]
+				},
+				responsive: false
+			}
+		});
+	}
+
 
 	function setChartPlugin(chartPlugin){
 	 	chartPlugin.url = "https://extranet-uat.who.int/dhis2-dev";
@@ -659,14 +843,35 @@ $( document ).ready( function() {
 		  }
 		  return itemsArray;
 	}
-	/*** TEST ZONE ***/
+		/****  **********  ******  ********  ******  ******   *****  *//***** ********  *****  *** *//****
+	 ****  **                                TEST ZONE                                          **********
+	 ** ********    ******** **** ********* ******* ************   *********** *********** ******* *******/
+
+
 
 	chartPlugin = setChartPlugin(chartPlugin);
 	var chartTestParams = setChartParams("B9bBfRcF6jb", "aD1KD82UFB1", "New", orgUnit.id, "line", chartPlugin.url, "chart1");
 	chartPlugin.load([chartTestParams]);
 
+	// aD1KD82UFB1 new
 
+	function call_chart_test (){
+		var acl2014 = [1800, 1900, 300, 500, 200, 3,500,6,1500,1700,1800,19];
+		var acl2013 = [1700, 2900, 600, 900, 400, 500,500,6,1900,1900,1900,190];
+		var zcl2014 = [180, 190, 30, 50, 20, 3,50,6,150,170,180,19];
+		var zcl2013 = [160, 199, 40, 56, 50, 35,30,66,140,19,100,1];
+		var cl_current_year = monthlyArray[CL_ROW].slice(1,monthlyArray[CL_ROW].length);
+		var colors = [COLORS.blue, COLORS.blue, COLORS.green, COLORS.green];
+		var labels = ["ACL 2014", "ACL 2013", "ZCL 2014", "ZCL 2013"];
+		var dataarrays = [cl_current_year, acl2013, zcl2014, zcl2013];
 
+		lineChart("myChart", MONTHS_ABBREV, labels, dataarrays, colors, true);
+	}
+
+	
+	
+
+		
 	
 } );
 </script>
@@ -777,5 +982,9 @@ $( document ).ready( function() {
 
 
 
+
+
+
 <div id="chart1"></div>
-<div id="chart2"></div>
+
+<canvas id="myChart" width="450" height="300" ></canvas>
