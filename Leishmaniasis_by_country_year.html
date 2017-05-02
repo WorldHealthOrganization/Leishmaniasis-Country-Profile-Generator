@@ -23,8 +23,10 @@
 		* Sections of the code. 
 		1. CSS styles
 		2. JavaScript
+			jQuery-ui styles       
 			JavaScript imports
 			CONSTANTS
+			STATIC CONTENT FUNCTIONS
 			FUNCTIONS CALLING THE API 
 			FILLING LOGICAL STRUCTURES (ARRAYS)
 			AUXILIARY FUNCTIONS
@@ -38,14 +40,29 @@
  **********		   																		   **********
  ****************************************************************************************************/
 @media print {
-	/* @page { size: auto;  margin: 0mm; }
-		removes footer, date and page number but there's no longer nice
-			*/
    .non-printable {
        display: none;
     }
     
 }
+@page 
+    {
+        size:  auto;   /* auto is the initial value */
+        margin: 0mm;  /* this affects the margin in the printer settings */
+    }
+
+    html
+    {
+        background-color: #FFFFFF; 
+        margin: 0px;  /* this affects the margin on the html before sending to printer */
+    }
+
+    body
+    {
+        border: solid 1px blue ;
+        margin: 1mm 15mm 1mm 15mm; /* margin you want for the content */
+    }
+
 
 /* selectable */
  #selectable .ui-selecting { background: #FECA40; }
@@ -63,11 +80,7 @@
 	font-size: 15px;
 }
 
-.links
-{
-	font-size: 15px;
-	margin-left: 30px;
-}
+
 .head_logo{
 	width:160px;
 }
@@ -98,7 +111,6 @@ img.center {
   /*  color: red; */	
 }
 </style>
-
 <!-- 
 
 /****************************************************************************************************
@@ -117,11 +129,19 @@ img.center {
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.js"></script>
 
 <script type="text/javascript">
+
 $( document ).ready( function() {
 
 	/* Adds jQueryTE and jquery-ui css' */
+
 	$('head').append('<link rel="stylesheet" href="https://rawgit.com/Rjjp/plugins/master/jquery-te-1.4.0.css" type="text/css" />');
-	$('head').append('<link rel="stylesheet" href="https://cdn.rawgit.com/Rjjp/plugins/master/jquery-ui/jquery-ui.css" type="text/css" />');
+ 	$('head').append('<link rel="stylesheet" href="https://cdn.rawgit.com/Rjjp/plugins/master/jquery-ui/jquery-ui.css" type="text/css" />');
+
+
+	/****************************************************************************************************
+	 **********                               jQuery-ui styles                                 **********
+	 ****************************************************************************************************/
+	
 
 
 	/****************************************************************************************************
@@ -180,7 +200,11 @@ $( document ).ready( function() {
 		VL_MONTHLY : "GW4lVTTLWfW",
 		ACL_MONTHLY : "YfnF9NPpP4c"
 
-	}
+	};
+	var DATAELEMENT = {
+		ACL_EPI_Type : "f1bBSpuIyzD",
+		ZCL_EPI_Type : "Ta96pnXcAum"
+	};
 
 	var TYPE_NEW_CASES = "psVSPLclyFj";
 	var TYPE_RELAPSE = "KPn9RHNrd8R";
@@ -231,6 +255,8 @@ $( document ).ready( function() {
 
 	var orgUnit = dhis2.report.organisationUnit;
 	var country_name =orgUnit.name;
+
+	var acl_and_zcl_activated = false;
 
 	console.log(dhis2);
 	console.log(dhis2.report);
@@ -295,9 +321,17 @@ $( document ).ready( function() {
 
 	var footNoteCounter = 0;
 	
+	/* HTML elements */
 	var table = 	$("#example");
 	var tableBody = 	$("#tbody3");
 	var monthlyDistributionTableBody = $("#monthlyDistributionTableBody");
+	var monthlyDistributionTableHead = $("#monthlyDistributionTableHead");
+	var newCLCasesChartID = "NewCLCasesChart";
+	var newVLCasesChartID = "NewVLCasesChart";
+	
+	var EPI_TABLE_TD_ID_PREFIX = "epiTable";
+	var MONTHLY_TABLE_TD_ID_PREFIX = "monthlyTable";
+	var BUTTON_PREFIX = '_b_';
 
 	var rowTitles = [	"Endemicity status:",
 						"Number of new cases (incidence):",
@@ -345,7 +379,7 @@ $( document ).ready( function() {
 	$( "#a03" ).attr( "src", API_URL+"charts/Ox5bv6fKEWg/data?width=450&height=300&date=" + date );
 	$( "#a04" ).attr( "src", API_URL+"charts/XGEAenGcRaB/data?width=450&height=300&date=" + date );
 
-	$( "#table1" ).load( API_URL+"reportTables/emMtuwdfwb1/data.html?date=" + date );
+	//$( "#table1" ).load( API_URL+"reportTables/emMtuwdfwb1/data.html?date=" + date );
 
 	$( "#b01" ).attr( "src", API_URL+"maps/uFcRuF2LsOo/data?width=450&date=" + date );
 	$( "#b02" ).attr( "src", API_URL+"maps/xPc4t89kEXl/data?width=450&date=" + date );
@@ -368,6 +402,38 @@ $( document ).ready( function() {
 
 	var builtUrl;
 
+	/************************************************
+	Starting calls
+	*/
+
+	generateMonthlyCheckboxes();
+	fillMonthlyTableHead(monthlyDistributionTableHead);
+
+	/****************************************************************************************************
+ 	 **********                    	     STATIC CONTENT FUNCTIONS         	           	       **********
+	 ****************************************************************************************************/
+	function fillMonthlyTableHead(htmlObject){
+		var html = '<th></th>';
+		
+		for (var i=0; i<MONTHS_ABBREV.length;i++){
+			html +='<th class="editableElement">'+MONTHS_ABBREV[i]+'</th>';
+		}
+
+		htmlObject.append(html);
+	}
+
+	function generateMonthlyCheckboxes(){
+		var html = '<legend>Monthly distribution table: </legend>';
+		for (var i=0; i<rowMonthlyTitles.length; i++){
+			html+='<input id="'+MONTHLY_TABLE_TD_ID_PREFIX+BUTTON_PREFIX+i+'" type="checkbox" checked="checked" />'
+			html+='<label for="'+MONTHLY_TABLE_TD_ID_PREFIX+BUTTON_PREFIX+i+'">'+rowMonthlyTitles[i]+'</label>'
+		}
+		    
+		$( "#monthlyCheckboxes" ).append(html);
+
+		$('input[type=checkbox]').checkboxradio();
+	}
+
 	/****************************************************************************************************
  	 **********                    	    FUNCTIONS CALLING THE API         	           	       **********
 	 ****************************************************************************************************/
@@ -375,9 +441,7 @@ $( document ).ready( function() {
 		var params = {
 			dataSet: dataset,
 			period: [],
-	
 			orgUnit: orgUnit.id
-
 		}
 
 		for (var i=1;i<=12;i++){
@@ -385,41 +449,35 @@ $( document ).ready( function() {
 			params.period[i] = year + monthNumber;
 		}
 
-	//	params.dataSet = DATASET.CL_MONTHLY;
-
-		//var monthNumber = numberToTwoDigits(i);
-	//	params.period = year + monthNumber;
 		builtUrl = buildAPIUrl(DATA_VALUE_SETS, params);
 		return $.ajax({
 			url: builtUrl
 		}).then(function(data) {
-			fillMonthlyArray(row, data.dataValues);
+			if(typeof row === 'number'){
+				fillMonthlyArray(row, data.dataValues);
+			} else if (row.length>1){
+				fillMonthlyArrayACLZCL(row[0], row[1], data.dataValues);
+			}
 		});
-	
-		
 	}
-
 
 	function get_monthly_cases_for_cl_current_year() {
-			get_monthly_cases_for(DATASET.CL_MONTHLY, CL_ROW, year);
+			return get_monthly_cases_for(DATASET.CL_MONTHLY, CL_ROW, year);
 	}
 	function get_monthly_cases_for_cl_previous_year() {
-			get_monthly_cases_for(DATASET.CL_MONTHLY, CL_PREVIOUS_YEAR_ROW, year-1);
-
+			return get_monthly_cases_for(DATASET.CL_MONTHLY, CL_PREVIOUS_YEAR_ROW, year-1);
 	}
 	function get_monthly_cases_for_vl_current_year() {
-			get_monthly_cases_for(DATASET.VL_MONTHLY, VL_ROW, year);
+			return get_monthly_cases_for(DATASET.VL_MONTHLY, VL_ROW, year);
 	}
 	function get_monthly_cases_for_vl_previous_year() {
-			get_monthly_cases_for(DATASET.VL_MONTHLY, VL_PREVIOUS_YEAR_ROW, year-1);
-
+			return get_monthly_cases_for(DATASET.VL_MONTHLY, VL_PREVIOUS_YEAR_ROW, year-1);
 	}
 	function get_monthly_cases_for_azcl_current_year() {
-			get_monthly_cases_for(DATASET.ACL_MONTHLY, ACL_ROW, year);
+			return get_monthly_cases_for(DATASET.ACL_MONTHLY, [ACL_ROW, ZCL_ROW], year);
 	}
 	function get_monthly_cases_for_azcl_previous_year() {
-			get_monthly_cases_for(DATASET.ACL_MONTHLY, ACL_ROW, year-1);
-
+			return get_monthly_cases_for(DATASET.ACL_MONTHLY, [ACL_PREVIOUS_YEAR_ROW, ZCL_PREVIOUS_YEAR_ROW], year-1);
 	}
 	
 
@@ -431,6 +489,7 @@ $( document ).ready( function() {
 		return $.ajax({
 			url: builtUrl
 		}).then(function(data) {
+				decide_cl_or_aclzcl_mode(data.dataValues);
 				fillArray(data.dataValues, CL_COLUMN);
 		});
 	}
@@ -467,6 +526,35 @@ $( document ).ready( function() {
 										relapses_by_month[i-starting_column],
 										unspecified_by_month[i-starting_column] ]);
 			monthlyArray[row][i] = total_cases_by_month;
+		}
+		
+	}	 
+	/***
+
+	 */
+	function fillMonthlyArrayACLZCL(aclRow, zclRow, dataValues) {
+		var new_cases_by_month_acl = getValuesForKeyByMonth(dataValues,["categoryOptionCombo", "dataElement"],[TYPE_NEW_CASES, DATAELEMENT.ACL_EPI_Type],"value");
+		var relapses_by_month_acl = getValuesForKeyByMonth(dataValues,["categoryOptionCombo", "dataElement"],[TYPE_RELAPSE, DATAELEMENT.ACL_EPI_Type],"value");
+		var unspecified_by_month_acl = getValuesForKeyByMonth(dataValues,["categoryOptionCombo", "dataElement"],[TYPE_UNSPECIFIED, DATAELEMENT.ACL_EPI_Type],"value");
+
+		var new_cases_by_month_zcl = getValuesForKeyByMonth(dataValues,["categoryOptionCombo", "dataElement"],[TYPE_NEW_CASES, DATAELEMENT.ZCL_EPI_Type],"value");
+		var relapses_by_month_zcl = getValuesForKeyByMonth(dataValues,["categoryOptionCombo", "dataElement"],[TYPE_RELAPSE, DATAELEMENT.ZCL_EPI_Type],"value");
+		var unspecified_by_month_zcl = getValuesForKeyByMonth(dataValues,["categoryOptionCombo", "dataElement"],[TYPE_UNSPECIFIED, DATAELEMENT.ZCL_EPI_Type],"value");
+
+		var total_cases_by_month;
+		var starting_column = monthlyArray[aclRow].length;
+
+		for (var i=starting_column; i < new_cases_by_month_acl.length + starting_column; i++){
+			total_cases_by_month = add([	new_cases_by_month_acl[i - starting_column],
+										relapses_by_month_acl[i - starting_column],
+										unspecified_by_month_acl[i - starting_column] ]);
+			monthlyArray[aclRow][i] = total_cases_by_month;
+		}
+		for (var i=starting_column; i < new_cases_by_month_zcl.length + starting_column; i++){
+			total_cases_by_month = add([	new_cases_by_month_zcl[i - starting_column],
+										relapses_by_month_zcl[i - starting_column],
+										unspecified_by_month_zcl[i - starting_column] ]);
+			monthlyArray[zclRow][i] = total_cases_by_month;
 		}
 		
 	}
@@ -534,14 +622,13 @@ $( document ).ready( function() {
 		// the code here will be executed when all four ajax requests resolve.
 		// a1, a2, a3 and a4 are lists of length 3 containing the response text,
 		// status, and jqXHR object for each of the four ajax calls respectively.
-		writeTable(tableBody, array);
-		writeTable(monthlyDistributionTableBody, monthlyArray);
+		writeTable(tableBody, array, EPI_TABLE_TD_ID_PREFIX);
+		writeTable(monthlyDistributionTableBody, monthlyArray, MONTHLY_TABLE_TD_ID_PREFIX);
 
-
+		setMonthlyCheckboxes();
 		makeElementsFootnotables();
 
-
-		call_chart_test();
+		generate_cl_vl_new_cases_charts();
 	});
 
 
@@ -553,6 +640,17 @@ $( document ).ready( function() {
  	 **********                     		 AUXILIARY FUNCTIONS          	    		       **********
 	 ****************************************************************************************************/
 
+	 /*
+
+	
+
+	 */
+
+	function decide_cl_or_aclzcl_mode(dataValues){
+		if (dataValues === undefined ){
+			acl_and_zcl_activated = true;
+		}
+	}
 	/* return a text about publishing date with the current month and year*/
 	function getDatePublished(){
 		var d = new Date();
@@ -561,13 +659,13 @@ $( document ).ready( function() {
 		return PUBLISHED_TEXT+" "+MONTHS[thisMonth]+" "+thisYear;
 	}
 
-	function writeTable(htmlObject, array) {
+	function writeTable(htmlObject, array, tdIdPrefix) {
 		// declare html variable (a string holder):
 		var html = '';
 		var count = 0;
 		for (var i = 0; i < array.length; i++) {
 			// add opening <tr> tag to the string:
-			html += '<tr>';
+			html += '<tr id="'+tdIdPrefix+i+'">';
 			for (var j = 0; j < array[i].length; j++) {
 				// add <td> elements to the string:
 				html += '<td>' + '<span class="footnotable editableElement" >' + array[i][j] + '</span>' + '</td>';
@@ -625,13 +723,26 @@ $( document ).ready( function() {
 		if (array === undefined){
 			return returnValue;
 		}
-
-		$.each( array, function( index, object ) {
-			if(object[keyName]===keyValue){
-				returnValue = object[valueName];
-				return false;
-			} 
-		});
+		if (typeof keyName === 'string') {
+			// one property check
+			$.each( array, function( index, object ) {
+				if(object[keyName]===keyValue){
+					returnValue = object[valueName];
+					return false;
+				} 
+			});
+		} else if (keyName.length > 1 && keyValue.length > 1) {
+			// two properties check  // not used
+			$.each( array, function( index, object ) {
+				if(object[keyName[0]]===keyValue[0] && object[keyName[1]]===keyValue[1]){
+					returnValue = object[valueName];
+					return false;
+				} 
+			});
+		} else {
+			return 'ERROR in getValueForKey';
+		}
+		
 		return returnValue;
 	}
 
@@ -648,14 +759,27 @@ $( document ).ready( function() {
 		}
 
 		var index, period;
-
-		$.each( array, function( index, object ) {
-			if(object[keyName]===keyValue){
-				period = object["period"];
-				index = Number(period.slice(period.length-2, period.length)) - 1;
-				returnValue[index] = object[valueName];
-			} 
-		});
+		if (typeof keyName === 'string') {
+			// one property check
+			$.each( array, function( index, object ) {
+				if(object[keyName]===keyValue){
+					period = object["period"];
+					index = Number(period.slice(period.length-2, period.length)) - 1;
+					returnValue[index] = object[valueName];
+				} 
+			});
+		} else if (keyName.length > 1 && keyValue.length > 1) {
+			// two properties check
+			$.each( array, function( index, object ) {
+				if(object[keyName[0]]===keyValue[0] && object[keyName[1]]===keyValue[1]){
+					period = object["period"];
+					index = Number(period.slice(period.length-2, period.length)) - 1;
+					returnValue[index] = object[valueName];
+				} 
+			});
+		} else {
+			return 'ERROR in getValueForKey';
+		}
 		return returnValue;
 	}
 
@@ -683,22 +807,18 @@ $( document ).ready( function() {
 				addition = addition + +number;
 				counter++;
 			} 
-
 		}
 		if (counter === 0){
 			return WHEN_UNDEFINED;
 		} else {
 			return addition;
 		}
-
 	}
 
 	/** Creates a 2 dimension array with labels.
 		rowsNum: Length of first array dimension (number of rows)
 		rowsTitles : labels for 
 		mode : the place for labels in array. Options : LABELS_ON_COLUMNS or LABELS_ON_ROWS
-	
-
 	*/
 	function  create_2_dim_array(rowsNum, rowsTitles, mode) {
 		var array = []
@@ -717,19 +837,66 @@ $( document ).ready( function() {
 				array[i][0] = rowsTitles[i];
 			}
 		}
-		
-		
 		return array;
+	}
 
+	function setMonthlyCheckboxes(){
+		// checked by default, trigger click for desactivate and for fire behaviour.
+		$('#'+MONTHLY_TABLE_TD_ID_PREFIX+BUTTON_PREFIX+VL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
+		$('#'+MONTHLY_TABLE_TD_ID_PREFIX+BUTTON_PREFIX+CL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
+		$('#'+MONTHLY_TABLE_TD_ID_PREFIX+BUTTON_PREFIX+ACL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
+		$('#'+MONTHLY_TABLE_TD_ID_PREFIX+BUTTON_PREFIX+ZCL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
 
+		if(acl_and_zcl_activated){
+			$('#'+MONTHLY_TABLE_TD_ID_PREFIX+BUTTON_PREFIX+CL_ROW).trigger('click');
+		} else {
+			$('#'+MONTHLY_TABLE_TD_ID_PREFIX+BUTTON_PREFIX+ACL_ROW).trigger('click');
+			$('#'+MONTHLY_TABLE_TD_ID_PREFIX+BUTTON_PREFIX+ZCL_ROW).trigger('click');
+		}
+
+		$(':checkbox').button( "refresh" );
 	}
 
 	/****************************************************************************************************
 	 **********                               CHARTS functions                                 **********
 	 ****************************************************************************************************/
 
+	/* Retrieves the data of vl and cl or acl/zcl, configures the charts and generates them.
+	*/
+	function generate_cl_vl_new_cases_charts (){
+	
+		if (acl_and_zcl_activated) {
+			var colors = [COLORS.blue, COLORS.blue, COLORS.green, COLORS.green];
+			var labels = ["ACL "+year, "ACL "+(year-1), "ZCL "+year, "ZCL " + (year-1)];
+			
+			var acl_current_year = monthlyArray[ACL_ROW].slice(1,monthlyArray[ACL_ROW].length);
+			var zcl_current_year = monthlyArray[ZCL_ROW].slice(1,monthlyArray[ZCL_ROW].length);
+			var acl_previous_year = monthlyArray[ACL_PREVIOUS_YEAR_ROW].slice(1,monthlyArray[ACL_PREVIOUS_YEAR_ROW].length);
+			var zcl_previous_year = monthlyArray[ZCL_PREVIOUS_YEAR_ROW].slice(1,monthlyArray[ZCL_PREVIOUS_YEAR_ROW].length);
 
-	 	/* 	Generates an any-lines-number line graph. 
+			var dataarrays = [acl_current_year, acl_previous_year, zcl_current_year, zcl_previous_year];
+
+
+		} else {
+			var colors = [COLORS.blue, COLORS.blue];
+			var labels = ["CL "+year, "CL " + (year-1)];
+			var cl_current_year = monthlyArray[CL_ROW].slice(1,monthlyArray[CL_ROW].length);
+			var cl_previous_year = monthlyArray[CL_PREVIOUS_YEAR_ROW].slice(1,monthlyArray[CL_PREVIOUS_YEAR_ROW].length);
+			var dataarrays = [cl_current_year, cl_previous_year];
+		
+		}
+		lineChart(newCLCasesChartID, MONTHS_ABBREV, labels, dataarrays, colors, true);
+		
+		var vl_current_year = monthlyArray[VL_ROW].slice(1,monthlyArray[VL_ROW].length);
+		var vl_previous_year = monthlyArray[VL_PREVIOUS_YEAR_ROW].slice(1,monthlyArray[VL_PREVIOUS_YEAR_ROW].length);
+		var vl_data_arrays = [vl_current_year, vl_previous_year];
+		var vl_colors = [COLORS.violet, COLORS.violet];
+		var vl_labels = ["VL "+year, "VL " + (year-1)];
+
+		lineChart(newVLCasesChartID, MONTHS_ABBREV, vl_labels, vl_data_arrays, vl_colors, true);
+
+	}
+	/* 	Generates an any-lines-number line graph. 
 		htmlElementID: the id of the canvas/html element where put the graph
 		x_labels: The labels for the x-axis  
 		dataLabelArray: an array with the label of each data line
@@ -843,34 +1010,34 @@ $( document ).ready( function() {
 		  }
 		  return itemsArray;
 	}
+
+
+
 		/****  **********  ******  ********  ******  ******   *****  *//***** ********  *****  *** *//****
 	 ****  **                                TEST ZONE                                          **********
 	 ** ********    ******** **** ********* ******* ************   *********** *********** ******* *******/
 
 
-
+/*
 	chartPlugin = setChartPlugin(chartPlugin);
 	var chartTestParams = setChartParams("B9bBfRcF6jb", "aD1KD82UFB1", "New", orgUnit.id, "line", chartPlugin.url, "chart1");
 	chartPlugin.load([chartTestParams]);
-
+*/
 	// aD1KD82UFB1 new
 
-	function call_chart_test (){
-		var acl2014 = [1800, 1900, 300, 500, 200, 3,500,6,1500,1700,1800,19];
-		var acl2013 = [1700, 2900, 600, 900, 400, 500,500,6,1900,1900,1900,190];
-		var zcl2014 = [180, 190, 30, 50, 20, 3,50,6,150,170,180,19];
-		var zcl2013 = [160, 199, 40, 56, 50, 35,30,66,140,19,100,1];
-		var cl_current_year = monthlyArray[CL_ROW].slice(1,monthlyArray[CL_ROW].length);
-		var colors = [COLORS.blue, COLORS.blue, COLORS.green, COLORS.green];
-		var labels = ["ACL 2014", "ACL 2013", "ZCL 2014", "ZCL 2013"];
-		var dataarrays = [cl_current_year, acl2013, zcl2014, zcl2013];
-
-		lineChart("myChart", MONTHS_ABBREV, labels, dataarrays, colors, true);
-	}
-
 	
-	
+	$(":checkbox").change(function() {
+		var index = Number(this.id.slice(this.id.length-1, this.id.length));
+			console.log(this.id);
 
+		if(this.checked) {
+			//Do stuff
+			$("#"+MONTHLY_TABLE_TD_ID_PREFIX+index).show();
+		} else {
+			$("#"+MONTHLY_TABLE_TD_ID_PREFIX+index).hide();
+		}
+	});
+	
 		
 	
 } );
@@ -883,7 +1050,10 @@ $( document ).ready( function() {
  	**********		   																		   **********
 	 ****************************************************************************************************/
 	-->
-<div class="non-printable">Configuration Area - Wont be printed<br>
+<div class="non-printable section"><hr>
+Configuration Area - Wont be printed<br>
+	Instructions : Right click to add a footnote number.<br>
+					Left click to edit an element.
 
 	<ol id="selectable">
 	<li class="ui-widget-content">Item 1</li>
@@ -896,6 +1066,31 @@ $( document ).ready( function() {
 	</ol>
 
 
+
+<fieldset id="monthlyCheckboxes">
+  <!--  <legend>Monthly distribution table: </legend>
+    
+	<input id="mdtb0" type="checkbox" checked="checked" />
+	<label for="mdtb0">CL</label>
+	<input id="mdtb1" type="checkbox" checked="checked" />
+	<label for="mdtb1">VL</label>
+	<input id="mdtb2" type="checkbox" checked="checked" />
+	<label for="mdtb2">CL Previous year</label>
+	<input id="mdtb3" type="checkbox" checked="checked" />
+	<label for="mdtb3">VL Previous year</label>
+	<input id="mdtb4" type="checkbox" checked="checked" />
+	<label for="mdtb4">ACL</label>
+	<input id="mdtb5" type="checkbox" checked="checked" />
+	<label for="mdtb5">ZCL</label>
+	<input id="mdtb6" type="checkbox" checked="checked" />
+	<label for="mdtb6">ACL Previous year</label>
+	<input id="mdtb7" type="checkbox" checked="checked" />
+	<label for="mdtb7">ZCL Previous year</label>
+-->
+</fieldset>
+
+
+<hr>
 
 </div>
 <div class="section">
@@ -941,18 +1136,10 @@ $( document ).ready( function() {
 
 <div class="section">
 	<h4 class="editableElement footnotable" >Monthly distribution of new cases January-December</h4>
-	<div id="table1"></div>
-
 
 	<table id="monthlyDistributionTable" class="display" cellspacing="0" width="100%">
 			<thead>
-				<tr>
-					<th></th>
-					<th><span id="JAN"></span>JAN</th>
-					<th><span id="FEB"></span>FEB</th>
-					<th><span id=""></span>MAR</th>
-					<th><span id=""></span></th>
-				</tr>
+				<tr id ="monthlyDistributionTableHead"></tr>
 			</thead>
 			<tbody id="monthlyDistributionTableBody"></tbody>
 	</table>
@@ -974,17 +1161,15 @@ $( document ).ready( function() {
 
 	<div id="dialog-editor">
 		<textarea id="editor" title="Edit field"></textarea>
+		
 	</div>
 
 </div>
 
+<!--
+<div id="chart1" width="450" height="300"></div>
+-->
+<canvas id="NewCLCasesChart" width="450" height="300" ></canvas>
+<canvas id="NewVLCasesChart" width="450" height="300" ></canvas>
 
 
-
-
-
-
-
-<div id="chart1"></div>
-
-<canvas id="myChart" width="450" height="300" ></canvas>
