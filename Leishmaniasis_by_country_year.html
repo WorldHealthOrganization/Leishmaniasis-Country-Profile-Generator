@@ -106,6 +106,10 @@ img.center {
   flex: 1; /*grow*/
 }
 
+/* lines for tables */
+tr.bottom_line td,th {
+  border-bottom: 1px solid #cad5e5;	/* Info : Border from first row table doesn't come from here. Just same property. */
+}
 
 .footNoted {
   /*  color: red; */	
@@ -150,13 +154,28 @@ $( document ).ready( function() {
 	var API_URL = "../api/";
 	var DATA_VALUE_SETS = "dataValueSets";
 	var WHEN_UNDEFINED = "No data";
+	var WHEN_NON_APPLICABLE = "N/A";
 	var WHEN_DIV_0 = "-";
 	var ERROR = "Error!";
+
+	var BOTTOM_LINE_CLASS = "bottom_line";
+
+	var VALUE_KEY = "value";
+	var CC_KEY = "categoryOptionCombo";
+	var DE_KEY = "dataElement";
+	var PERIOD_KEY = "period";
 
 	var LABELS_ON_ROWS = 0;
 	var LABELS_ON_COLUMNS = 1;
 
+	/* Texts on report */
 	var PUBLISHED_TEXT = "Published in ";
+	var VL_CHART_LEGEND = "VL ";
+	var CL_CHART_LEGEND = "CL ";	
+	var ACL_CHART_LEGEND = "ACL ";
+	var ZCL_CHART_LEGEND = "ZCL ";
+	var TREATMENT_TABLE_FIRST_COLUMNS = "TREATMENT OUTCOME";
+
 
 	var MONTHS = [	"January",
 					"February",
@@ -192,47 +211,35 @@ $( document ).ready( function() {
 		violet :'rgba(153, 0, 255, 1)',
 		soft_violet :'rgba(153, 0, 255, 0.2)'
 	}
+
+	/* Country General Information Texts */
 	
-	var DATASET = {
-		CL : "tnek2LjfuIm",
-		VL : "fdBM4sWSuPR",
-		CL_MONTHLY : "pWGPGaE6knJ",
-		VL_MONTHLY : "GW4lVTTLWfW",
-		ACL_MONTHLY : "YfnF9NPpP4c"
-
-	};
-	var DATAELEMENT = {
-		ACL_EPI_Type : "f1bBSpuIyzD",
-		ZCL_EPI_Type : "Ta96pnXcAum"
-	};
-
-	var TYPE_NEW_CASES = "psVSPLclyFj";
-	var TYPE_RELAPSE = "KPn9RHNrd8R";
-	var TYPE_UNSPECIFIED = "IRW4YrOtk5q";
-
-	var COMBO_MEN = "GpQZH8hC7jY";
-	var COMBO_WOMEN = "TtoYCIVcBA3";
-
-	var AGE_5 = "hKq5WASZw8q";
-	var AGE_5_14 = "mTyLqDjpQ5b";
-	var AGE_14 = "DDliBAHqwGV";
-	var AGE_TOTAL = "OWKZMKxVCnh";
-
-	var ORIGIN_AUTOC_NEW = "WynvvdELtqm";
-	var ORIGIN_AUTOC_REL = "LUVeZjOsibr";
-	var ORIGIN_AUTOC_UNS = "wYB0E3USJ7L";
-	var ORIGIN_IMPORT_NEW = "pWZT12mjhUC";
-	var ORIGIN_IMPORT_REL = "QO2kKL8ySPc";
-	var ORIGIN_IMPORT_UNS = "A5TSwm9Wivn";
-	var ORIGIN_UNKNOWN_NEW = "Lx8tyhhseZZ";
-	var ORIGIN_UNKNOWN_REL = "lGFgLYweSNS";
-	var ORIGIN_UNKNOWN_UNS = "EGvT9lj2BOy";
+	var CGI_LABELS = [	"Total population:",
+						"Gender (%, F/M):",
+						"GDP (PPP int $):",
+						"Income status:",
+						"Age group <15/> 14 years, %: ",
+						"Life expectancy at birth in years (F/M):",
+						"Number of 2nd sub-national administrative level<br>divisions, name:"
+						];
 
 	/* Epidemiology table constants */
+	var FIRST_COLUMN = 0;
 	var VL_COLUMN = 1;
 	var CL_COLUMN = 2;
-	var PKDL_COLUMN = 3;
-	var MCL_COLUMN = 4;
+	var ACL_COLUMN = 3;
+	var ZCL_COLUMN = 4;
+	var PKDL_COLUMN = 5;
+	var MCL_COLUMN = 6;
+
+	var COLUMNS_LABELS = [ 	"VL",
+							"CL",
+							"ACL",
+							"ZCL",
+							"PKDL",
+							"MCL"
+							];
+
 
 	var ENDEMICITY_ROW = 0;
 	var NEW_ROW = 1;
@@ -246,9 +253,205 @@ $( document ).ready( function() {
 	var RISK_ROW = 9;
 	var OUTBK_ROW = 10;
 	var FOCI_ROW = 11;
-	var UNSP_ROW = 12;
+
+	var rowTitles = [	"Endemicity status:",
+						"Number of new cases (incidence):",
+						"Number of relapse cases:",
+						"Total number of cases:",
+						"Imported cases (#, %):",
+						"Gender distribution (%F):",
+						"Age group distribution (%, <5/5-14/>14):",
+						"Incidence rate (cases/10 000 population in endemic areas):",
+						"Number of endemic 3rd sub-national administrative level divisions (n):",
+						"Population at risk (%, n/total):",
+						"Was there anz outbreak?",
+						"Number of new foci:"
+						];
+	var LINES_BELOW_LABELS_EPI = [true,false,false,true,true,false,true,false,false,true,false,true];
+	var array = create_2_dim_array(rowTitles.length, rowTitles, LABELS_ON_COLUMNS);
+
+	/* Monthly distribution table constants */
+	var VL_ROW = 0;
+	var CL_ROW = 1;
+	var VL_PREVIOUS_YEAR_ROW = 2;
+	var CL_PREVIOUS_YEAR_ROW = 3;
+	var ACL_ROW = 4;
+	var ZCL_ROW = 5;
+	var ACL_PREVIOUS_YEAR_ROW = 6;
+	var ZCL_PREVIOUS_YEAR_ROW = 7;
+
+	var rowMonthlyTitles = ["VL",
+							"CL",
+							"VL (previous year)",
+							"CL (previous year)",
+							"ACL",
+							"ZCL",
+							"ACL (previous year)",
+							"ZCL (previous year)"
+							];
+	var LINES_BELOW_LABELS_MONTHLY = [true,true,true,true,true,true,true,true];
+
+	var monthlyArray = create_2_dim_array(rowMonthlyTitles.length, rowMonthlyTitles, LABELS_ON_COLUMNS);
+
+	/* Control and surveillance table */
+
+	/* Country General Information Texts */
+	
+	var CAS_LABELS = [	"Year Leishmaniasis National Control<br>Programme (LNCP) was established:",
+						"Type of surveillance:",
+						"Is there a vector control programme?",
+						"Type of insecticide used for IRS:",
+						"Year latest national guidelines were published:",
+						"Is leishmaniasis notifiable (mandatory reporting)?",
+						"Is there a reservoir host control programme?",
+						"Number of leishmaniasis health facilities:"
+						];
 
 
+	/* Diagnosis table */
+
+	var SCREENED_ACTIVELY_ROW = 0;
+	var SCREENED_PASSIVELY_ROW = 1;
+	var VL_CASES_DIAGNOSED_ROW = 2;
+	var POSITIVE_RDT_ROW = 3;
+	var DIRECT_EXAM_DIAGNOSED_ROW = 4;
+	var POSITIVE_DIRECT_EXAM_ROW = 5;
+	var CLINICALLY_DIAGNOSED_ROW = 6;
+	var HIV_COINFECTION_ROW = 7;
+
+	var diagnosisLabels = [	"Number of people screened actively for:",
+							"Number of people screened passively for:",
+							"VL cases diagnosed by RDT<br>(%, RDT+/total VL cases):",
+							"Proportion of positive RDT<br>(%, RDT+/total RDT):",
+							"Cases diagnosed by direct exam<br>(parasitology) (%, # slides +/total cases):",
+							"Proportion of positive slides<br>(%, # slides +/total slides):",
+							"Cases diagnosed clinically<br>(%, # clinical cases/total cases): ",
+							"Percentage of cases with HIV-VL coinfection:"
+							];
+	var LINES_BELOW_LABELS_DIAG = [false,true,false,true,false,false,true,true];
+
+	var diagnosisArray = create_2_dim_array(diagnosisLabels.length, diagnosisLabels, LABELS_ON_COLUMNS);
+
+	/* Treatment table */
+	
+	var RELAPSE_PROPORTION_ROW = 0;
+	var INITIAL_CURE_RATE_ROW = 1;
+	var FAILURE_RATE_ROW = 2;
+	var CASE_FATALITY_ROW = 3;
+
+	var treatmentLabels = [ "Proportion of relapse cases:",
+							"Initial cure rate:",
+							"Failure rate:",				
+							"Case-fatality rate:"
+							];
+	var LINES_BELOW_LABELS_TREAT = [true, false, false, true];
+	var treatmentArray = create_2_dim_array(treatmentLabels.length, treatmentLabels, LABELS_ON_COLUMNS);
+	
+
+	var DATASET = {
+		CL : "tnek2LjfuIm",
+		VL : "fdBM4sWSuPR",
+		AZCL : "Uc3j0vpsfSB", 
+		CL_MONTHLY : "pWGPGaE6knJ",
+		VL_MONTHLY : "GW4lVTTLWfW",
+		AZCL_MONTHLY : "YfnF9NPpP4c"
+
+	};
+	// DATA_ELEMENTS
+	var DE = {
+		CL_EPI_Type :   "EPw6gR9fDqt",
+		VL_EPI_Type :	"IxbBQzytPgv",
+		ACL_EPI_Type : 	"f1bBSpuIyzD",
+		ZCL_EPI_Type : 	"Ta96pnXcAum",
+		VL_LAB_RDT_tested_type : "rFy4bKMa977",
+		VL_LAB_parasito_tested_type : "RrKpXTbayoB",
+		VL_LAB_parasito_result_type : "Qc7ujS567UL",
+		VL_LAB_clinical : "BAsexzzzJZC",
+		VL_LAB_HIVstatus_Type : "NTo887FeHdI",
+		PKDL_GEN_EPID_cases : "NdbsWSygpqz",
+		PKDL_EPID_sex: "ipWXN3NeXac",
+		PKDL_EPID_age : "rw4tu6PNGKO",
+		PKDL_LAB_HIV: "sxjZutF1AMx",
+		VL_TREATMENT_OUTCOME: "eh7Lbb7Rslc"
+
+	};
+
+	var DE_SCREEN_ACTIVE = {};
+	DE_SCREEN_ACTIVE[VL_COLUMN] = "g6yIwTl0sHx";
+	DE_SCREEN_ACTIVE[CL_COLUMN] = "c5Zvvh9AWB4";
+	DE_SCREEN_ACTIVE[ACL_COLUMN] = "hqgnicLioSz";
+	DE_SCREEN_ACTIVE[ZCL_COLUMN] = "NDNcasRLz01";
+
+	var DE_SCREEN_PASSIVE = {};
+	DE_SCREEN_PASSIVE[VL_COLUMN] = "MRFflirvoj4";
+	DE_SCREEN_PASSIVE[CL_COLUMN] = "jdQau4rlj73";
+	DE_SCREEN_PASSIVE[ACL_COLUMN] = "gZuua8o0gNS";
+	DE_SCREEN_PASSIVE[ZCL_COLUMN] = "yEmHARyqLIk";
+
+	var TYPE_NEW_CASES = "psVSPLclyFj";
+	var TYPE_RELAPSE = "KPn9RHNrd8R";
+	var TYPE_UNSPECIFIED = "IRW4YrOtk5q";
+
+	var NEW_MALE = "GpQZH8hC7jY";
+	var NEW_FEMALE = "TtoYCIVcBA3";
+	var NEW_UNKNOWN = "FaYhAlKLX16";
+	var REL_MALE = "UG7PsogfDYz";
+	var REL_FEMALE = "OmkgX8Kkurn";
+	var REL_UNKNOWN = "Ng311XPZTbv";
+	var UNS_MALE = "aWWYWv6buzp";
+	var UNS_FEMALE = "wGED4K5Bs37";
+	var UNS_UNKNOWN = "zkKbIIarKWM";
+
+	var FEMALE = "V2LdgcGgFQt";
+	var MALE = "Z2hvpF7mhh7";
+	var UNKNOWN_SEX = "jNbFhhnUsQv";
+
+	var AGE_5 = "HDXcEOGT2s1";
+	var AGE_5_14 = "DOJartWGuff";
+	var AGE_14 = "vJEPLhdauF7";
+	var AGE_UNKNOWN = "kek1YXjDq70";
+
+	var NEW_UNDER_5 = "hKq5WASZw8q";
+	var NEW_5_14 = "mTyLqDjpQ5b";
+	var NEW_OVER_14 = "DDliBAHqwGV";
+	var NEW_AGE_UNKNOWN = "dVuOzmU4xbI";
+	var REL_UNDER_5 = "NlAMTGlJ7b3";
+	var REL_5_14 = "a1GEE4dBKZ8";
+	var REL_OVER_14 = "xxrYh49wmnD";
+	var REL_AGE_UNKNOWN = "zuuSkk9CiNB";
+	var UNS_UNDER_5 = "rZwYGlqR8GG";
+	var UNS_5_14 = "P6R9XEaqQbz";
+	var UNS_OVER_14 = "UQMTeRPY2U0";
+	var UNS_AGE_UNKNOWN = "nIbrdHllMKh";
+
+	var ORIGIN_AUTOC_NEW = "WynvvdELtqm";
+	var ORIGIN_AUTOC_REL = "LUVeZjOsibr";
+	var ORIGIN_AUTOC_UNS = "wYB0E3USJ7L";
+	var ORIGIN_IMPORT_NEW = "pWZT12mjhUC";
+	var ORIGIN_IMPORT_REL = "QO2kKL8ySPc";
+	var ORIGIN_IMPORT_UNS = "A5TSwm9Wivn";
+	var ORIGIN_UNKNOWN_NEW = "Lx8tyhhseZZ";
+	var ORIGIN_UNKNOWN_REL = "lGFgLYweSNS";
+	var ORIGIN_UNKNOWN_UNS = "EGvT9lj2BOy";
+
+	/* Diagnosis DataElements */
+	//o1smtpQE1tm
+	var POSITIVE_NEW = "jRcT6HVKb2t";
+	var POSITIVE_RELAPSE = "QKqVJ13mGZI";
+	var POSITIVE_UNSP = "YXktM46YiXo";
+
+	/* Treatment Category options*/
+
+	var NEW_CURED = "UnXwCSYnnvT";
+	var NEW_RELOUT = "HjLmlc308bk";
+	var NEW_DEAD = "SWQatS9z4sL";
+	var REL_CURED = "a6I7BzjrnmJ";
+	var REL_RELOUT = "j7RGAw4zpVi";
+	var REL_DEAD = "iML4aJx17bq";
+	var UNS_CURED = "SZiY6xiTgy6";
+	var UNS_RELOUT = "D08F1WAa6x6";
+	var UNS_DEAD = "qAneJjz2lLH";
+	
 
 	var date = dhis2.report.date;
 	var year = date.slice(0,4);
@@ -263,12 +466,6 @@ $( document ).ready( function() {
 	console.log(orgUnit);
 	console.log(country_name);
 
-	/* Set Epidemiology table values
-	*/
-	$( "#vl_head" ).text("VL");
-	$( "#cl_head" ).text("CL");
-	$( "#pkdl_head" ).text("PKDL");
-	$( "#mcl_head" ).text("MCL");
 
 
 	var editingElement;
@@ -322,55 +519,31 @@ $( document ).ready( function() {
 	var footNoteCounter = 0;
 	
 	/* HTML elements */
-	var table = 	$("#example");
-	var tableBody = 	$("#tbody3");
+	var epiTable = 	$("#epiTable");
+	var epiTableBody = 	$("#epiTableBody");
+	var epiTableHead = 	$("#epiTableHead");
+
 	var monthlyDistributionTableBody = $("#monthlyDistributionTableBody");
 	var monthlyDistributionTableHead = $("#monthlyDistributionTableHead");
+
+	var diagTableBody = $("#diagTableBody");
+	var diagTableHead = $("#diagTableHead");
+
+	var treatmentTableBody = $("#treatmentTableBody");
+	var treatmentTableHead = $("#treatmentTableHead");
+
 	var newCLCasesChartID = "NewCLCasesChart";
 	var newVLCasesChartID = "NewVLCasesChart";
 	
 	var EPI_TABLE_TD_ID_PREFIX = "epiTable";
 	var MONTHLY_TABLE_TD_ID_PREFIX = "monthlyTable";
+	var DIAG_TABLE_TD_ID_PREFIX = "diagTable";
+
+	var LEISH_COLUMN_DETAIL_PREFIX = "LeishDetail";
+
 	var BUTTON_PREFIX = '_b_';
 
-	var rowTitles = [	"Endemicity status:",
-						"Number of new cases (incidence):",
-						"Number of relapse cases:",
-						"Total number of cases:",
-						"Imported cases (#, %):",
-						"Gender distribution (%F):",
-						"Age group distribution (%, <5/5-14/>14):",
-						"Incidence rate (cases/10 000 population in endemic areas):",
-						"Number of endemic 3rd sub-national administrative level divisions (n):",
-						"Population at risk (%, n/total):",
-						"Was there anz outbreak?",
-						"Number of new foci:",
-						"(EXTRA) Unspecified cases:"
-						]
 
-	var array = create_2_dim_array(rowTitles.length, rowTitles, LABELS_ON_COLUMNS);
-
-	/* Monthly distribution table constants */
-	var VL_ROW = 0;
-	var CL_ROW = 1;
-	var VL_PREVIOUS_YEAR_ROW = 2;
-	var CL_PREVIOUS_YEAR_ROW = 3;
-	var ACL_ROW = 4;
-	var ZCL_ROW = 5;
-	var ACL_PREVIOUS_YEAR_ROW = 6;
-	var ZCL_PREVIOUS_YEAR_ROW = 7;
-
-	var rowMonthlyTitles = ["VL",
-							"CL",
-							"VL (previous year)",
-							"CL (previous year)",
-							"ACL",
-							"ZCL",
-							"ACL (previous year)",
-							"ZCL (previous year)"
-							];
-
-	var monthlyArray = create_2_dim_array(rowMonthlyTitles.length, rowMonthlyTitles, LABELS_ON_COLUMNS);
 
 	
 	/* Set charts*/
@@ -406,33 +579,40 @@ $( document ).ready( function() {
 	Starting calls
 	*/
 
-	generateMonthlyCheckboxes();
-	fillMonthlyTableHead(monthlyDistributionTableHead);
+
+	generateCheckboxes($("#leish_detail_checkboxes"), COLUMNS_LABELS, "ACL/ZCL PKDL Details:",LEISH_COLUMN_DETAIL_PREFIX);
+	generateCheckboxes($("#monthlyCheckboxes"), rowMonthlyTitles, "Monthly distribution table:",MONTHLY_TABLE_TD_ID_PREFIX);
+
+	fillTableHead(epiTableHead, '', COLUMNS_LABELS);
+	fillTableHead(monthlyDistributionTableHead, '', MONTHS_ABBREV);
+	fillTableHead(diagTableHead, '', COLUMNS_LABELS);
+	fillTableHead(treatmentTableHead, TREATMENT_TABLE_FIRST_COLUMNS, COLUMNS_LABELS.slice(0,1));
+
 
 	/****************************************************************************************************
  	 **********                    	     STATIC CONTENT FUNCTIONS         	           	       **********
 	 ****************************************************************************************************/
-	function fillMonthlyTableHead(htmlObject){
-		var html = '<th></th>';
+	function fillTableHead(htmlObject, firstColumn, headObjects){
+		var html = '<th>'+firstColumn+'</th>';
 		
-		for (var i=0; i<MONTHS_ABBREV.length;i++){
-			html +='<th class="editableElement">'+MONTHS_ABBREV[i]+'</th>';
+		for (var i=0; i<headObjects.length;i++){
+			html +='<th class="editableElement">'+headObjects[i]+'</th>';
 		}
 
 		htmlObject.append(html);
 	}
 
-	function generateMonthlyCheckboxes(){
-		var html = '<legend>Monthly distribution table: </legend>';
-		for (var i=0; i<rowMonthlyTitles.length; i++){
-			html+='<input id="'+MONTHLY_TABLE_TD_ID_PREFIX+BUTTON_PREFIX+i+'" type="checkbox" checked="checked" />'
-			html+='<label for="'+MONTHLY_TABLE_TD_ID_PREFIX+BUTTON_PREFIX+i+'">'+rowMonthlyTitles[i]+'</label>'
+	function generateCheckboxes(htmlObject, labels, title, prefix){
+		var html = '<legend>'+title+'</legend>';
+		for (var i=0; i<labels.length; i++){
+			html+='<input id="'+prefix+BUTTON_PREFIX+i+'" type="checkbox" class="'+prefix+'" checked="checked" />'
+			html+='<label for="'+prefix+BUTTON_PREFIX+i+'">'+labels[i]+'</label>'
 		}
 		    
-		$( "#monthlyCheckboxes" ).append(html);
-
+		htmlObject.append(html);
 		$('input[type=checkbox]').checkboxradio();
 	}
+
 
 	/****************************************************************************************************
  	 **********                    	    FUNCTIONS CALLING THE API         	           	       **********
@@ -474,10 +654,10 @@ $( document ).ready( function() {
 			return get_monthly_cases_for(DATASET.VL_MONTHLY, VL_PREVIOUS_YEAR_ROW, year-1);
 	}
 	function get_monthly_cases_for_azcl_current_year() {
-			return get_monthly_cases_for(DATASET.ACL_MONTHLY, [ACL_ROW, ZCL_ROW], year);
+			return get_monthly_cases_for(DATASET.AZCL_MONTHLY, [ACL_ROW, ZCL_ROW], year);
 	}
 	function get_monthly_cases_for_azcl_previous_year() {
-			return get_monthly_cases_for(DATASET.ACL_MONTHLY, [ACL_PREVIOUS_YEAR_ROW, ZCL_PREVIOUS_YEAR_ROW], year-1);
+			return get_monthly_cases_for(DATASET.AZCL_MONTHLY, [ACL_PREVIOUS_YEAR_ROW, ZCL_PREVIOUS_YEAR_ROW], year-1);
 	}
 	
 
@@ -489,10 +669,26 @@ $( document ).ready( function() {
 		return $.ajax({
 			url: builtUrl
 		}).then(function(data) {
-				decide_cl_or_aclzcl_mode(data.dataValues);
-				fillArray(data.dataValues, CL_COLUMN);
+			//	decide_cl_or_aclzcl_mode(data.dataValues);
+				fillArray(data.dataValues, CL_COLUMN, DE.CL_EPI_Type, ""); 
 		});
 	}
+
+
+	/* getting cl cases from API */
+	function get_azcl_cases() {
+
+		params.dataSet = DATASET.AZCL;
+		builtUrl = buildAPIUrl(DATA_VALUE_SETS, params);
+		return $.ajax({
+			url: builtUrl
+		}).then(function(data) {
+				set_aclzcl_mode_to_true_if_data(data.dataValues);
+				fillArray(data.dataValues, ACL_COLUMN, DE.ACL_EPI_Type, ""); 
+				fillArray(data.dataValues, ZCL_COLUMN, DE.ZCL_EPI_Type, ""); 
+		});
+	}
+
 
 	/* getting vl cases from API */
 	function get_vl_cases() {
@@ -501,7 +697,9 @@ $( document ).ready( function() {
 		return $.ajax({
 			url: builtUrl
 		}).then(function(data) {
-				fillArray(data.dataValues, VL_COLUMN);
+				fillArray(data.dataValues, VL_COLUMN, DE.VL_EPI_Type, DE.VL_LAB_RDT_tested_type);
+				fillArray(data.dataValues, PKDL_COLUMN, DE.VL_EPI_Type, DE.VL_LAB_RDT_tested_type);
+
 		});
 	}
 
@@ -514,9 +712,9 @@ $( document ).ready( function() {
 
 	 */
 	function fillMonthlyArray(row, dataValues) {
-		var new_cases_by_month = getValuesForKeyByMonth(dataValues,"categoryOptionCombo",TYPE_NEW_CASES,"value");
-		var relapses_by_month = getValuesForKeyByMonth(dataValues,"categoryOptionCombo",TYPE_RELAPSE,"value");
-		var unspecified_by_month = getValuesForKeyByMonth(dataValues,"categoryOptionCombo",TYPE_UNSPECIFIED,"value");
+		var new_cases_by_month = getValuesForKeyByMonth(dataValues,CC_KEY,TYPE_NEW_CASES, VALUE_KEY);
+		var relapses_by_month = getValuesForKeyByMonth(dataValues,CC_KEY,TYPE_RELAPSE, VALUE_KEY);
+		var unspecified_by_month = getValuesForKeyByMonth(dataValues,CC_KEY,TYPE_UNSPECIFIED, VALUE_KEY);
 
 		var total_cases_by_month;
 		var starting_column = monthlyArray[row].length;
@@ -533,13 +731,13 @@ $( document ).ready( function() {
 
 	 */
 	function fillMonthlyArrayACLZCL(aclRow, zclRow, dataValues) {
-		var new_cases_by_month_acl = getValuesForKeyByMonth(dataValues,["categoryOptionCombo", "dataElement"],[TYPE_NEW_CASES, DATAELEMENT.ACL_EPI_Type],"value");
-		var relapses_by_month_acl = getValuesForKeyByMonth(dataValues,["categoryOptionCombo", "dataElement"],[TYPE_RELAPSE, DATAELEMENT.ACL_EPI_Type],"value");
-		var unspecified_by_month_acl = getValuesForKeyByMonth(dataValues,["categoryOptionCombo", "dataElement"],[TYPE_UNSPECIFIED, DATAELEMENT.ACL_EPI_Type],"value");
+		var new_cases_by_month_acl = getValuesForKeyByMonth(dataValues,[CC_KEY, DE_KEY],[TYPE_NEW_CASES, DE.ACL_EPI_Type], VALUE_KEY);
+		var relapses_by_month_acl = getValuesForKeyByMonth(dataValues,[CC_KEY, DE_KEY],[TYPE_RELAPSE, DE.ACL_EPI_Type], VALUE_KEY);
+		var unspecified_by_month_acl = getValuesForKeyByMonth(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED, DE.ACL_EPI_Type], VALUE_KEY);
 
-		var new_cases_by_month_zcl = getValuesForKeyByMonth(dataValues,["categoryOptionCombo", "dataElement"],[TYPE_NEW_CASES, DATAELEMENT.ZCL_EPI_Type],"value");
-		var relapses_by_month_zcl = getValuesForKeyByMonth(dataValues,["categoryOptionCombo", "dataElement"],[TYPE_RELAPSE, DATAELEMENT.ZCL_EPI_Type],"value");
-		var unspecified_by_month_zcl = getValuesForKeyByMonth(dataValues,["categoryOptionCombo", "dataElement"],[TYPE_UNSPECIFIED, DATAELEMENT.ZCL_EPI_Type],"value");
+		var new_cases_by_month_zcl = getValuesForKeyByMonth(dataValues,[CC_KEY, DE_KEY],[TYPE_NEW_CASES, DE.ZCL_EPI_Type], VALUE_KEY);
+		var relapses_by_month_zcl = getValuesForKeyByMonth(dataValues,[CC_KEY, DE_KEY],[TYPE_RELAPSE, DE.ZCL_EPI_Type], VALUE_KEY);
+		var unspecified_by_month_zcl = getValuesForKeyByMonth(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED, DE.ZCL_EPI_Type], VALUE_KEY);
 
 		var total_cases_by_month;
 		var starting_column = monthlyArray[aclRow].length;
@@ -558,53 +756,206 @@ $( document ).ready( function() {
 		}
 		
 	}
-
-	function fillArray(dataValues, column) {
-		var new_cases = getValueForKey(dataValues,"categoryOptionCombo",TYPE_NEW_CASES,"value");
-		array[NEW_ROW][column] = new_cases;
-		var relapse = getValueForKey(dataValues,"categoryOptionCombo",TYPE_RELAPSE,"value");
-		array[RELAPSE_ROW][column] = relapse;
-		var unspecified = getValueForKey(dataValues,"categoryOptionCombo",TYPE_UNSPECIFIED,"value");
-		array[UNSP_ROW][column] = unspecified;
-		array[TOTAL_ROW][column] = add([new_cases, relapse, unspecified]);
-
-		// sex distribution  TODO onlz news!
-		var men = getValueForKey(dataValues,"categoryOptionCombo", COMBO_MEN,"value");
-		var women = getValueForKey(dataValues,"categoryOptionCombo",COMBO_WOMEN,"value");
-		array[SEX_ROW][column] = percentageText(women, add([men, women]));
+	/*
+		column :
+		epiDE : Epidemiology Data getElement
+		diagDE : diagnosis DataElement
+	*/
+	function fillArray(dataValues, column, epiDE, diagDE) {
+		/* Edidemiology table */
+	
+		// type of cases
+		var new_cases = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_NEW_CASES,epiDE], VALUE_KEY);
+		var relapse = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_RELAPSE,epiDE], VALUE_KEY);
+		var unspecified = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED,epiDE], VALUE_KEY);
+		var total_cases_type = add([new_cases, relapse, unspecified]);
 		
-		//age distribution TODO onlz news!
-		// Todo Age Unknown	
-		var age_5 = getValueForKey(dataValues,"categoryOptionCombo", AGE_5,"value");
-		var age_5_14 = getValueForKey(dataValues,"categoryOptionCombo", AGE_5_14,"value");
-		var age_14 = getValueForKey(dataValues,"categoryOptionCombo", AGE_14,"value");
-		var total_age_cases = add([age_5, age_5_14, age_14]);
+		array[NEW_ROW][column] = new_cases;
+		array[RELAPSE_ROW][column] = relapse;
+		array[TOTAL_ROW][column] = total_cases_type;
 
-		array[AGE_ROW][column] = "(" +	percentageText(age_5, total_age_cases) + " / "
-										+	percentageText(age_5_14, total_age_cases) + " / "
-										+	percentageText(age_14, total_age_cases) + ")";
-											
+		// sex distribution 
+		var new_unknown = getValueForKey(dataValues, CC_KEY, NEW_UNKNOWN, VALUE_KEY);
+		var rel_unknown = getValueForKey(dataValues, CC_KEY, REL_UNKNOWN, VALUE_KEY);
+		var uns_unknown = getValueForKey(dataValues, CC_KEY, UNS_UNKNOWN, VALUE_KEY);
+		var unknown = add([new_unknown, rel_unknown, uns_unknown]);
+
+		var new_male = getValueForKey(dataValues, CC_KEY, NEW_MALE, VALUE_KEY);
+		var rel_male = getValueForKey(dataValues, CC_KEY, REL_MALE, VALUE_KEY);
+		var uns_male = getValueForKey(dataValues, CC_KEY, UNS_MALE, VALUE_KEY);
+		var male = add([new_male, rel_male, uns_male]);
+
+		var new_female = getValueForKey(dataValues, CC_KEY, NEW_FEMALE, VALUE_KEY);
+		var rel_female = getValueForKey(dataValues, CC_KEY, REL_FEMALE, VALUE_KEY);
+		var uns_female = getValueForKey(dataValues, CC_KEY, UNS_FEMALE, VALUE_KEY);
+		var female = add([new_female, rel_female, uns_female]);
+
+		array[SEX_ROW][column] = percentageText(female, add([male, female, unknown]));
+		
+		//age distribution 
+		var new_under_5 = getValueForKey(dataValues, CC_KEY, NEW_UNDER_5, VALUE_KEY);
+		var rel_under_5 = getValueForKey(dataValues, CC_KEY, REL_UNDER_5, VALUE_KEY);
+		var uns_under_5 = getValueForKey(dataValues, CC_KEY, UNS_UNDER_5, VALUE_KEY);
+		var under_5 =  add([new_under_5, rel_under_5, uns_under_5]);
+
+		var new_5_14 = getValueForKey(dataValues, CC_KEY, NEW_5_14, VALUE_KEY);
+		var rel_5_14 = getValueForKey(dataValues, CC_KEY, REL_5_14, VALUE_KEY);
+		var uns_5_14 = getValueForKey(dataValues, CC_KEY, UNS_5_14, VALUE_KEY);
+		var _5_14 =  add([new_5_14, rel_5_14, uns_5_14]);
+
+		var new_over_14 = getValueForKey(dataValues, CC_KEY, NEW_OVER_14, VALUE_KEY);
+		var rel_over_14 = getValueForKey(dataValues, CC_KEY, REL_OVER_14, VALUE_KEY);
+		var uns_over_14 = getValueForKey(dataValues, CC_KEY, UNS_OVER_14, VALUE_KEY);
+		var over_14 =  add([new_over_14, rel_over_14, uns_over_14]);
+
+		var new_age_unknown = getValueForKey(dataValues, CC_KEY, NEW_AGE_UNKNOWN, VALUE_KEY);
+		var rel_age_unknown = getValueForKey(dataValues, CC_KEY, REL_AGE_UNKNOWN, VALUE_KEY);
+		var uns_age_unknown = getValueForKey(dataValues, CC_KEY, UNS_AGE_UNKNOWN, VALUE_KEY);
+		var age_unknown =  add([new_age_unknown, rel_age_unknown, uns_age_unknown]);
+
+		var total_age_cases = add([under_5, _5_14, over_14, age_unknown]);
+
+		array[AGE_ROW][column] = "(" +	percentageText(under_5, total_age_cases) + " / "
+										+	percentageText(_5_14, total_age_cases) + " / "
+										+	percentageText(over_14, total_age_cases) + ")";				
 
 		//origin distribution
 		var origin_autoc = add([
-			getValueForKey(dataValues,"categoryOptionCombo", ORIGIN_AUTOC_NEW,"value"),
-			getValueForKey(dataValues,"categoryOptionCombo", ORIGIN_AUTOC_REL,"value"),
-			getValueForKey(dataValues,"categoryOptionCombo", ORIGIN_AUTOC_UNS,"value")
+			getValueForKey(dataValues,CC_KEY, ORIGIN_AUTOC_NEW, VALUE_KEY),
+			getValueForKey(dataValues,CC_KEY, ORIGIN_AUTOC_REL, VALUE_KEY),
+			getValueForKey(dataValues,CC_KEY, ORIGIN_AUTOC_UNS, VALUE_KEY)
 		]);
 		var origin_imported = add([
-			getValueForKey(dataValues,"categoryOptionCombo", ORIGIN_IMPORT_NEW,"value"),
-			getValueForKey(dataValues,"categoryOptionCombo", ORIGIN_IMPORT_REL,"value"),
-			getValueForKey(dataValues,"categoryOptionCombo", ORIGIN_IMPORT_UNS,"value")
+			getValueForKey(dataValues,CC_KEY, ORIGIN_IMPORT_NEW, VALUE_KEY),
+			getValueForKey(dataValues,CC_KEY, ORIGIN_IMPORT_REL, VALUE_KEY),
+			getValueForKey(dataValues,CC_KEY, ORIGIN_IMPORT_UNS, VALUE_KEY)
 		]);
 		var origin_unknown = add([
-			getValueForKey(dataValues,"categoryOptionCombo", ORIGIN_UNKNOWN_NEW,"value"),
-			getValueForKey(dataValues,"categoryOptionCombo", ORIGIN_UNKNOWN_REL,"value"),
-			getValueForKey(dataValues,"categoryOptionCombo", ORIGIN_UNKNOWN_UNS,"value")
+			getValueForKey(dataValues,CC_KEY, ORIGIN_UNKNOWN_NEW, VALUE_KEY),
+			getValueForKey(dataValues,CC_KEY, ORIGIN_UNKNOWN_REL, VALUE_KEY),
+			getValueForKey(dataValues,CC_KEY, ORIGIN_UNKNOWN_UNS, VALUE_KEY)
 		]);
 		var total_origin_cases = add([origin_autoc, origin_imported, origin_unknown]);
 		array[IMPORTED_ROW][column] = origin_imported 
 									+ ", "
 									+	percentageText(origin_imported, total_origin_cases);
+
+		/* only PKDL TODO: place that if that's true */
+
+		if (column === PKDL_COLUMN){
+			var cases = getValueForKey(dataValues,DE_KEY,DE.PKDL_GEN_EPID_cases, VALUE_KEY);
+			array[NEW_ROW][column] = cases;
+			array[RELAPSE_ROW][column] = WHEN_NON_APPLICABLE;
+			array[TOTAL_ROW][column] = cases;
+			array[IMPORTED_ROW][column] = WHEN_NON_APPLICABLE; 
+
+			var male = getValueForKey(dataValues, [CC_KEY,DE_KEY], [MALE, DE.PKDL_EPID_sex], VALUE_KEY);
+			var female = getValueForKey(dataValues, [CC_KEY,DE_KEY], [FEMALE, DE.PKDL_EPID_sex], VALUE_KEY);
+			array[SEX_ROW][column] = percentageText(female, add([male, female]));
+
+			var age_5 = getValueForKey(dataValues,[CC_KEY,DE_KEY], [AGE_5, DE.PKDL_EPID_age], VALUE_KEY);
+			var age_5_14 = getValueForKey(dataValues,[CC_KEY,DE_KEY], [AGE_5_14, DE.PKDL_EPID_age], VALUE_KEY);
+			var age_14 = getValueForKey(dataValues,[CC_KEY,DE_KEY], [AGE_14, DE.PKDL_EPID_age], VALUE_KEY);
+			var total_age_cases = add([age_5, age_5_14, age_14]);
+
+			array[AGE_ROW][column] = "(" +	percentageText(age_5, total_age_cases) + " / "
+											+	percentageText(age_5_14, total_age_cases) + " / "
+											+	percentageText(age_14, total_age_cases) + ")";		
+
+		}
+
+
+
+
+		/* Diagnosis table */
+		
+		// active and passive screening
+		if (column === PKDL_COLUMN) {
+			diagnosisArray[SCREENED_ACTIVELY_ROW][column] = WHEN_NON_APPLICABLE;
+			diagnosisArray[SCREENED_PASSIVELY_ROW][column] = WHEN_NON_APPLICABLE;
+		} else {
+			var screen_active = getValueForKey(dataValues, DE_KEY, DE_SCREEN_ACTIVE[column] , VALUE_KEY);
+			var screen_passive = getValueForKey(dataValues, DE_KEY, DE_SCREEN_PASSIVE[column] , VALUE_KEY);
+			diagnosisArray[SCREENED_ACTIVELY_ROW][column] = screen_active;
+			diagnosisArray[SCREENED_PASSIVELY_ROW][column] = screen_passive;
+		}
+		
+
+		if (column === VL_COLUMN) {
+			// cases diagnosed by RDT and %positive RDT
+			var new_rdt = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_NEW_CASES,diagDE], VALUE_KEY);
+			var unsp_rdt = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED,diagDE], VALUE_KEY);
+			var total_rdt = add([new_rdt, unsp_rdt]);
+
+			var positive_new_rdt = getValueForKey(dataValues, CC_KEY, POSITIVE_NEW,  VALUE_KEY);
+			var positive_unsp_rdt = getValueForKey(dataValues, CC_KEY, POSITIVE_UNSP,  VALUE_KEY);
+			var total_positive_rdt = add([positive_new_rdt, positive_unsp_rdt]);
+			
+			diagnosisArray[VL_CASES_DIAGNOSED_ROW][column] = percentageCasesAndTotal(total_positive_rdt, total_cases_type);
+			diagnosisArray[POSITIVE_RDT_ROW][column] = percentageCasesAndTotal(total_positive_rdt, total_rdt);
+
+			// percentage of cases with HIV-VL coinfection
+			var hiv_coinf_new = getValueForKey(dataValues,[CC_KEY, DE_KEY],[POSITIVE_NEW, DE.VL_LAB_HIVstatus_Type], VALUE_KEY); 
+			var hiv_coinf_rel = getValueForKey(dataValues,[CC_KEY, DE_KEY],[POSITIVE_RELAPSE, DE.VL_LAB_HIVstatus_Type], VALUE_KEY); 
+			var hiv_coinf_uns = getValueForKey(dataValues,[CC_KEY, DE_KEY],[POSITIVE_UNSP, DE.VL_LAB_HIVstatus_Type], VALUE_KEY); 
+			var hiv_coinf_total = add([hiv_coinf_new, hiv_coinf_rel, hiv_coinf_uns]);
+
+			diagnosisArray[HIV_COINFECTION_ROW][column] = percentageCasesAndTotal(hiv_coinf_total, total_cases_type);
+
+
+			/* Treatment table */
+		
+			var new_cured = getValueForKey(dataValues, CC_KEY, NEW_CURED, VALUE_KEY);
+			var rel_cured = getValueForKey(dataValues, CC_KEY, REL_CURED, VALUE_KEY);
+			var uns_cured = getValueForKey(dataValues, CC_KEY, UNS_CURED, VALUE_KEY);
+			var total_cured = add([new_cured, rel_cured, uns_cured]);
+
+			var new_fail = getValueForKey(dataValues, CC_KEY, NEW_RELOUT, VALUE_KEY);
+			var rel_fail = getValueForKey(dataValues, CC_KEY, REL_RELOUT, VALUE_KEY);
+			var uns_fail = getValueForKey(dataValues, CC_KEY, UNS_RELOUT, VALUE_KEY);
+			var total_fail = add([new_fail, rel_fail, uns_fail]);
+
+			var new_dead = getValueForKey(dataValues, CC_KEY, NEW_DEAD, VALUE_KEY);
+			var rel_dead = getValueForKey(dataValues, CC_KEY, REL_DEAD, VALUE_KEY);
+			var uns_dead = getValueForKey(dataValues, CC_KEY, UNS_DEAD, VALUE_KEY);
+			var total_dead = add([new_dead, rel_dead, uns_dead]);
+
+			treatmentArray[RELAPSE_PROPORTION_ROW][column] = percentageCasesAndTotal(relapse, total_cases_type);
+			treatmentArray[INITIAL_CURE_RATE_ROW][column] = percentageCasesAndTotal(total_cured, total_cases_type);
+			treatmentArray[FAILURE_RATE_ROW][column] = percentageCasesAndTotal(total_fail, total_cases_type);
+			treatmentArray[CASE_FATALITY_ROW][column] = percentageCasesAndTotal(total_dead, total_cases_type);
+			
+		} else {
+			diagnosisArray[VL_CASES_DIAGNOSED_ROW][column] = WHEN_NON_APPLICABLE;
+			diagnosisArray[POSITIVE_RDT_ROW][column] = WHEN_NON_APPLICABLE;
+			diagnosisArray[HIV_COINFECTION_ROW][column] = WHEN_NON_APPLICABLE;
+		}
+
+		// Direct exam
+		var direct_exam_new = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_NEW_CASES, DE.VL_LAB_parasito_tested_type], VALUE_KEY);
+		var direct_exam_rel = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_RELAPSE, DE.VL_LAB_parasito_tested_type], VALUE_KEY);
+		var direct_exam_uns = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED, DE.VL_LAB_parasito_tested_type], VALUE_KEY);
+		var direct_exam_total = add([direct_exam_new, direct_exam_rel, direct_exam_uns]);
+
+		diagnosisArray[DIRECT_EXAM_DIAGNOSED_ROW][column] = percentageCasesAndTotal(direct_exam_total, total_cases_type);
+
+		//Positive slides
+		var positive_slides_new = getValueForKey(dataValues,[CC_KEY, DE_KEY],[POSITIVE_NEW, DE.VL_LAB_parasito_result_type], VALUE_KEY); 
+		var positive_slides_rel = getValueForKey(dataValues,[CC_KEY, DE_KEY],[POSITIVE_RELAPSE, DE.VL_LAB_parasito_result_type], VALUE_KEY); 
+		var positive_slides_uns = getValueForKey(dataValues,[CC_KEY, DE_KEY],[POSITIVE_UNSP, DE.VL_LAB_parasito_result_type], VALUE_KEY); 
+		var positive_slides_total = add([positive_slides_new, positive_slides_rel, positive_slides_uns]);
+
+		diagnosisArray[POSITIVE_DIRECT_EXAM_ROW][column] = percentageCasesAndTotal(positive_slides_new, positive_slides_total);
+
+		//Cases diagnosed clinically
+		var clinical_cases_new = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_NEW_CASES, DE.VL_LAB_clinical], VALUE_KEY);
+		var clinical_cases_rel = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_RELAPSE, DE.VL_LAB_clinical], VALUE_KEY);
+		var clinical_cases_uns = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED, DE.VL_LAB_clinical], VALUE_KEY);
+		var clinical_cases_total = add([clinical_cases_new, clinical_cases_rel, clinical_cases_uns]);
+
+		diagnosisArray[CLINICALLY_DIAGNOSED_ROW][column] = percentageCasesAndTotal(clinical_cases_total, total_cases_type);
+
+
 
 	}
 	
@@ -612,7 +963,7 @@ $( document ).ready( function() {
 	// Code to execute after API calls have been done.
 	// $.when(ajax1(), ajax2(), ajax3(), ajax4()).done(function(a1, a2, a3, a4){
 	// http://stackoverflow.com/questions/3709597/wait-until-all-jquery-ajax-requests-are-done
-	$.when(get_cl_cases(), get_vl_cases(), 
+	$.when(get_cl_cases(), get_vl_cases(), get_azcl_cases(),
 		get_monthly_cases_for_cl_current_year(),
 		get_monthly_cases_for_cl_previous_year(),
 		get_monthly_cases_for_vl_current_year(),
@@ -622,8 +973,10 @@ $( document ).ready( function() {
 		// the code here will be executed when all four ajax requests resolve.
 		// a1, a2, a3 and a4 are lists of length 3 containing the response text,
 		// status, and jqXHR object for each of the four ajax calls respectively.
-		writeTable(tableBody, array, EPI_TABLE_TD_ID_PREFIX);
-		writeTable(monthlyDistributionTableBody, monthlyArray, MONTHLY_TABLE_TD_ID_PREFIX);
+		writeTable(epiTableBody, array, EPI_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_EPI);
+		writeTable(monthlyDistributionTableBody, monthlyArray, MONTHLY_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_MONTHLY);
+		writeTable(diagTableBody, diagnosisArray, DIAG_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_DIAG);
+		writeTable(treatmentTableBody, treatmentArray, "", LINES_BELOW_LABELS_TREAT);
 
 		setMonthlyCheckboxes();
 		makeElementsFootnotables();
@@ -646,8 +999,8 @@ $( document ).ready( function() {
 
 	 */
 
-	function decide_cl_or_aclzcl_mode(dataValues){
-		if (dataValues === undefined ){
+	function set_aclzcl_mode_to_true_if_data(dataValues){
+		if (dataValues !== undefined ){
 			acl_and_zcl_activated = true;
 		}
 	}
@@ -658,14 +1011,23 @@ $( document ).ready( function() {
 		var thisYear = d.getFullYear();
 		return PUBLISHED_TEXT+" "+MONTHS[thisMonth]+" "+thisYear;
 	}
-
-	function writeTable(htmlObject, array, tdIdPrefix) {
+	/*
+		linesOnRows : An array with the number of the rows which must have a line below
+	*/
+	function writeTable(htmlObject, array, tdIdPrefix, linesOnRows) {
 		// declare html variable (a string holder):
 		var html = '';
 		var count = 0;
+
+		var lineClass = "";
 		for (var i = 0; i < array.length; i++) {
+			if (linesOnRows[i]){
+				lineClass = BOTTOM_LINE_CLASS;
+			} else {
+				lineClass ="";
+			}
 			// add opening <tr> tag to the string:
-			html += '<tr id="'+tdIdPrefix+i+'">';
+			html += '<tr id="'+tdIdPrefix+i+'" class="'+lineClass+'">';
 			for (var j = 0; j < array[i].length; j++) {
 				// add <td> elements to the string:
 				html += '<td>' + '<span class="footnotable editableElement" >' + array[i][j] + '</span>' + '</td>';
@@ -714,8 +1076,8 @@ $( document ).ready( function() {
 
 	/* 	Searchs for a custom value for a customKey with a custom value through an array
 			array : the array
-			keyName : the name of the key to check
-			keyValue : the target value of the keyName
+			keyName : the name (or an array of) of the key to check
+			keyValue : the target (or an array of) value of the keyName
 			valueName : the name of the key of the value to return
 	*/
 	function getValueForKey(array, keyName, keyValue, valueName){
@@ -740,7 +1102,8 @@ $( document ).ready( function() {
 				} 
 			});
 		} else {
-			return 'ERROR in getValueForKey';
+			console.log('ERROR in ' + arguments.callee.name);
+			return 'ERROR in ' + arguments.callee.name ;
 		}
 		
 		return returnValue;
@@ -748,8 +1111,8 @@ $( document ).ready( function() {
 
 		/* 	Searchs for a custom value for a customKey with a custom value through an array
 			array : the array
-			keyName : the name of the key to check
-			keyValue : the target value of the keyName
+			keyName : the name (or an array of) of the key to check
+			keyValue : the target (or an array of) alue of the keyName
 			valueName : the name of the key of the value to return
 	*/
 	function getValuesForKeyByMonth(array, keyName, keyValue, valueName){
@@ -763,7 +1126,7 @@ $( document ).ready( function() {
 			// one property check
 			$.each( array, function( index, object ) {
 				if(object[keyName]===keyValue){
-					period = object["period"];
+					period = object[PERIOD_KEY];
 					index = Number(period.slice(period.length-2, period.length)) - 1;
 					returnValue[index] = object[valueName];
 				} 
@@ -772,15 +1135,24 @@ $( document ).ready( function() {
 			// two properties check
 			$.each( array, function( index, object ) {
 				if(object[keyName[0]]===keyValue[0] && object[keyName[1]]===keyValue[1]){
-					period = object["period"];
+					period = object[PERIOD_KEY];
 					index = Number(period.slice(period.length-2, period.length)) - 1;
 					returnValue[index] = object[valueName];
 				} 
 			});
 		} else {
-			return 'ERROR in getValueForKey';
+			console.log('ERROR in ' + arguments.callee.name);
+			return 'ERROR in ' + arguments.callee.name ;
 		}
 		return returnValue;
+	}
+
+	/*	Returns a percentage with no decimals, the #cases and the total between parenthesis
+
+	*/
+	function percentageCasesAndTotal(numerator, denominator){
+		return 	percentageText(numerator, denominator) + "  (" +
+				numerator + " / " + denominator + ")";
 	}
 
 	/*	Returns a percentage with no decimals 
@@ -847,12 +1219,25 @@ $( document ).ready( function() {
 		$('#'+MONTHLY_TABLE_TD_ID_PREFIX+BUTTON_PREFIX+ACL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
 		$('#'+MONTHLY_TABLE_TD_ID_PREFIX+BUTTON_PREFIX+ZCL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
 
+		//$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+VL_COLUMN).trigger('click');
+		//$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+MCL_COLUMN).trigger('click');
+
 		if(acl_and_zcl_activated){
+			
 			$('#'+MONTHLY_TABLE_TD_ID_PREFIX+BUTTON_PREFIX+CL_ROW).trigger('click');
+
+			$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(CL_COLUMN-1)).trigger('click');
+			$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(PKDL_COLUMN-1)).trigger('click');
 		} else {
 			$('#'+MONTHLY_TABLE_TD_ID_PREFIX+BUTTON_PREFIX+ACL_ROW).trigger('click');
 			$('#'+MONTHLY_TABLE_TD_ID_PREFIX+BUTTON_PREFIX+ZCL_ROW).trigger('click');
+
+			$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(ACL_COLUMN-1)).trigger('click');
+			$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(ZCL_COLUMN-1)).trigger('click');
 		}
+
+
+
 
 		$(':checkbox').button( "refresh" );
 	}
@@ -867,7 +1252,7 @@ $( document ).ready( function() {
 	
 		if (acl_and_zcl_activated) {
 			var colors = [COLORS.blue, COLORS.blue, COLORS.green, COLORS.green];
-			var labels = ["ACL "+year, "ACL "+(year-1), "ZCL "+year, "ZCL " + (year-1)];
+			var labels = [ACL_CHART_LEGEND +year, ACL_CHART_LEGEND +(year-1), ZCL_CHART_LEGEND + year, ZCL_CHART_LEGEND  + (year-1)];
 			
 			var acl_current_year = monthlyArray[ACL_ROW].slice(1,monthlyArray[ACL_ROW].length);
 			var zcl_current_year = monthlyArray[ZCL_ROW].slice(1,monthlyArray[ZCL_ROW].length);
@@ -879,7 +1264,7 @@ $( document ).ready( function() {
 
 		} else {
 			var colors = [COLORS.blue, COLORS.blue];
-			var labels = ["CL "+year, "CL " + (year-1)];
+			var labels = [CL_CHART_LEGEND + year, CL_CHART_LEGEND + (year-1)];
 			var cl_current_year = monthlyArray[CL_ROW].slice(1,monthlyArray[CL_ROW].length);
 			var cl_previous_year = monthlyArray[CL_PREVIOUS_YEAR_ROW].slice(1,monthlyArray[CL_PREVIOUS_YEAR_ROW].length);
 			var dataarrays = [cl_current_year, cl_previous_year];
@@ -891,7 +1276,7 @@ $( document ).ready( function() {
 		var vl_previous_year = monthlyArray[VL_PREVIOUS_YEAR_ROW].slice(1,monthlyArray[VL_PREVIOUS_YEAR_ROW].length);
 		var vl_data_arrays = [vl_current_year, vl_previous_year];
 		var vl_colors = [COLORS.violet, COLORS.violet];
-		var vl_labels = ["VL "+year, "VL " + (year-1)];
+		var vl_labels = [VL_CHART_LEGEND + year, VL_CHART_LEGEND + (year-1)];
 
 		lineChart(newVLCasesChartID, MONTHS_ABBREV, vl_labels, vl_data_arrays, vl_colors, true);
 
@@ -1023,19 +1408,21 @@ $( document ).ready( function() {
 	var chartTestParams = setChartParams("B9bBfRcF6jb", "aD1KD82UFB1", "New", orgUnit.id, "line", chartPlugin.url, "chart1");
 	chartPlugin.load([chartTestParams]);
 */
-	// aD1KD82UFB1 new
 
-	
-	$(":checkbox").change(function() {
+	// Listener ACL/ZCL PKDL buttons
+	$(":checkbox."+LEISH_COLUMN_DETAIL_PREFIX).change(function() {
 		var index = Number(this.id.slice(this.id.length-1, this.id.length));
-			console.log(this.id);
-
-		if(this.checked) {
-			//Do stuff
-			$("#"+MONTHLY_TABLE_TD_ID_PREFIX+index).show();
-		} else {
-			$("#"+MONTHLY_TABLE_TD_ID_PREFIX+index).hide();
-		}
+		$('#epiTable tr, #diagTable tr').each(function() {
+			$(this).find("td,th").eq(index+1).toggle();
+		});
+	});
+	
+	// Listener monthly buttons
+	$(":checkbox."+MONTHLY_TABLE_TD_ID_PREFIX).change(function() {
+		var index = Number(this.id.slice(this.id.length-1, this.id.length));
+		var startingid = this.id.slice(0, -1-BUTTON_PREFIX.length);
+		$("#"+startingid+index).toggle();
+		
 	});
 	
 		
@@ -1055,39 +1442,8 @@ Configuration Area - Wont be printed<br>
 	Instructions : Right click to add a footnote number.<br>
 					Left click to edit an element.
 
-	<ol id="selectable">
-	<li class="ui-widget-content">Item 1</li>
-	<li class="ui-widget-content">Item 2</li>
-	<li class="ui-widget-content">Item 3</li>
-	<li class="ui-widget-content">Item 4</li>
-	<li class="ui-widget-content">Item 5</li>
-	<li class="ui-widget-content">Item 6</li>
-	<li class="ui-widget-content">Item 7</li>
-	</ol>
-
-
-
-<fieldset id="monthlyCheckboxes">
-  <!--  <legend>Monthly distribution table: </legend>
-    
-	<input id="mdtb0" type="checkbox" checked="checked" />
-	<label for="mdtb0">CL</label>
-	<input id="mdtb1" type="checkbox" checked="checked" />
-	<label for="mdtb1">VL</label>
-	<input id="mdtb2" type="checkbox" checked="checked" />
-	<label for="mdtb2">CL Previous year</label>
-	<input id="mdtb3" type="checkbox" checked="checked" />
-	<label for="mdtb3">VL Previous year</label>
-	<input id="mdtb4" type="checkbox" checked="checked" />
-	<label for="mdtb4">ACL</label>
-	<input id="mdtb5" type="checkbox" checked="checked" />
-	<label for="mdtb5">ZCL</label>
-	<input id="mdtb6" type="checkbox" checked="checked" />
-	<label for="mdtb6">ACL Previous year</label>
-	<input id="mdtb7" type="checkbox" checked="checked" />
-	<label for="mdtb7">ZCL Previous year</label>
--->
-</fieldset>
+<fieldset id="leish_detail_checkboxes"></fieldset>
+<fieldset id="monthlyCheckboxes"></fieldset>
 
 
 <hr>
@@ -1117,17 +1473,11 @@ Configuration Area - Wont be printed<br>
 	<h4 class="editableElement footnotable">Epidemiology</h4>
 
 
-	<table id="example" class="display" cellspacing="0" width="100%">
+	<table id="epiTable" class="display" cellspacing="0" width="100%">
 			<thead>
-				<tr>
-					<th></th>
-					<th><span class="footnotable editableElement" id="vl_head"></span></th>
-					<th><span class="footnotable editableElement" id="cl_head"></span></th>
-					<th><span class="footnotable editableElement" id="pkdl_head"></span></th>
-					<th><span class="footnotable editableElement" id="mcl_head"></span></th>
-				</tr>
+				<tr id ="epiTableHead"></tr>
 			</thead>
-			<tbody id="tbody3"></tbody>
+			<tbody id="epiTableBody"></tbody>
 	</table>
 
 
@@ -1145,14 +1495,6 @@ Configuration Area - Wont be printed<br>
 	</table>
 
 </div>
-
-<div class="section">
-	<img id="a01">
-	<img id="a02">
-	<img id="a03">
-	<img id="a04">
-</div>
-
 
 
 <div class="section">
@@ -1173,3 +1515,27 @@ Configuration Area - Wont be printed<br>
 <canvas id="NewVLCasesChart" width="450" height="300" ></canvas>
 
 
+<div class="section">
+	<h4 class="editableElement footnotable" >Diagnosis</h4>
+
+	<table id="diagTable" class="display" cellspacing="0" width="100%">
+			<thead>
+				<tr id ="diagTableHead"></tr>
+			</thead>
+			<tbody id="diagTableBody"></tbody>
+	</table>
+
+</div>
+
+
+<div class="section">
+	<h4 class="editableElement footnotable" >Treatment and medicines</h4>
+
+	<table id="treatmentTable" class="display" cellspacing="0" width="100%">
+			<thead>
+				<tr id ="treatmentTableHead"></tr>
+			</thead>
+			<tbody id="treatmentTableBody"></tbody>
+	</table>
+
+</div>
