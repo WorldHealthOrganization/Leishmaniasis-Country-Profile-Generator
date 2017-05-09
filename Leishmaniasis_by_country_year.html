@@ -60,7 +60,7 @@
     body
     {
         border: solid 1px blue ;
-        margin: 1mm 15mm 1mm 15mm; /* margin you want for the content */
+        margin: 1mm 0mm 1mm 0mm; /* margin you want for the content */
     }
 
 
@@ -73,13 +73,17 @@
 
 .section
 {
-	border-bottom: 1px solid #ccc;
-	margin-bottom: 50px; 
-	padding-bottom: 50px;
-	width: 930px;
+	border-bottom: 0px solid #ccc;  /* line at the end of the section */
+	margin-bottom: 0px; 
+	padding-bottom: 0px;
+	width: 900px;
 	font-size: 15px;
 }
 
+.comment {
+	font-style: italic;
+	font-size: 11px;
+}
 
 .head_logo{
 	width:160px;
@@ -114,6 +118,34 @@ tr.bottom_line td,th {
 .footNoted {
   /*  color: red; */	
 }
+
+
+/* for graphs */
+.sameLine
+{
+	display: inline-block !important;
+}
+.notShown
+{
+	display: none !important;
+}
+
+.map {
+    border: 0;
+    margin: 10px;
+}
+.map.wide {
+    width: 900px;
+    height: 500px;
+}
+
+.twoColumns {
+    column-count:2;
+    -moz-column-count:2;
+    -webkit-column-count:2;
+    
+    width:900px;
+}
 </style>
 <!-- 
 
@@ -131,6 +163,12 @@ tr.bottom_line td,th {
 <script type="text/javascript" src ="https://cdn.rawgit.com/Rjjp/plugins/master/jquery-ui/jquery-ui.js">//TODO:use the cdn officiel</script>
 <script type="text/javascript" src="//dhis2-cdn.org/v226/plugin/chart.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.js"></script>
+<script type="text/javascript" src="https://dhis2-cdn.org/v222/ext/ext-all.js"></script>
+<script type="text/javascript" src="https://dhis2-cdn.org/v226/plugin/map.js"></script>
+<script type="text/javascript" src="https://dhis2-cdn.org/v222/openlayers/OpenLayers.js"></script>
+<script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false"></script>
+
+
 
 <script type="text/javascript">
 
@@ -140,6 +178,7 @@ $( document ).ready( function() {
 
 	$('head').append('<link rel="stylesheet" href="https://rawgit.com/Rjjp/plugins/master/jquery-te-1.4.0.css" type="text/css" />');
  	$('head').append('<link rel="stylesheet" href="https://cdn.rawgit.com/Rjjp/plugins/master/jquery-ui/jquery-ui.css" type="text/css" />');
+	$('head').append('<link rel="stylesheet" href="https://dhis2-cdn.org/v222/ext/resources/css/ext-plugin-gray.css" type="text/css" />');
 
 
 	/****************************************************************************************************
@@ -153,10 +192,13 @@ $( document ).ready( function() {
 	 ****************************************************************************************************/
 	var API_URL = "../api/";
 	var DATA_VALUE_SETS = "dataValueSets";
+	var ANALYTICS = "analytics";
 	var WHEN_UNDEFINED = "No data";
 	var WHEN_NON_APPLICABLE = "N/A";
 	var WHEN_DIV_0 = "-";
 	var ERROR = "Error!";
+
+	var HISTORIC_DEFAULT_VALUE = 15;
 
 	var BOTTOM_LINE_CLASS = "bottom_line";
 
@@ -176,6 +218,14 @@ $( document ).ready( function() {
 	var ZCL_CHART_LEGEND = "ZCL ";
 	var TREATMENT_TABLE_FIRST_COLUMNS = "TREATMENT OUTCOME";
 
+	var VL_CHART_CASES_LEGEND = "VL cases";
+	var CL_CHART_CASES_LEGEND = "CL cases";
+	var ACL_CHART_CASES_LEGEND = "ACL cases";
+	var ZCL_CHART_CASES_LEGEND = "ZCL cases";
+	var VL_CHART_INCIDENCE_LEGEND = "VL incidence rate";
+	var CL_CHART_INCIDENCE_LEGEND = "CL incidence rate";
+	var ACL_CHART_INCIDENCE_LEGEND = "ACL incidence rate";
+	var ZCL_CHART_INCIDENCE_LEGEND = "ZCL incidence rate";
 
 	var MONTHS = [	"January",
 					"February",
@@ -212,6 +262,13 @@ $( document ).ready( function() {
 		soft_violet :'rgba(153, 0, 255, 0.2)'
 	}
 
+	// For configure mixed charts
+	var DATASID = {
+			LEFT: "left",
+			RIGHT: "right"
+	}
+
+
 	/* Country General Information Texts */
 	
 	var CGI_LABELS = [	"Total population:",
@@ -222,6 +279,9 @@ $( document ).ready( function() {
 						"Life expectancy at birth in years (F/M):",
 						"Number of 2nd sub-national administrative level<br>divisions, name:"
 						];
+
+	var LINES_BELOW_LABELS_CGI = [true,true,true,false,true,true,true];
+	var generalInformationArray = create_2_dim_array(CGI_LABELS.length, CGI_LABELS, LABELS_ON_COLUMNS);
 
 	/* Epidemiology table constants */
 	var FIRST_COLUMN = 0;
@@ -264,7 +324,7 @@ $( document ).ready( function() {
 						"Incidence rate (cases/10 000 population in endemic areas):",
 						"Number of endemic 3rd sub-national administrative level divisions (n):",
 						"Population at risk (%, n/total):",
-						"Was there anz outbreak?",
+						"Was there any outbreak?",
 						"Number of new foci:"
 						];
 	var LINES_BELOW_LABELS_EPI = [true,false,false,true,true,false,true,false,false,true,false,true];
@@ -306,7 +366,8 @@ $( document ).ready( function() {
 						"Is there a reservoir host control programme?",
 						"Number of leishmaniasis health facilities:"
 						];
-
+	var LINES_BELOW_LABELS_CAS = [true,true,true,false,true,true,true];
+	var controlArray = create_2_dim_array(CAS_LABELS.length, CAS_LABELS, LABELS_ON_COLUMNS);
 
 	/* Diagnosis table */
 
@@ -347,6 +408,10 @@ $( document ).ready( function() {
 	var LINES_BELOW_LABELS_TREAT = [true, false, false, true];
 	var treatmentArray = create_2_dim_array(treatmentLabels.length, treatmentLabels, LABELS_ON_COLUMNS);
 	
+	var historicLength = HISTORIC_DEFAULT_VALUE;
+	var historicIncidence = create_2_dim_array(5,"",LABELS_ON_ROWS);
+	var historicNewCases = create_2_dim_array(5,"",LABELS_ON_ROWS);
+
 
 	var DATASET = {
 		CL : "tnek2LjfuIm",
@@ -451,7 +516,15 @@ $( document ).ready( function() {
 	var UNS_CURED = "SZiY6xiTgy6";
 	var UNS_RELOUT = "D08F1WAa6x6";
 	var UNS_DEAD = "qAneJjz2lLH";
-	
+
+	/* Indicators*/
+	var IN = {
+		VL_INCIDENCE: "znrCp1SsKA8",
+		CL_INCIDENCE: "aZQ1Cmgvnnn",
+		ACL_INCIDENCE: "J6grbcheses",
+		ZCL_INCIDENCE: "nFdRbLa6cj6"
+
+	}	
 
 	var date = dhis2.report.date;
 	var year = date.slice(0,4);
@@ -502,15 +575,6 @@ $( document ).ready( function() {
 	}
 	
 
-	$(".editableElement").click(function(){
-		dialog.dialog( "open" );	
-		var test = this.innerHTML;
-		editingElement = this;
-		$("#editor").jqteVal(editingElement.innerHTML);
-
-	});
-
-
 	/**** END TEST AREA ****/
 
 
@@ -519,6 +583,10 @@ $( document ).ready( function() {
 	var footNoteCounter = 0;
 	
 	/* HTML elements */
+	var cgiTable = 	$("#cgiTable");
+	var cgiTableBody = 	$("#cgiTableBody");
+	var cgiTableHead = 	$("#cgiTableHead");
+
 	var epiTable = 	$("#epiTable");
 	var epiTableBody = 	$("#epiTableBody");
 	var epiTableHead = 	$("#epiTableHead");
@@ -526,18 +594,31 @@ $( document ).ready( function() {
 	var monthlyDistributionTableBody = $("#monthlyDistributionTableBody");
 	var monthlyDistributionTableHead = $("#monthlyDistributionTableHead");
 
+	var casTable = 	$("#casTable");
+	var casTableBody = 	$("#casTableBody");
+	var casTableHead = 	$("#casTableHead");
+
 	var diagTableBody = $("#diagTableBody");
 	var diagTableHead = $("#diagTableHead");
 
 	var treatmentTableBody = $("#treatmentTableBody");
 	var treatmentTableHead = $("#treatmentTableHead");
 
-	var newCLCasesChartID = "NewCLCasesChart";
-	var newVLCasesChartID = "NewVLCasesChart";
-	
+	var newCLCasesChartID = "chart0";	
+	var newAZCLCasesChartID = "chart1";
+	var newVLCasesChartID = "chart2";
+
+	var newCLAndHistoricIncidenceID = "chart3";
+	var newAZCLAndHistoricIncidenceID = "chart4";
+	var newVLAndHistoricIncidenceID = "chart5";
+
+	var CGI_TABLE_TD_ID_PREFIX = "cgiTable";
 	var EPI_TABLE_TD_ID_PREFIX = "epiTable";
 	var MONTHLY_TABLE_TD_ID_PREFIX = "monthlyTable";
+	var CAS_TABLE_TD_ID_PREFIX = "casTable";
 	var DIAG_TABLE_TD_ID_PREFIX = "diagTable";
+
+	var CHART_PREFIX = "chart";
 
 	var LEISH_COLUMN_DETAIL_PREFIX = "LeishDetail";
 
@@ -545,17 +626,11 @@ $( document ).ready( function() {
 
 
 
-	
-	/* Set charts*/
-	$( "#a01" ).attr( "src", API_URL+"charts/Ox5bv6fKEWg/data?width=450&height=300&date=" + date );
-	$( "#a02" ).attr( "src", API_URL+"charts/Ox5bv6fKEWg/data?width=450&height=300&date=" + date );
-	$( "#a03" ).attr( "src", API_URL+"charts/Ox5bv6fKEWg/data?width=450&height=300&date=" + date );
-	$( "#a04" ).attr( "src", API_URL+"charts/XGEAenGcRaB/data?width=450&height=300&date=" + date );
 
 	//$( "#table1" ).load( API_URL+"reportTables/emMtuwdfwb1/data.html?date=" + date );
 
-	$( "#b01" ).attr( "src", API_URL+"maps/uFcRuF2LsOo/data?width=450&date=" + date );
-	$( "#b02" ).attr( "src", API_URL+"maps/xPc4t89kEXl/data?width=450&date=" + date );
+	$( "#b01" ).attr( "src", API_URL+"maps/uFcRuF2LsOo/data?width=400&date=" + date );
+	$( "#b02" ).attr( "src", API_URL+"maps/xPc4t89kEXl/data?width=400&date=" + date );
 
 
 
@@ -579,9 +654,11 @@ $( document ).ready( function() {
 	Starting calls
 	*/
 
+	chartCheckboxesLabels = ["CL monthly", "AZCL monthly", "VL monthly", "CL yearly", "AZCL yearly", "VL yearly" ];
 
-	generateCheckboxes($("#leish_detail_checkboxes"), COLUMNS_LABELS, "ACL/ZCL PKDL Details:",LEISH_COLUMN_DETAIL_PREFIX);
-	generateCheckboxes($("#monthlyCheckboxes"), rowMonthlyTitles, "Monthly distribution table:",MONTHLY_TABLE_TD_ID_PREFIX);
+	generateCheckboxes($("#leish_detail_checkboxes"), COLUMNS_LABELS, "Leishmaniasis types to show:",LEISH_COLUMN_DETAIL_PREFIX,-1);
+	generateCheckboxes($("#monthlyCheckboxes"), rowMonthlyTitles, "Leishmaniasis types to show in monthly table:",MONTHLY_TABLE_TD_ID_PREFIX,-1);
+	generateCheckboxes($("#chartCheckboxes"), chartCheckboxesLabels, "Graphs to show",CHART_PREFIX,2);
 
 	fillTableHead(epiTableHead, '', COLUMNS_LABELS);
 	fillTableHead(monthlyDistributionTableHead, '', MONTHS_ABBREV);
@@ -602,11 +679,14 @@ $( document ).ready( function() {
 		htmlObject.append(html);
 	}
 
-	function generateCheckboxes(htmlObject, labels, title, prefix){
+	function generateCheckboxes(htmlObject, labels, title, prefix, newLineOn){
 		var html = '<legend>'+title+'</legend>';
 		for (var i=0; i<labels.length; i++){
 			html+='<input id="'+prefix+BUTTON_PREFIX+i+'" type="checkbox" class="'+prefix+'" checked="checked" />'
 			html+='<label for="'+prefix+BUTTON_PREFIX+i+'">'+labels[i]+'</label>'
+			if(i===newLineOn){
+				html+='<br>';
+			}
 		}
 		    
 		htmlObject.append(html);
@@ -703,6 +783,43 @@ $( document ).ready( function() {
 		});
 	}
 
+	function getNewCases(dimension, column){
+		var params = {
+			dimension: ["dx:"+dimension,"pe:"+year, "B9bBfRcF6jb:aD1KD82UFB1"],
+			filter: ["ou:"+orgUnit.id],
+			displayProperty : "NAME",
+			skipMeta:"true"
+		}
+		for (var i=1; i<historicLength; i++){
+			params.dimension[1] +=";"+(year-i);
+		}
+		var builtUrl = buildAPIUrl(ANALYTICS, params);
+		return $.ajax({
+			url: builtUrl
+		}).then(function(data) {
+				fillNewCasesArray(data, column);
+		});
+	}
+	function getIncidenceFor(indicator, column){
+
+
+		var params = {
+			dimension: ["dx:"+indicator,"pe:"+year],
+			filter: ["ou:"+orgUnit.id],
+			displayProperty : "NAME",
+			skipMeta:"true"
+		}
+		for (var i=1; i<historicLength; i++){
+			params.dimension[1] +=";"+(year-i);
+		}
+		var builtUrl = buildAPIUrl(ANALYTICS, params);
+		return $.ajax({
+			url: builtUrl
+		}).then(function(data) {
+				fillIncidenceArray(data, column);
+		});
+	}
+
 
 	/****************************************************************************************************
  	 **********                      FILLING LOGICAL STRUCTURES (ARRAYS)               	       **********
@@ -755,6 +872,14 @@ $( document ).ready( function() {
 			monthlyArray[zclRow][i] = total_cases_by_month;
 		}
 		
+	}
+
+	function fillNewCasesArray(data, column){
+		historicNewCases[column] = getAnalyticValueForKey(data);
+	}
+	function fillIncidenceArray(data, column){
+		historicIncidence[column] = getAnalyticValueForKey(data);
+		array[INCD_ROW][column] = historicIncidence[column][0]; // 0 = this year
 	}
 	/*
 		column :
@@ -964,24 +1089,38 @@ $( document ).ready( function() {
 	// $.when(ajax1(), ajax2(), ajax3(), ajax4()).done(function(a1, a2, a3, a4){
 	// http://stackoverflow.com/questions/3709597/wait-until-all-jquery-ajax-requests-are-done
 	$.when(get_cl_cases(), get_vl_cases(), get_azcl_cases(),
+		getIncidenceFor(IN.VL_INCIDENCE, VL_COLUMN),
+		getIncidenceFor(IN.CL_INCIDENCE, CL_COLUMN),
+		getIncidenceFor(IN.ACL_INCIDENCE, ACL_COLUMN),
+		getIncidenceFor(IN.ZCL_INCIDENCE, ZCL_COLUMN),
+		getNewCases(DE.VL_EPI_Type, VL_COLUMN),
+		getNewCases(DE.CL_EPI_Type, CL_COLUMN),
+		getNewCases(DE.ACL_EPI_Type, ACL_COLUMN),
+		getNewCases(DE.ZCL_EPI_Type, ZCL_COLUMN),
 		get_monthly_cases_for_cl_current_year(),
 		get_monthly_cases_for_cl_previous_year(),
 		get_monthly_cases_for_vl_current_year(),
 		get_monthly_cases_for_vl_previous_year(),
 		get_monthly_cases_for_azcl_current_year(),
-		get_monthly_cases_for_azcl_previous_year()).done(function(cl, vl, m1,m2,m3,m4,m5,m6){
+		get_monthly_cases_for_azcl_previous_year()).done(function(cl, vl, azcl, a, m1,m2,m3,m4,m5,m6){
 		// the code here will be executed when all four ajax requests resolve.
 		// a1, a2, a3 and a4 are lists of length 3 containing the response text,
 		// status, and jqXHR object for each of the four ajax calls respectively.
+		writeTable(cgiTableBody, generalInformationArray, CGI_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_CGI);
 		writeTable(epiTableBody, array, EPI_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_EPI);
 		writeTable(monthlyDistributionTableBody, monthlyArray, MONTHLY_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_MONTHLY);
+		writeTable(casTableBody, controlArray, CAS_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_CAS);
 		writeTable(diagTableBody, diagnosisArray, DIAG_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_DIAG);
 		writeTable(treatmentTableBody, treatmentArray, "", LINES_BELOW_LABELS_TREAT);
 
-		setMonthlyCheckboxes();
+		makeElementsEditables();
 		makeElementsFootnotables();
 
-		generate_cl_vl_new_cases_charts();
+		generate_cl_vl_new_monthly_charts();
+		generate_cl_vl_new_and_incidence_yearly_charts();
+
+		setMonthlyCheckboxes();
+
 	});
 
 
@@ -1043,6 +1182,21 @@ $( document ).ready( function() {
 		count = 0;
 	}	
 
+	function makeElementsEditables(){
+		$(".editableElement").mousedown(function(event) {
+			if (event.which === 1){
+					
+				dialog.dialog( "open" );	
+				var test = this.innerHTML;
+				editingElement = this;
+				$("#editor").jqteVal(editingElement.innerHTML);
+
+				event.preventDefault();
+			}
+		});
+	
+	}
+	
 	function makeElementsFootnotables(){
 		$(".footnotable").mousedown(function(event) {
 			if (event.which === 3){
@@ -1059,6 +1213,7 @@ $( document ).ready( function() {
 			}
 		});
 
+		// Avoid to show menu
 		$('.footnotable').contextmenu(function() {
 			return false;
 		});
@@ -1072,6 +1227,27 @@ $( document ).ready( function() {
 
 	function numberToTwoDigits( number){
 		return ("0" + number).slice(-2);
+	}
+
+	
+	
+	function getAnalyticValueForKey(array){
+		yearColumn = 0;
+		valueColumn = 0;
+
+		for (var j=0;j<array.headers.length;j++){
+			if(array.headers[j].name==="pe"){
+				yearColumn = j;
+			}
+			if(array.headers[j].name==="value"){
+				valueColumn = j;
+			}
+		}
+		var returnValues = new Array(historicLength);
+		for (var i=0; i<array.rows.length; i++){
+			returnValues[year-array.rows[i][yearColumn]] = array.rows[i][valueColumn];
+		}
+		return returnValues;
 	}
 
 	/* 	Searchs for a custom value for a customKey with a custom value through an array
@@ -1228,16 +1404,20 @@ $( document ).ready( function() {
 
 			$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(CL_COLUMN-1)).trigger('click');
 			$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(PKDL_COLUMN-1)).trigger('click');
+
+		
+			$('#'+CHART_PREFIX+BUTTON_PREFIX+"1").trigger('click');
+			$('#'+CHART_PREFIX+BUTTON_PREFIX+"4").trigger('click');
 		} else {
 			$('#'+MONTHLY_TABLE_TD_ID_PREFIX+BUTTON_PREFIX+ACL_ROW).trigger('click');
 			$('#'+MONTHLY_TABLE_TD_ID_PREFIX+BUTTON_PREFIX+ZCL_ROW).trigger('click');
 
 			$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(ACL_COLUMN-1)).trigger('click');
 			$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(ZCL_COLUMN-1)).trigger('click');
+
+			$('#'+CHART_PREFIX+BUTTON_PREFIX+"0").trigger('click');
+			$('#'+CHART_PREFIX+BUTTON_PREFIX+"3").trigger('click');
 		}
-
-
-
 
 		$(':checkbox').button( "refresh" );
 	}
@@ -1246,11 +1426,11 @@ $( document ).ready( function() {
 	 **********                               CHARTS functions                                 **********
 	 ****************************************************************************************************/
 
-	/* Retrieves the data of vl and cl or acl/zcl, configures the charts and generates them.
+	/* Retrieves the data of vl and cl or acl/zcl, configures the monthly charts and generates them.
 	*/
-	function generate_cl_vl_new_cases_charts (){
+	function generate_cl_vl_new_monthly_charts (){
 	
-		if (acl_and_zcl_activated) {
+		//if (acl_and_zcl_activated) {
 			var colors = [COLORS.blue, COLORS.blue, COLORS.green, COLORS.green];
 			var labels = [ACL_CHART_LEGEND +year, ACL_CHART_LEGEND +(year-1), ZCL_CHART_LEGEND + year, ZCL_CHART_LEGEND  + (year-1)];
 			
@@ -1261,16 +1441,18 @@ $( document ).ready( function() {
 
 			var dataarrays = [acl_current_year, acl_previous_year, zcl_current_year, zcl_previous_year];
 
+			lineChart(newAZCLCasesChartID, MONTHS_ABBREV, labels, dataarrays, colors, true);
 
-		} else {
-			var colors = [COLORS.blue, COLORS.blue];
-			var labels = [CL_CHART_LEGEND + year, CL_CHART_LEGEND + (year-1)];
+
+		//} else {
+			colors = [COLORS.blue, COLORS.blue];
+			labels = [CL_CHART_LEGEND + year, CL_CHART_LEGEND + (year-1)];
 			var cl_current_year = monthlyArray[CL_ROW].slice(1,monthlyArray[CL_ROW].length);
 			var cl_previous_year = monthlyArray[CL_PREVIOUS_YEAR_ROW].slice(1,monthlyArray[CL_PREVIOUS_YEAR_ROW].length);
 			var dataarrays = [cl_current_year, cl_previous_year];
-		
-		}
-		lineChart(newCLCasesChartID, MONTHS_ABBREV, labels, dataarrays, colors, true);
+			lineChart(newCLCasesChartID, MONTHS_ABBREV, labels, dataarrays, colors, true);
+
+	//	}
 		
 		var vl_current_year = monthlyArray[VL_ROW].slice(1,monthlyArray[VL_ROW].length);
 		var vl_previous_year = monthlyArray[VL_PREVIOUS_YEAR_ROW].slice(1,monthlyArray[VL_PREVIOUS_YEAR_ROW].length);
@@ -1281,6 +1463,39 @@ $( document ).ready( function() {
 		lineChart(newVLCasesChartID, MONTHS_ABBREV, vl_labels, vl_data_arrays, vl_colors, true);
 
 	}
+
+	/* Retrieves the data of vl and cl or acl/zcl, configures the yearly charts and generates them.
+		*/
+	function generate_cl_vl_new_and_incidence_yearly_charts(){
+
+		var dataLabelArray = [ACL_CHART_INCIDENCE_LEGEND, ZCL_CHART_INCIDENCE_LEGEND, ACL_CHART_CASES_LEGEND, ZCL_CHART_CASES_LEGEND];
+		var charType = ["line","line","bar","bar"];
+		var dataArray = [historicIncidence[ACL_COLUMN], historicIncidence[ZCL_COLUMN], historicNewCases[ACL_COLUMN], historicNewCases[ZCL_COLUMN]];
+		var colorArray = [COLORS.blue, COLORS.green, COLORS.soft_blue, COLORS.soft_green];
+		var dataChartIDs= [DATASID.RIGHT, DATASID.RIGHT, DATASID.LEFT, DATASID.LEFT];
+		lineBarChart(newAZCLAndHistoricIncidenceID, dataLabelArray, charType, dataArray, colorArray, dataChartIDs);
+
+
+
+		dataLabelArray = [VL_CHART_INCIDENCE_LEGEND, VL_CHART_CASES_LEGEND];
+		charType = ["line","bar"];
+		dataArray = [historicIncidence[VL_COLUMN], historicNewCases[VL_COLUMN]];
+		colorArray = [COLORS.violet, COLORS.soft_violet];
+		dataChartIDs= [DATASID.RIGHT, DATASID.LEFT];
+		lineBarChart(newVLAndHistoricIncidenceID, dataLabelArray, charType, dataArray, colorArray, dataChartIDs);
+
+
+		dataLabelArray = [CL_CHART_INCIDENCE_LEGEND, CL_CHART_CASES_LEGEND];
+		charType = ["line","bar"];
+		dataArray = [historicIncidence[CL_COLUMN], historicNewCases[CL_COLUMN]];
+		colorArray = [COLORS.blue, COLORS.green];
+		dataChartIDs= [DATASID.RIGHT, DATASID.LEFT];
+		lineBarChart(newCLAndHistoricIncidenceID, dataLabelArray, charType, dataArray, colorArray, dataChartIDs);
+
+	}
+
+
+
 	/* 	Generates an any-lines-number line graph. 
 		htmlElementID: the id of the canvas/html element where put the graph
 		x_labels: The labels for the x-axis  
@@ -1326,6 +1541,60 @@ $( document ).ready( function() {
 							beginAtZero:true
 						}
 					}]
+				},
+				responsive: false
+			}
+		});
+	}
+
+	function lineBarChart(htmlElementID, dataLabelArray, charType, dataArray, colorArray, dataChartIDs){
+
+	
+	
+		var theDataSets = [];
+		var aDataSet = {};
+		for (var i = 0; i<dataLabelArray.length; i++){
+			aDataSet = {};
+			aDataSet.label = dataLabelArray[i];
+			aDataSet.fill = false;
+			aDataSet.data = dataArray[i].reverse();
+			aDataSet.backgroundColor = colorArray[i];
+			aDataSet.borderColor = colorArray[i];
+			aDataSet.borderWidth = 2;
+			aDataSet.type = charType[i];
+			aDataSet.yAxisID = dataChartIDs[i];
+			theDataSets[i] = aDataSet;
+		}
+
+		var yearLabels = [];
+		for (var i=0; i<historicLength;i++){
+			yearLabels[historicLength-i-1] = year-i;
+		}
+
+
+		var ctx = document.getElementById(htmlElementID);
+		var myChart = new Chart(ctx, {
+			type: 'bar',
+			data: {
+				labels: yearLabels,
+				datasets: theDataSets
+			},
+			options: {
+				scales: {
+				yAxes: [{
+					id: DATASID.LEFT,
+					stacked: true,
+					type: 'linear',
+					position: 'left',
+				},{
+					id: DATASID.RIGHT,
+					type: 'linear',
+					position: 'right',
+					ticks: {
+					max: 2,
+					min: 0
+					}
+				}]
 				},
 				responsive: false
 			}
@@ -1425,8 +1694,31 @@ $( document ).ready( function() {
 		
 	});
 	
+	// Listener graph buttons
+	$(":checkbox."+CHART_PREFIX).change(function() {
+		var index = Number(this.id.slice(this.id.length-1, this.id.length));
+		var startingid = this.id.slice(0, -1-BUTTON_PREFIX.length);
+		var theCanvas = $('#'+startingid+index);
+		theCanvas.toggleClass('sameLine');
+		theCanvas.toggleClass('notShown');
 		
-	
+	});
+
+
+
+function test(){
+	var base = "https://extranet-uat.who.int/dhis2-dev";
+
+	Ext.onReady(	function (){
+		DHIS.getMap({
+		id: "pe31bkGmYiS",
+		el: "map2",
+		url:base
+		});	
+	}); 
+
+}
+
 } );
 </script>
 
@@ -1438,13 +1730,15 @@ $( document ).ready( function() {
 	 ****************************************************************************************************/
 	-->
 <div class="non-printable section"><hr>
-Configuration Area - Wont be printed<br>
+
+<div class="comment">
+	Configuration Area - Wont be printed<br>
 	Instructions : Right click to add a footnote number.<br>
 					Left click to edit an element.
-
+</div>
 <fieldset id="leish_detail_checkboxes"></fieldset>
 <fieldset id="monthlyCheckboxes"></fieldset>
-
+<fieldset id="chartCheckboxes"></fieldset>
 
 <hr>
 
@@ -1459,14 +1753,19 @@ Configuration Area - Wont be printed<br>
 		<div class="center_text editableElement" id="country_name"></div>
 		<div class="align_to_right">
 			<div class="editableElement" id="year"></div>
-			<div class="editableElement" id="published_date"></div>
+			<div class="editableElement comment" id="published_date"></div>
 		</div>
 	</div>
 </div>
 
 <div class="section">
-	<h4 class="editableElement footnotable">Country General Information </h4>
-	
+	<h4 class="editableElement footnotable">Country General Information</h4>
+	<div class="twoColumns"><table id="cgiTable" class="display" cellspacing="0" width="100%">
+			<thead>
+				<tr id ="cgiTableHead"></tr>
+			</thead>
+			<tbody id="cgiTableBody"></tbody>
+	</table></div>
 </div>
 
 <div class="section">
@@ -1508,12 +1807,32 @@ Configuration Area - Wont be printed<br>
 
 </div>
 
-<!--
-<div id="chart1" width="450" height="300"></div>
--->
-<canvas id="NewCLCasesChart" width="450" height="300" ></canvas>
-<canvas id="NewVLCasesChart" width="450" height="300" ></canvas>
+<div>
+	<canvas class="sameLine" id="chart0" width="425" height="300" ></canvas>
+	<canvas class="sameLine" id="chart1" width="425" height="300" ></canvas>
+	<canvas class="sameLine" id="chart2" width="425" height="300" ></canvas>
+</div>
+<div>
+	<canvas class="sameLine" id="chart3" width="425" height="300" ></canvas>
+	<canvas class="sameLine" id="chart4" width="425" height="300" ></canvas>
+	<canvas class="sameLine" id="chart5" width="425" height="300" ></canvas>
+</div>
 
+
+
+
+
+<div class="section">
+	<h4 class="editableElement footnotable" >Control and Surveillance</h4>
+	
+	<div class="twoColumns"><table id="casTable" class="display" cellspacing="0" width="100%">
+			<thead>
+				<tr id ="casTableHead"></tr>
+			</thead>
+			<tbody id="casTableBody"></tbody>
+	</table></div>
+
+</div>
 
 <div class="section">
 	<h4 class="editableElement footnotable" >Diagnosis</h4>
@@ -1539,3 +1858,6 @@ Configuration Area - Wont be printed<br>
 	</table>
 
 </div>
+
+	<div id="map1" class="map wide"></div>
+	<div id="map2" class="map wide" ></div>
