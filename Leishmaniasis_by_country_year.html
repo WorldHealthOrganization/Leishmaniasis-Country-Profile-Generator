@@ -79,11 +79,21 @@
 	width: 900px;
 	font-size: 15px;
 }
+.configuration-section{
+	width: 1200px;
+}
 
 .comment {
 	font-style: italic;
 	font-size: 11px;
 }
+
+.footnote {
+	font-size: 11px;
+}
+
+.superindex 
+{vertical-align:super} 
 
 .head_logo{
 	width:160px;
@@ -115,7 +125,7 @@ tr.bottom_line td,th {
   border-bottom: 1px solid #cad5e5;	/* Info : Border from first row table doesn't come from here. Just same property. */
 }
 
-.footNoted {
+.footNotedElement {
   /*  color: red; */	
 }
 
@@ -146,6 +156,55 @@ tr.bottom_line td,th {
     
     width:900px;
 }
+
+
+#sortable2{
+    counter-reset: footNoteListCounter;
+}
+#sortable2 li:before{
+    content: counter(footNoteListCounter);
+	counter-increment: footNoteListCounter;
+    font-weight: bold;
+    background: #007FFF;
+    color:white;
+    border-radius: 2px 6px;
+    padding: 2px;
+    padding-right: 5px;
+    padding-left: 5px;
+
+    margin-right: 8px;
+
+}
+#sortable1, #sortable2 {
+    border: 1px solid #eee;
+    width: 550px;
+    min-height: 20px;
+    list-style-type: none;
+    margin: 0;
+    padding: 5px 0 0 0;
+    float: left;
+    margin-right: 10px;
+  }
+  #sortable1 li, #sortable2 li {
+    margin: 0 5px 5px 5px;
+    padding: 5px;
+    font-size: 1em;
+    width: 550;
+  }
+
+.FixedHeightContainer
+{
+  height: 300px;
+  width:fit-content;
+  padding:0px; 
+  display:inline-block;
+}
+.Content
+{
+  height:280px;
+   overflow:auto;
+}
+
 </style>
 <!-- 
 
@@ -159,6 +218,8 @@ tr.bottom_line td,th {
  **********                             JavaScript imports                                 **********
  ****************************************************************************************************/
  -->
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
 <script type="text/javascript" src ="https://cdn.rawgit.com/Rjjp/plugins/master/jquery-te-1.4.0-oms.js"></script>
 <script type="text/javascript" src ="https://cdn.rawgit.com/Rjjp/plugins/master/jquery-ui/jquery-ui.js">//TODO:use the cdn officiel</script>
 <script type="text/javascript" src="//dhis2-cdn.org/v226/plugin/chart.js"></script>
@@ -169,7 +230,6 @@ tr.bottom_line td,th {
 <script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false"></script>
 
 
-
 <script type="text/javascript">
 
 $( document ).ready( function() {
@@ -177,7 +237,10 @@ $( document ).ready( function() {
 	/* Adds jQueryTE and jquery-ui css' */
 
 	$('head').append('<link rel="stylesheet" href="https://rawgit.com/Rjjp/plugins/master/jquery-te-1.4.0.css" type="text/css" />');
- 	$('head').append('<link rel="stylesheet" href="https://cdn.rawgit.com/Rjjp/plugins/master/jquery-ui/jquery-ui.css" type="text/css" />');
+ 	$('head').append('<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" type="text/css" />');
+ 	$('head').append('<link rel="stylesheet" href="https://jqueryui.com/resources/demos/style.css" type="text/css" />');
+
+	 
 	$('head').append('<link rel="stylesheet" href="https://dhis2-cdn.org/v222/ext/resources/css/ext-plugin-gray.css" type="text/css" />');
 
 
@@ -557,20 +620,24 @@ $( document ).ready( function() {
         "Save changes": saveChanges,
 		"Save changes and close": saveChangesAndClose,
         Cancel: function() {
+			deleteNewFootnote();
           dialog.dialog( "close" );
         }
       },
       close: function() {
        
+		
         //allFields.removeClass( "ui-state-error" );
       }
     });
 
 	function saveChanges(){
 		editingElement.innerHTML = $("#editor").jqteVal();
+		addNewFootnote();
 	}
 	function saveChangesAndClose(){
 		editingElement.innerHTML = $("#editor").jqteVal();
+		addNewFootnote();
 		dialog.dialog( "close" );
 	}
 	
@@ -656,9 +723,28 @@ $( document ).ready( function() {
 
 	chartCheckboxesLabels = ["CL monthly", "AZCL monthly", "VL monthly", "CL yearly", "AZCL yearly", "VL yearly" ];
 
+
+	/* sortable lists */
+
+   
+
+
+
 	generateCheckboxes($("#leish_detail_checkboxes"), COLUMNS_LABELS, "Leishmaniasis types to show:",LEISH_COLUMN_DETAIL_PREFIX,-1);
 	generateCheckboxes($("#monthlyCheckboxes"), rowMonthlyTitles, "Leishmaniasis types to show in monthly table:",MONTHLY_TABLE_TD_ID_PREFIX,-1);
 	generateCheckboxes($("#chartCheckboxes"), chartCheckboxesLabels, "Graphs to show",CHART_PREFIX,2);
+
+
+
+	$( "#sortable1, #sortable2" ).sortable({
+      connectWith: ".connectedSortable"
+    }).disableSelection();
+	$('input[type=checkbox]').checkboxradio();
+    $( "#tabs" ).tabs({heightStyle: "auto"});
+
+	$( ".ui-state-hover" ).removeClass( "ui-state-hover" );
+	//correct_css_checkboxes();
+
 
 	fillTableHead(epiTableHead, '', COLUMNS_LABELS);
 	fillTableHead(monthlyDistributionTableHead, '', MONTHS_ABBREV);
@@ -690,7 +776,6 @@ $( document ).ready( function() {
 		}
 		    
 		htmlObject.append(html);
-		$('input[type=checkbox]').checkboxradio();
 	}
 
 
@@ -1180,43 +1265,58 @@ $( document ).ready( function() {
 		htmlObject.append(html);
 		// reset the count:
 		count = 0;
-	}	
-
+	}
+	
+	//TODO: fix contextmenu
+ 	$(document).on("contextmenu",function(e){
+        if(e.target.nodeName != "INPUT" && e.target.nodeName != "TEXTAREA")
+             e.preventDefault();
+			 return false;
+     });
 	function makeElementsEditables(){
+			// Avoid to show menu
+		$('.editableElement').contextmenu(function() {
+			return false;
+		});
+	
 		$(".editableElement").mousedown(function(event) {
-			if (event.which === 1){
-					
+			if (event.which === 3){
+				//event.preventDefault();
+
 				dialog.dialog( "open" );	
 				var test = this.innerHTML;
 				editingElement = this;
 				$("#editor").jqteVal(editingElement.innerHTML);
 
-				event.preventDefault();
 			}
 		});
+
 	
 	}
 	
 	function makeElementsFootnotables(){
 		$(".footnotable").mousedown(function(event) {
-			if (event.which === 3){
-				if ($(this).hasClass('footNoted')) {
-					$(this).text($(this).html().substring(0,$(this).html().length - 11 - footNoteCounter.toString().length));
-					footNoteCounter--;
+			if (event.which === 1){
+				if ($(this).hasClass('footNotedElement')) {
+					var element = $('#footNoteNumber' + footNoteCounter ); // will return element
+					if ($(this).children().attr("id")===element.attr("id")) {  // Check if trying to remove last element
+						element[0].parentNode.removeChild(element[0]); // will remove the element from DOM
+						footNoteCounter--;
+						$(this).toggleClass('footNotedElement');
+					}
+
 				} else {
 					footNoteCounter++;
-					$(this).append("<sup>"+footNoteCounter+"</sup>");
+					$(this).append("<span id='footNoteNumber"+footNoteCounter+"' class='superindex'>"+footNoteCounter+"</span>");
+					$(this).toggleClass('footNotedElement');
 				}
 
 				event.preventDefault();
-				$(this).toggleClass('footNoted');
+				
 			}
 		});
 
-		// Avoid to show menu
-		$('.footnotable').contextmenu(function() {
-			return false;
-		});
+
 	}
 	/*	Returns a url for the API
 
@@ -1406,8 +1506,8 @@ $( document ).ready( function() {
 			$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(PKDL_COLUMN-1)).trigger('click');
 
 		
-			$('#'+CHART_PREFIX+BUTTON_PREFIX+"1").trigger('click');
-			$('#'+CHART_PREFIX+BUTTON_PREFIX+"4").trigger('click');
+			$('#'+CHART_PREFIX+BUTTON_PREFIX+"0").trigger('click');
+			$('#'+CHART_PREFIX+BUTTON_PREFIX+"3").trigger('click');
 		} else {
 			$('#'+MONTHLY_TABLE_TD_ID_PREFIX+BUTTON_PREFIX+ACL_ROW).trigger('click');
 			$('#'+MONTHLY_TABLE_TD_ID_PREFIX+BUTTON_PREFIX+ZCL_ROW).trigger('click');
@@ -1415,8 +1515,8 @@ $( document ).ready( function() {
 			$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(ACL_COLUMN-1)).trigger('click');
 			$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(ZCL_COLUMN-1)).trigger('click');
 
-			$('#'+CHART_PREFIX+BUTTON_PREFIX+"0").trigger('click');
-			$('#'+CHART_PREFIX+BUTTON_PREFIX+"3").trigger('click');
+			$('#'+CHART_PREFIX+BUTTON_PREFIX+"1").trigger('click');
+			$('#'+CHART_PREFIX+BUTTON_PREFIX+"4").trigger('click');
 		}
 
 		$(':checkbox').button( "refresh" );
@@ -1719,6 +1819,90 @@ function test(){
 
 }
 
+
+    var storedFootnotes = [
+       "For this reporting period, an area at the 2nd sub-national administrative level reporting cases for the first time ever",
+        " In Afghanistan, VL diganosis is available only in two centres (Regional Hospital of Kandahar and Children´s Hospital in Kabul). The cases are reported mainly"
+            +"from four provinces, but the surveillance system is too week to identify the endemicity status of the others. ",
+        "In the Region of the Americas, the age groups used for reporting are <5 years, 5-9y, 10-19y, 20-49y and 50y and older",
+        " In the Region of the Americas, except for the number of cases, all the indicators include both CL and MCL cases",
+        " In the Region of the Americas, the endemic areas used for the calculation of incidence rate and population-at-risk were the lowest sub-national administrative levels"
+            +"reporting cases in 2014."
+
+    ];
+    var activeFootnotes = [
+        "Defined as “Number of people living in 2nd sub-national administrative level endemic areas”",
+        "For Sierra Leone, monthly number of cases (both new and relapse cases)",
+        "Incidence rate at the national level"
+        ];
+    
+    function fillList(htmlObject, array, highlighted){
+        var liClass = "ui-state-default";
+        if (highlighted){
+            liClass = "ui-state-highlight";
+        }
+
+        var html = '';
+		for (var i=0; i<array.length; i++){
+			html+='<li class="'+liClass+' editableElement">'
+			html+= array[i];
+			html+= '</li>';
+		}
+		    
+		htmlObject.append(html);
+    }
+
+    fillList($("#sortable1"),storedFootnotes,false);
+    fillList($("#sortable2"),activeFootnotes,true);
+	fillFootnotes();
+
+	$("#newfootnote").click(function() {
+ 		 dialog.dialog( "open" );	
+		editingElement = $("#newFootnoteText")[0];
+		$("#editor").jqteVal(editingElement.innerHTML);
+	});
+
+	function addNewFootnote(){
+		if($("#newFootnoteText").html()){
+			var liClass = "ui-state-default";
+			var html='';
+			html+='<li class="'+liClass+' editableElement">'
+			html+= $("#newFootnoteText").html();
+			html+= '</li>';
+			$("#sortable1").append(html);
+		}
+		deleteNewFootnote();
+	}
+
+	function deleteNewFootnote(){
+		$("#newFootnoteText").html('');
+	}
+
+	$( "#sortable2" ).on( "sortreceive", function( event, ui ) {
+		console.log(event);
+		console.log(ui);
+
+		fillFootnotes();
+
+	} );
+
+	function fillFootnotes(){
+		var htmlObject = $("#footnotes");
+		htmlObject.html('');
+		var elements = $("#sortable2 li");
+
+        var html = '';
+		for (var i=0; i<elements.length; i++){
+			html+='<div class="footnote"><span class="superindex">'+(i+1)+'</span><span class="editableElement">'
+			html+= elements[i].innerHTML;
+			html+= '</span></div>';
+		}
+		    
+		htmlObject.append(html);
+	}
+
+
+
 } );
 </script>
 
@@ -1729,16 +1913,44 @@ function test(){
  	**********		   																		   **********
 	 ****************************************************************************************************/
 	-->
-<div class="non-printable section"><hr>
+<div class="non-printable configuration-section section"><hr>
 
-<div class="comment">
-	Configuration Area - Wont be printed<br>
-	Instructions : Right click to add a footnote number.<br>
-					Left click to edit an element.
-</div>
-<fieldset id="leish_detail_checkboxes"></fieldset>
-<fieldset id="monthlyCheckboxes"></fieldset>
-<fieldset id="chartCheckboxes"></fieldset>
+	<div class="comment">
+		Configuration Area - Wont be printed<br>
+		Instructions : Left click to add a footnote number.<br>
+						Right click to edit an element.
+	</div>
+	<div id="tabs">
+		<ul>
+			<li><a href="#tabs-1">General</a></li>
+			<li><a href="#tabs-2">Footnotes</a></li>
+		</ul>
+		<div id="tabs-1">		
+			<fieldset id="leish_detail_checkboxes"></fieldset>
+			<fieldset id="monthlyCheckboxes"></fieldset>
+			<fieldset id="chartCheckboxes"></fieldset>
+		</div>
+		<div id="tabs-2">
+			<div class="FixedHeightContainer">
+				<div class="Content">
+					<ul id="sortable1" class="connectedSortable">
+					</ul>
+				</div>
+			</div>
+			<div class="FixedHeightContainer">
+				<div class="Content">
+					<ul id="sortable2" class="connectedSortable">
+					</ul>
+				</div>
+			</div>
+			 <button id="newfootnote" class="ui-button ui-widget ui-corner-all">
+    			<span class="ui-icon ui-icon-document"></span> Add new footnote
+  			</button>
+			<div id="newFootnoteText" style="display:none"></div>
+
+		</div>
+	</div>
+
 
 <hr>
 
@@ -1796,16 +2008,7 @@ function test(){
 </div>
 
 
-<div class="section">
-	<img id="b01" style="margin-right: 20px">
-	<img id="b02">
 
-	<div id="dialog-editor">
-		<textarea id="editor" title="Edit field"></textarea>
-		
-	</div>
-
-</div>
 
 <div>
 	<canvas class="sameLine" id="chart0" width="425" height="300" ></canvas>
@@ -1818,7 +2021,14 @@ function test(){
 	<canvas class="sameLine" id="chart5" width="425" height="300" ></canvas>
 </div>
 
+<div class="section">
+	<img id="b01" style="margin-right: 20px">
+	<img id="b02">
 
+	<div id="dialog-editor">
+		<textarea id="editor" title="Edit field"></textarea>
+	</div>
+</div>
 
 
 
@@ -1858,6 +2068,11 @@ function test(){
 	</table>
 
 </div>
-
+<!--
 	<div id="map1" class="map wide"></div>
 	<div id="map2" class="map wide" ></div>
+-->
+<div class="section">
+	<hr>
+	<div id="footnotes"></div>
+</div>
