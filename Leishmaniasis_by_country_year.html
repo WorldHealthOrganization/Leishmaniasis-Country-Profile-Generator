@@ -1728,32 +1728,33 @@ $( document ).ready( function() {
 	 **********                               LISTENERS                                        **********
 	 ****************************************************************************************************/
 
-
-	// Listener ACL/ZCL PKDL buttons
-	$(":checkbox."+LEISH_COLUMN_DETAIL_PREFIX).change(function() {
-		var index = Number(this.id.slice(this.id.length-1, this.id.length));
-		$('#epiTable tr, #diagTable tr').each(function() {
-			$(this).find("td,th").eq(index+1).toggle();
+	 function addListenersToCheckboxes(){
+		// Listener ACL/ZCL PKDL buttons
+		$(":checkbox."+LEISH_COLUMN_DETAIL_PREFIX).change(function() {
+			var index = Number(this.id.slice(this.id.length-1, this.id.length));
+			$('#epiTable tr, #diagTable tr').each(function() {
+				$(this).find("td,th").eq(index+1).toggle();
+			});
 		});
-	});
-	
-	// Listener monthly buttons
-	$(":checkbox."+MONTHLY_TABLE_TD_ID_PREFIX).change(function() {
-		var index = Number(this.id.slice(this.id.length-1, this.id.length));
-		var startingid = this.id.slice(0, -1-BUTTON_PREFIX.length);
-		$("#"+startingid+index).toggle();
 		
-	});
-	
-	// Listener graph buttons
-	$(":checkbox."+CHART_PREFIX).change(function() {
-		var index = Number(this.id.slice(this.id.length-1, this.id.length));
-		var startingid = this.id.slice(0, -1-BUTTON_PREFIX.length);
-		var theCanvas = $('#'+startingid+index);
-		theCanvas.toggleClass('sameLine');
-		theCanvas.toggleClass('notShown');
+		// Listener monthly buttons
+		$(":checkbox."+MONTHLY_TABLE_TD_ID_PREFIX).change(function() {
+			var index = Number(this.id.slice(this.id.length-1, this.id.length));
+			var startingid = this.id.slice(0, -1-BUTTON_PREFIX.length);
+			$("#"+startingid+index).toggle();
+			
+		});
 		
-	});
+		// Listener graph buttons
+		$(":checkbox."+CHART_PREFIX).change(function() {
+			var index = Number(this.id.slice(this.id.length-1, this.id.length));
+			var startingid = this.id.slice(0, -1-BUTTON_PREFIX.length);
+			var theCanvas = $('#'+startingid+index);
+			theCanvas.toggleClass('sameLine');
+			theCanvas.toggleClass('notShown');
+			
+		});
+	 }
 
 	// Editor for footnotes
 	$("#newfootnote").click(function() {
@@ -1797,7 +1798,7 @@ $( document ).ready( function() {
 	generateCheckboxes($("#leish_detail_checkboxes"), COLUMNS_LABELS, "Leishmaniasis types to show:",LEISH_COLUMN_DETAIL_PREFIX,-1);
 	generateCheckboxes($("#monthlyCheckboxes"), MONTHLY_LABELS, "Leishmaniasis types to show in monthly table:",MONTHLY_TABLE_TD_ID_PREFIX,-1);
 	generateCheckboxes($("#chartCheckboxes"), CHART_CHECKBOXES_LABELS, "Graphs to show",CHART_PREFIX,2);
-
+	addListenersToCheckboxes();
 
 	$( "#sortable1, #sortable2" ).sortable({
       connectWith: ".connectedSortable"
