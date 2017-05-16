@@ -52,8 +52,13 @@
 }
 @page 
     {
-        size:  auto;   /* auto is the initial value */
-        margin: 0mm;  /* this affects the margin in the printer settings */
+        size:  A4;   /* auto is the initial value */
+        margin: 5mm;  /* this affects the margin in the printer settings */
+		
+		
+		@bottom-left {
+  		  content: "Page " counter(page) " of " counter(pages);
+ 			 }
     }
 
     html
@@ -64,8 +69,8 @@
 
     body
     {
-        border: solid 1px blue ;
-        margin: 1mm 0mm 1mm 0mm; /* margin you want for the content */
+        border: solid 0px blue ;
+        margin: 0mm 0mm 0mm 0mm; /* margin you want for the content */
     }
 
 
@@ -75,11 +80,11 @@
 	border-bottom: 0px solid #ccc;  /* line at the end of the section */
 	margin-bottom: 0px; 
 	padding-bottom: 0px;
-	width: 900px;
+	/*width: 900px;*/
 	font-size: 15px;
 }
 .configuration-section{
-	width: 1200px;
+	/*width: 1200px;*/
 }
 
 .comment {
@@ -1735,18 +1740,39 @@ $( document ).ready( function() {
 
 
 	function fillFootnotes(){
-		var htmlObject = $("#footnotes");
-		htmlObject.html('');
-		var elements = $("#sortable2 li");
+		var footnotesZone1 = $("#footnotes1");
+		var footnotesZone2 = $("#footnotes2");
 
-        var html = '';
+		footnotesZone1.html('');
+		footnotesZone2.html('');
+
+		var elements = $("#sortable2 li");
+        var html = [];
+		var zone = 1;
 		for (var i=0; i<elements.length; i++){
-			html+='<div class="footnote"><span class="superindex">'+(i+1)+'</span><span class="'+CLASS_EDITABLE_ELEMENT+'">'
-			html+= elements[i].innerHTML;
-			html+= '</span></div>';
+			zone = getFootnotesZoneObject("#footNoteNumber"+(i+1));
+			html[zone]+='<div class="footnote"><span class="superindex">'+(i+1)+'</span><span class="'+CLASS_EDITABLE_ELEMENT+'">'
+			html[zone]+= elements[i].innerHTML;
+			html[zone]+= '</span></div>';
 		}
 		    
-		htmlObject.append(html);
+		footnotesZone1.append(html[0]);
+		footnotesZone2.append(html[1]);
+	}
+
+	function getFootnotesZoneObject(footNote){
+		if ($(footNote).length<=0){
+			return 1;
+		}
+
+		console.log("footNote.offset().top"+$(footNote).offset().top);
+		console.log("$(footnotes1).offset().top"+$("#footnotes1").offset().top);
+		if($(footNote).offset().top<$("#footnotes1").offset().top){
+			return 0;
+		} else {
+			return 1;
+		}
+
 	}
 
 	/****************************************************************************************************
@@ -2113,14 +2139,19 @@ $( document ).ready( function() {
 
 
 <div>
-	<canvas class="sameLine" id="chart0" width="425" height="300" ></canvas>
-	<canvas class="sameLine" id="chart1" width="425" height="300" ></canvas>
-	<canvas class="sameLine" id="chart2" width="425" height="300" ></canvas>
+	<canvas class="sameLine" id="chart0" width="375" height="250" ></canvas>
+	<canvas class="sameLine" id="chart1" width="375" height="250" ></canvas>
+	<canvas class="sameLine" id="chart2" width="375" height="250" ></canvas>
 </div>
 <div>
-	<canvas class="sameLine" id="chart3" width="425" height="300" ></canvas>
-	<canvas class="sameLine" id="chart4" width="425" height="300" ></canvas>
-	<canvas class="sameLine" id="chart5" width="425" height="300" ></canvas>
+	<canvas class="sameLine" id="chart3" width="375" height="250" ></canvas>
+	<canvas class="sameLine" id="chart4" width="375" height="250" ></canvas>
+	<canvas class="sameLine" id="chart5" width="375" height="250" ></canvas>
+</div>
+
+<div class="section">
+	<hr>
+	<div id="footnotes1"></div>
 </div>
 
 <div class="section">
@@ -2182,5 +2213,5 @@ $( document ).ready( function() {
 -->
 <div class="section">
 	<hr>
-	<div id="footnotes"></div>
+	<div id="footnotes2"></div>
 </div>
