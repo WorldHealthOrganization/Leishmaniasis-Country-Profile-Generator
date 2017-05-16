@@ -144,8 +144,8 @@ tr.bottom_line td,th {
     margin: 10px;
 }
 .map.wide {
-    width: 900px;
-    height: 500px;
+    width: 400px;
+    height: 300px;
 }
 
 .twoColumns {
@@ -217,17 +217,19 @@ tr.bottom_line td,th {
  **********                             JavaScript imports                                 **********
  ****************************************************************************************************/
  -->
-   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-
 <script type="text/javascript" src ="https://cdn.rawgit.com/Rjjp/plugins/master/jquery-te-1.4.0-oms.js"></script>
 <script type="text/javascript" src ="https://cdn.rawgit.com/Rjjp/plugins/master/jquery-ui/jquery-ui.js">//TODO:use the cdn officiel</script>
 <script type="text/javascript" src="//dhis2-cdn.org/v226/plugin/chart.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.js"></script>
 <script type="text/javascript" src="https://dhis2-cdn.org/v222/ext/ext-all.js"></script>
 <script type="text/javascript" src="https://dhis2-cdn.org/v226/plugin/map.js"></script>
+
+
+
+<!--
 <script type="text/javascript" src="https://dhis2-cdn.org/v222/openlayers/OpenLayers.js"></script>
 <script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false"></script>
-
+-->
 
 <script type="text/javascript">
 
@@ -241,7 +243,13 @@ $( document ).ready( function() {
 	$('head').append('<link rel="stylesheet" href="https://rawgit.com/Rjjp/plugins/master/jquery-te-1.4.0.css" type="text/css" />');
  	$('head').append('<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" type="text/css" />');
  	$('head').append('<link rel="stylesheet" href="https://jqueryui.com/resources/demos/style.css" type="text/css" />');
+
+	$('head').append('<link href="//fonts.googleapis.com/css?family=Roboto:400" rel="stylesheet">');
 	$('head').append('<link rel="stylesheet" href="https://dhis2-cdn.org/v222/ext/resources/css/ext-plugin-gray.css" type="text/css" />');
+
+
+	
+
 
 
 
@@ -487,12 +495,14 @@ $( document ).ready( function() {
 		VL_EPI_Type :	"IxbBQzytPgv",
 		ACL_EPI_Type : 	"f1bBSpuIyzD",
 		ZCL_EPI_Type : 	"Ta96pnXcAum",
+		MCL_EPI_Type : 	"K8k1LRZagmc",
 		VL_LAB_RDT_tested_type : "rFy4bKMa977",
 		VL_LAB_parasito_tested_type : "RrKpXTbayoB",
 		VL_LAB_parasito_result_type : "Qc7ujS567UL",
 		VL_LAB_clinical : "BAsexzzzJZC",
 		VL_LAB_HIVstatus_Type : "NTo887FeHdI",
 		PKDL_GEN_EPID_cases : "NdbsWSygpqz",
+		MCL_GEN_EPID_cases : "K8k1LRZagmc",
 		PKDL_EPID_sex: "ipWXN3NeXac",
 		PKDL_EPID_age : "rw4tu6PNGKO",
 		PKDL_LAB_HIV: "sxjZutF1AMx",
@@ -512,6 +522,8 @@ $( document ).ready( function() {
 	DE_SCREEN_PASSIVE[ACL_COLUMN] = "gZuua8o0gNS";
 	DE_SCREEN_PASSIVE[ZCL_COLUMN] = "yEmHARyqLIk";
 
+
+	var CC_DEFAULT = "Xr12mI7VPn3";
 	var TYPE_NEW_CASES = "psVSPLclyFj";
 	var TYPE_RELAPSE = "KPn9RHNrd8R";
 	var TYPE_UNSPECIFIED = "IRW4YrOtk5q";
@@ -740,6 +752,7 @@ $( document ).ready( function() {
 		}).then(function(data) {
 			//	decide_cl_or_aclzcl_mode(data.dataValues);
 				fillArray(data.dataValues, CL_COLUMN, DE.CL_EPI_Type, ""); 
+				fillArray(data.dataValues, MCL_COLUMN, DE.MCL_EPI_Type, "", DE.MCL_GEN_EPID_cases); 
 		});
 	}
 
@@ -753,8 +766,8 @@ $( document ).ready( function() {
 			url: builtUrl
 		}).then(function(data) {
 				set_aclzcl_mode_to_true_if_data(data.dataValues);
-				fillArray(data.dataValues, ACL_COLUMN, DE.ACL_EPI_Type, ""); 
-				fillArray(data.dataValues, ZCL_COLUMN, DE.ZCL_EPI_Type, ""); 
+				fillArray(data.dataValues, ACL_COLUMN, DE.ACL_EPI_Type, "", ""); 
+				fillArray(data.dataValues, ZCL_COLUMN, DE.ZCL_EPI_Type, "", ""); 
 		});
 	}
 
@@ -766,8 +779,8 @@ $( document ).ready( function() {
 		return $.ajax({
 			url: builtUrl
 		}).then(function(data) {
-				fillArray(data.dataValues, VL_COLUMN, DE.VL_EPI_Type, DE.VL_LAB_RDT_tested_type);
-				fillArray(data.dataValues, PKDL_COLUMN, DE.VL_EPI_Type, DE.VL_LAB_RDT_tested_type);
+				fillArray(data.dataValues, VL_COLUMN, DE.VL_EPI_Type, DE.VL_LAB_RDT_tested_type, "");
+				fillArray(data.dataValues, PKDL_COLUMN, DE.VL_EPI_Type, DE.VL_LAB_RDT_tested_type, DE.PKDL_GEN_EPID_cases);
 
 		});
 	}
@@ -870,12 +883,15 @@ $( document ).ready( function() {
 		historicIncidence[column] = getAnalyticValueForKey(data);
 		array[INCD_ROW][column] = historicIncidence[column][0]; // 0 = this year
 	}
+
+
+
 	/*
 		column :
 		epiDE : Epidemiology Data getElement
 		diagDE : diagnosis DataElement
 	*/
-	function fillArray(dataValues, column, epiDE, diagDE) {
+	function fillArray(dataValues, column, epiDE, diagDE, epiPKDLMCLCases) {
 		/* Edidemiology table */
 	
 		// type of cases
@@ -929,9 +945,7 @@ $( document ).ready( function() {
 
 		var total_age_cases = add([under_5, _5_14, over_14, age_unknown]);
 
-		array[AGE_ROW][column] = "(" +	percentageText(under_5, total_age_cases) + " / "
-										+	percentageText(_5_14, total_age_cases) + " / "
-										+	percentageText(over_14, total_age_cases) + ")";				
+		array[AGE_ROW][column] = threePercentages(under_5, _5_14, over_14, total_age_cases);	
 
 		//origin distribution
 		var origin_autoc = add([
@@ -954,29 +968,35 @@ $( document ).ready( function() {
 									+ ", "
 									+	percentageText(origin_imported, total_origin_cases);
 
-		/* only PKDL TODO: place that if that's true */
+		/* only PKDL and MCL TODO: place that if that's true */
 
-		if (column === PKDL_COLUMN){
-			var cases = getValueForKey(dataValues,DE_KEY,DE.PKDL_GEN_EPID_cases, VALUE_KEY);
+		if (column === PKDL_COLUMN || column === MCL_COLUMN){
+			var cases = getValueForKey(dataValues, DE_KEY, epiPKDLMCLCases, VALUE_KEY);
 			array[NEW_ROW][column] = cases;
 			array[RELAPSE_ROW][column] = WHEN_NON_APPLICABLE;
 			array[TOTAL_ROW][column] = cases;
 			array[IMPORTED_ROW][column] = WHEN_NON_APPLICABLE; 
 
-			var male = getValueForKey(dataValues, [CC_KEY,DE_KEY], [MALE, DE.PKDL_EPID_sex], VALUE_KEY);
-			var female = getValueForKey(dataValues, [CC_KEY,DE_KEY], [FEMALE, DE.PKDL_EPID_sex], VALUE_KEY);
+			var male = getValueForKey(dataValues, CC_KEY, MALE, VALUE_KEY);
+			var female = getValueForKey(dataValues, CC_KEY, FEMALE, VALUE_KEY);
 			array[SEX_ROW][column] = percentageText(female, add([male, female]));
 
-			var age_5 = getValueForKey(dataValues,[CC_KEY,DE_KEY], [AGE_5, DE.PKDL_EPID_age], VALUE_KEY);
-			var age_5_14 = getValueForKey(dataValues,[CC_KEY,DE_KEY], [AGE_5_14, DE.PKDL_EPID_age], VALUE_KEY);
-			var age_14 = getValueForKey(dataValues,[CC_KEY,DE_KEY], [AGE_14, DE.PKDL_EPID_age], VALUE_KEY);
+			var age_5 = getValueForKey(dataValues, CC_KEY, AGE_5, VALUE_KEY);
+			var age_5_14 = getValueForKey(dataValues, CC_KEY, AGE_5_14, VALUE_KEY);
+			var age_14 = getValueForKey(dataValues, CC_KEY, AGE_14, VALUE_KEY);
 			var total_age_cases = add([age_5, age_5_14, age_14]);
 
-			array[AGE_ROW][column] = "(" +	percentageText(age_5, total_age_cases) + " / "
-											+	percentageText(age_5_14, total_age_cases) + " / "
-											+	percentageText(age_14, total_age_cases) + ")";		
+			array[AGE_ROW][column] = threePercentages(age_5, age_5_14, age_14, total_age_cases);	
+
+			array[INCD_ROW][column] = WHEN_NON_APPLICABLE; 
+			array[RISK_ROW][column] = WHEN_NON_APPLICABLE; 
+			array[THIRD_LEVEL_ROW][column] = WHEN_NON_APPLICABLE; 
+			array[OUTBK_ROW][column] = WHEN_NON_APPLICABLE; 
+			array[FOCI_ROW][column] = WHEN_NON_APPLICABLE; 
 
 		}
+
+	
 
 
 
@@ -984,7 +1004,7 @@ $( document ).ready( function() {
 		/* Diagnosis table */
 		
 		// active and passive screening
-		if (column === PKDL_COLUMN) {
+		if (column === PKDL_COLUMN || column === MCL_COLUMN) {
 			diagnosisArray[SCREENED_ACTIVELY_ROW][column] = WHEN_NON_APPLICABLE;
 			diagnosisArray[SCREENED_PASSIVELY_ROW][column] = WHEN_NON_APPLICABLE;
 		} else {
@@ -1045,30 +1065,38 @@ $( document ).ready( function() {
 			diagnosisArray[HIV_COINFECTION_ROW][column] = WHEN_NON_APPLICABLE;
 		}
 
-		// Direct exam
-		var direct_exam_new = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_NEW_CASES, DE.VL_LAB_parasito_tested_type], VALUE_KEY);
-		var direct_exam_rel = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_RELAPSE, DE.VL_LAB_parasito_tested_type], VALUE_KEY);
-		var direct_exam_uns = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED, DE.VL_LAB_parasito_tested_type], VALUE_KEY);
-		var direct_exam_total = add([direct_exam_new, direct_exam_rel, direct_exam_uns]);
 
-		diagnosisArray[DIRECT_EXAM_DIAGNOSED_ROW][column] = percentageCasesAndTotal(direct_exam_total, total_cases_type);
+		if (column === PKDL_COLUMN || column === MCL_COLUMN) {
+			diagnosisArray[DIRECT_EXAM_DIAGNOSED_ROW][column] = WHEN_NON_APPLICABLE;
+			diagnosisArray[POSITIVE_DIRECT_EXAM_ROW][column] = WHEN_NON_APPLICABLE;
+			diagnosisArray[CLINICALLY_DIAGNOSED_ROW][column] = WHEN_NON_APPLICABLE;
+		} 
+		else {
+		
+			// Direct exam
+			var direct_exam_new = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_NEW_CASES, DE.VL_LAB_parasito_tested_type], VALUE_KEY);
+			var direct_exam_rel = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_RELAPSE, DE.VL_LAB_parasito_tested_type], VALUE_KEY);
+			var direct_exam_uns = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED, DE.VL_LAB_parasito_tested_type], VALUE_KEY);
+			var direct_exam_total = add([direct_exam_new, direct_exam_rel, direct_exam_uns]);
 
-		//Positive slides
-		var positive_slides_new = getValueForKey(dataValues,[CC_KEY, DE_KEY],[POSITIVE_NEW, DE.VL_LAB_parasito_result_type], VALUE_KEY); 
-		var positive_slides_rel = getValueForKey(dataValues,[CC_KEY, DE_KEY],[POSITIVE_RELAPSE, DE.VL_LAB_parasito_result_type], VALUE_KEY); 
-		var positive_slides_uns = getValueForKey(dataValues,[CC_KEY, DE_KEY],[POSITIVE_UNSP, DE.VL_LAB_parasito_result_type], VALUE_KEY); 
-		var positive_slides_total = add([positive_slides_new, positive_slides_rel, positive_slides_uns]);
+			diagnosisArray[DIRECT_EXAM_DIAGNOSED_ROW][column] = percentageCasesAndTotal(direct_exam_total, total_cases_type);
 
-		diagnosisArray[POSITIVE_DIRECT_EXAM_ROW][column] = percentageCasesAndTotal(positive_slides_new, positive_slides_total);
+			//Positive slides
+			var positive_slides_new = getValueForKey(dataValues,[CC_KEY, DE_KEY],[POSITIVE_NEW, DE.VL_LAB_parasito_result_type], VALUE_KEY); 
+			var positive_slides_rel = getValueForKey(dataValues,[CC_KEY, DE_KEY],[POSITIVE_RELAPSE, DE.VL_LAB_parasito_result_type], VALUE_KEY); 
+			var positive_slides_uns = getValueForKey(dataValues,[CC_KEY, DE_KEY],[POSITIVE_UNSP, DE.VL_LAB_parasito_result_type], VALUE_KEY); 
+			var positive_slides_total = add([positive_slides_new, positive_slides_rel, positive_slides_uns]);
 
-		//Cases diagnosed clinically
-		var clinical_cases_new = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_NEW_CASES, DE.VL_LAB_clinical], VALUE_KEY);
-		var clinical_cases_rel = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_RELAPSE, DE.VL_LAB_clinical], VALUE_KEY);
-		var clinical_cases_uns = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED, DE.VL_LAB_clinical], VALUE_KEY);
-		var clinical_cases_total = add([clinical_cases_new, clinical_cases_rel, clinical_cases_uns]);
+			diagnosisArray[POSITIVE_DIRECT_EXAM_ROW][column] = percentageCasesAndTotal(positive_slides_new, positive_slides_total);
 
-		diagnosisArray[CLINICALLY_DIAGNOSED_ROW][column] = percentageCasesAndTotal(clinical_cases_total, total_cases_type);
+			//Cases diagnosed clinically
+			var clinical_cases_new = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_NEW_CASES, DE.VL_LAB_clinical], VALUE_KEY);
+			var clinical_cases_rel = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_RELAPSE, DE.VL_LAB_clinical], VALUE_KEY);
+			var clinical_cases_uns = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED, DE.VL_LAB_clinical], VALUE_KEY);
+			var clinical_cases_total = add([clinical_cases_new, clinical_cases_rel, clinical_cases_uns]);
 
+			diagnosisArray[CLINICALLY_DIAGNOSED_ROW][column] = percentageCasesAndTotal(clinical_cases_total, total_cases_type);
+		}
 
 
 	}
@@ -1296,12 +1324,44 @@ $( document ).ready( function() {
 		return returnValue;
 	}
 
+
+	/*	Returns three percentages with no decimals, between parenthesis
+
+	*/
+	function threePercentages(cases1, cases2, cases3, total){
+		if (total === WHEN_UNDEFINED || total === undefined){
+			return WHEN_UNDEFINED;
+		} else {
+			if ((cases1 === WHEN_UNDEFINED || cases1 === undefined) &&
+				(cases2 === WHEN_UNDEFINED || cases2 === undefined) &&
+				(cases3 === WHEN_UNDEFINED || cases3 === undefined))
+			{	
+				return WHEN_UNDEFINED;
+			}
+			else {
+				
+				return 	"(" + 
+							percentageText(cases1, total) + ", " +
+							percentageText(cases2, total) + ", " +
+							percentageText(cases3, total) + ")";
+
+			}
+		}
+	}
+
 	/*	Returns a percentage with no decimals, the #cases and the total between parenthesis
 
 	*/
 	function percentageCasesAndTotal(numerator, denominator){
-		return 	percentageText(numerator, denominator) + "  (" +
+
+		if (numerator === WHEN_UNDEFINED || numerator === undefined ||
+			denominator === WHEN_UNDEFINED || denominator === undefined) {
+				return WHEN_UNDEFINED;
+			}
+			else {
+				return 	percentageText(numerator, denominator) + "  (" +
 				numerator + " / " + denominator + ")";
+			}
 	}
 
 	/*	Returns a percentage with no decimals 
@@ -1764,7 +1824,7 @@ $( document ).ready( function() {
 	});
 
 	// New footnote arrives 
-	$( "#sortable2" ).on( "sortreceive", function( event, ui ) {
+	$( "#sortable2" ).on( "sortupdate", function( event, ui ) {
 		fillFootnotes();
 	} );
 
@@ -1853,7 +1913,7 @@ $( document ).ready( function() {
 		fillFootnotes();
 
 		setMonthlyCheckboxes();
-
+		//test();
 	});
 
 
@@ -1862,14 +1922,86 @@ $( document ).ready( function() {
 	 ** ********    ******** **** ********* ******* ************   *********** *********** ******* *******/
 
 	function test(){
-		var base = "https://extranet-uat.who.int/dhis2-dev";
+		var base = "https://extranet-uat.who.int/dhis2-dev/";
+
+
+
+
 
 		Ext.onReady(	function (){
+			 GIS.plugin.getMap({
+				url: base,
+				el: "map1",
+				mapViews: [{
+				columns: [{dimension: "dx", items: [{id: "EPw6gR9fDqt"}, {dimensionItemType: "DATA_ELEMENT"}]}], // data
+				rows: [{dimension: "ou", items: [{id: "LEVEL-3"}, {id: "qbqrFLCJewu"}]}], // organisation units,
+				filters: [{dimension: "pe", items: [{id: "2016"}]}], // period
+				// All following options are optional
+				"valueType": "de",
+      			"layer": "thematic1",
+      			"hidden": false,
+     			 "colorScale": "#ffffd4,#fed98e,#fe9929,#d95f0e,#993404"
+				}],
+				baseLayer :"gs"
+			});
+			
+			GIS.plugin.getMap({
+				"url": base,
+				"id": "cwhSUwUxBy4",
+				"el": "map2",
+				"username": "ramon2",
+  				"password": "1234Abcd"
+			});
+
+
+			
 			DHIS.getMap({
-			id: "pe31bkGmYiS",
-			el: "map2",
-			url:base
-			});	
+			"mapViews": [
+				{
+				"columns": [
+					{
+					"dimension": "dx",
+					"items": [
+						{
+						"id": "EPw6gR9fDqt",
+						"dimensionItemType": "DATA_ELEMENT"
+						}
+					]
+					}
+				],
+				"rows": [
+					{
+					"dimension": "ou",
+					"items": [
+						{
+						"id": "LEVEL-3"
+						},
+						{
+						"id": "qbqrFLCJewu"
+						}
+					]
+					}
+				],
+				"filters": [
+					{
+					"dimension": "pe",
+					"items": [
+						{
+						"id": "2016"
+						}
+					]
+					}
+				],
+				"valueType": "de",
+				"layer": "thematic1",
+				"hidden": false,
+				"colorScale": "#ffffd4,#fed98e,#fe9929,#d95f0e,#993404"
+				}
+			],
+			"url": base,
+			"el": "map3"
+			});
+
 		}); 
 
 	}
@@ -2040,7 +2172,13 @@ $( document ).ready( function() {
 </div>
 <!--
 	<div id="map1" class="map wide"></div>
-	<div id="map2" class="map wide" ></div>
+	<div id="map2" ></div>
+
+	<div id="map3" class="map wide"></div>
+	<div id="map4" class="map wide" ></div>
+
+	<div id="map5" class="map wide"></div>
+	<div id="map6" class="map wide" ></div>
 -->
 <div class="section">
 	<hr>
