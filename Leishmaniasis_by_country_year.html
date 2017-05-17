@@ -44,36 +44,39 @@
  **********                                1. CSS STYLES                                   **********
  **********		   																		   **********
  ****************************************************************************************************/
+
+
 @media print {
    .non-printable {
        display: none;
     }
     
 }
-@page 
-    {
+@page {
         size:  A4;   /* auto is the initial value */
-        margin: 5mm;  /* this affects the margin in the printer settings */
-		
-		
-		@bottom-left {
-  		  content: "Page " counter(page) " of " counter(pages);
- 			 }
-    }
+        margin: 5mm;  /* this affects the margin in the printer settings */		
+}
 
-    html
-    {
-        background-color: #FFFFFF; 
-        margin: 0px;  /* this affects the margin on the html before sending to printer */
-    }
+html
+{
+	background-color: #FFFFFF; 
+	margin: 0px;  /* this affects the margin on the html before sending to printer */
+}
 
-    body
-    {
-        border: solid 0px blue ;
-        margin: 0mm 0mm 0mm 0mm; /* margin you want for the content */
-    }
+body
+{
+	border: solid 0px blue ;
+	margin: 0mm 0mm 0mm 0mm; /* margin you want for the content */
+}
 
+h4 {
+	margin-top: 20px;
+	margin-bottom:5px;
+}
 
+h6 {
+	margin: 0px;
+}
 
 .section
 {
@@ -162,10 +165,10 @@ tr.bottom_line td,th {
 }
 
 
-#sortable2{
+#tabs-2{
     counter-reset: footNoteListCounter;
 }
-#sortable2 li:before{
+#sortable2 li:before, #sortable3 li:before{
     content: counter(footNoteListCounter);
 	counter-increment: footNoteListCounter;
     font-weight: bold;
@@ -179,26 +182,28 @@ tr.bottom_line td,th {
     margin-right: 8px;
 
 }
-#sortable1, #sortable2 {
+#sortable1, #sortable2, #sortable3 {
     border: 1px solid #eee;
-    width: 550px;
-    min-height: 20px;
+    /*width: 550px;*/
+	min-width: 320px;
+	max-width: 500px;
+    min-height: 50px;
     list-style-type: none;
     margin: 0;
     padding: 5px 0 0 0;
     float: left;
     margin-right: 10px;
   }
-  #sortable1 li, #sortable2 li {
+  #sortable1 li, #sortable2 li, #sortable3 li {
     margin: 0 5px 5px 5px;
     padding: 5px;
     font-size: 1em;
-    width: 550;
+    min-width: 100px;
+	max-width: 500px;
   }
 
 .FixedHeightContainer
 {
-  height: 300px;
   width:fit-content;
   padding:0px; 
   display:inline-block;
@@ -652,6 +657,7 @@ $( document ).ready( function() {
 
 	var sortableListNotSelected = $("#sortable1");
 	var sortableListPage1 = $("#sortable2");
+	var sortableListPage2 = $("#sortable3");
 
 	var newCLCasesChartID = "chart0";	
 	var newAZCLCasesChartID = "chart1";
@@ -1747,17 +1753,25 @@ $( document ).ready( function() {
 		footnotesZone2.html('');
 
 		var elements = $("#sortable2 li");
-        var html = [];
-		var zone = 1;
+        var html = '';
 		for (var i=0; i<elements.length; i++){
-			zone = getFootnotesZoneObject("#footNoteNumber"+(i+1));
-			html[zone]+='<div class="footnote"><span class="superindex">'+(i+1)+'</span><span class="'+CLASS_EDITABLE_ELEMENT+'">'
-			html[zone]+= elements[i].innerHTML;
-			html[zone]+= '</span></div>';
+		//	zone = getFootnotesZoneObject("#footNoteNumber"+(i+1));
+			html+='<div class="footnote"><span class="superindex">'+(i+1)+'</span><span class="'+CLASS_EDITABLE_ELEMENT+'">'
+			html+= elements[i].innerHTML;
+			html+= '</span></div>';
 		}
-		    
-		footnotesZone1.append(html[0]);
-		footnotesZone2.append(html[1]);
+		footnotesZone1.append(html);
+		
+		elements = $("#sortable3 li");
+    	html = '';
+		var base = i;
+		for (var i=0; i<elements.length; i++){
+		//	zone = getFootnotesZoneObject("#footNoteNumber"+(i+1));
+			html+='<div class="footnote"><span class="superindex">'+(i+base+1)+'</span><span class="'+CLASS_EDITABLE_ELEMENT+'">'
+			html+= elements[i].innerHTML;
+			html+= '</span></div>';
+		}
+		footnotesZone2.append(html);
 	}
 
 	function getFootnotesZoneObject(footNote){
@@ -1767,6 +1781,14 @@ $( document ).ready( function() {
 
 		console.log("footNote.offset().top"+$(footNote).offset().top);
 		console.log("$(footnotes1).offset().top"+$("#footnotes1").offset().top);
+
+		if($(".page-break").length){
+			console.log($(".page-break"));
+		} else {
+			console.log("no pages breaks");
+
+		}
+
 		if($(footNote).offset().top<$("#footnotes1").offset().top){
 			return 0;
 		} else {
@@ -1852,6 +1874,10 @@ $( document ).ready( function() {
 	// New footnote arrives 
 	$( "#sortable2" ).on( "sortupdate", function( event, ui ) {
 		fillFootnotes();
+	} );	
+	// New footnote arrives 
+	$( "#sortable3" ).on( "sortupdate", function( event, ui ) {
+		fillFootnotes();
 	} );
 
 	//TODO: fix contextmenu
@@ -1886,7 +1912,7 @@ $( document ).ready( function() {
 	generateCheckboxes($("#chartCheckboxes"), CHART_CHECKBOXES_LABELS, "Graphs to show",CHART_PREFIX,2);
 	addListenersToCheckboxes();
 
-	$( "#sortable1, #sortable2" ).sortable({
+	$( "#sortable1, #sortable2, #sortable3" ).sortable({
       connectWith: ".connectedSortable"
     }).disableSelection();
 	$('input[type=checkbox]').checkboxradio();
@@ -2068,8 +2094,16 @@ $( document ).ready( function() {
 				</div>
 			</div>
 			<div class="FixedHeightContainer">
-				<div class="Content">
+				<div class="Content"> 
+					<h6 class="subHeader">Footnotes page 1</h6>
 					<ul id="sortable2" class="connectedSortable">
+					</ul>
+				</div>
+			</div>
+			<div class="FixedHeightContainer">
+				<div class="Content">
+					<h6 class="subHeader">Footnotes page 2</h6>
+					<ul id="sortable3" class="connectedSortable">
 					</ul>
 				</div>
 			</div>
@@ -2085,10 +2119,8 @@ $( document ).ready( function() {
 
 <div class="section">
     <img class="head_logo center" src="http://www.who.int/about/Logo-WHO.jpg" />
-	<br>
-	
-	<div class="container">
-	
+
+	<div class="container">	
 		<div class="editableElement">Leishmaniasis</div>
 		<div class="center_text editableElement" id="country_name"></div>
 		<div class="align_to_right">
@@ -2111,15 +2143,12 @@ $( document ).ready( function() {
 <div class="section">
 	<h4 class="editableElement footnotable">Epidemiology</h4>
 
-
 	<table id="epiTable" class="display" cellspacing="0" width="100%">
 			<thead>
 				<tr id ="epiTableHead"></tr>
 			</thead>
 			<tbody id="epiTableBody"></tbody>
 	</table>
-
-
 </div>
 
 
@@ -2134,9 +2163,6 @@ $( document ).ready( function() {
 	</table>
 
 </div>
-
-
-
 
 <div>
 	<canvas class="sameLine" id="chart0" width="375" height="250" ></canvas>
