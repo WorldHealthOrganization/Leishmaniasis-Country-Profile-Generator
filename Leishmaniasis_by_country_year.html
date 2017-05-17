@@ -164,7 +164,9 @@ tr.bottom_line td,th {
     width:900px;
 }
 
-
+#tabs {
+	height:fit-content;
+}
 #tabs-2{
     counter-reset: footNoteListCounter;
 }
@@ -184,34 +186,37 @@ tr.bottom_line td,th {
 }
 #sortable1, #sortable2, #sortable3 {
     border: 1px solid #eee;
-    /*width: 550px;*/
-	min-width: 320px;
-	max-width: 500px;
+    /*width: 550px;
+	min-width: 200px;
+	max-width: 500px;*/
     min-height: 50px;
     list-style-type: none;
     margin: 0;
     padding: 5px 0 0 0;
     float: left;
     margin-right: 10px;
+	min-width: 200px;
+
   }
   #sortable1 li, #sortable2 li, #sortable3 li {
     margin: 0 5px 5px 5px;
     padding: 5px;
     font-size: 1em;
-    min-width: 100px;
-	max-width: 500px;
   }
 
 .FixedHeightContainer
 {
   width:fit-content;
+  
   padding:0px; 
-  display:inline-block;
 }
 .Content
 {
   height:280px;
-   overflow:auto;
+  display:inline-block;
+
+	width: 33%;
+	overflow:auto;
 }
 
 </style>
@@ -1916,7 +1921,7 @@ $( document ).ready( function() {
       connectWith: ".connectedSortable"
     }).disableSelection();
 	$('input[type=checkbox]').checkboxradio();
-    $( "#tabs" ).tabs({heightStyle: "auto"});
+    $( "#tabs" ).tabs({heightStyle: "content"});
 	// corrects bug on checkboxes
 	$( ".ui-state-hover" ).removeClass( "ui-state-hover" );
 
@@ -2089,18 +2094,19 @@ $( document ).ready( function() {
 		<div id="tabs-2">
 			<div class="FixedHeightContainer">
 				<div class="Content">
+					<h6 class="subHeader">Stored footnotes</h6>
 					<ul id="sortable1" class="connectedSortable">
 					</ul>
 				</div>
-			</div>
-			<div class="FixedHeightContainer">
+		<!--	</div>
+			<div class="FixedHeightContainer">-->
 				<div class="Content"> 
 					<h6 class="subHeader">Footnotes page 1</h6>
 					<ul id="sortable2" class="connectedSortable">
 					</ul>
 				</div>
-			</div>
-			<div class="FixedHeightContainer">
+		<!--	</div>
+			<div class="FixedHeightContainer">-->
 				<div class="Content">
 					<h6 class="subHeader">Footnotes page 2</h6>
 					<ul id="sortable3" class="connectedSortable">
