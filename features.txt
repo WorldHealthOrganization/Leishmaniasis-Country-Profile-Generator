@@ -1,0 +1,7 @@
+
+Graphs
+dragable 10x10
+
+MAps
+resizable,  
+dragable 10x10

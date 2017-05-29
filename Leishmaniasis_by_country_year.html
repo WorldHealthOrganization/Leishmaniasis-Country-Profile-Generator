@@ -219,6 +219,17 @@ tr.bottom_line td,th {
 	overflow:auto;
 }
 
+/* maps slider */
+.ui-slider-horizontal {
+    height: 8px;
+    width: 300px;
+}
+.ui-slider .ui-slider-handle {
+    height: 15px;
+    width: 25px;
+    padding-left: 5px;
+}
+
 </style>
 <!-- 
 
@@ -299,7 +310,7 @@ $( document ).ready( function() {
 	var ZCL_CHART_LEGEND = "ZCL ";
 	var TREATMENT_TABLE_FIRST_COLUMNS = "TREATMENT OUTCOME";
 
-	CHART_CHECKBOXES_LABELS = ["CL monthly", "AZCL monthly", "VL monthly", "CL yearly", "AZCL yearly", "VL yearly" ];
+	var CHART_CHECKBOXES_LABELS = ["CL monthly", "AZCL monthly", "VL monthly", "CL yearly", "AZCL yearly", "VL yearly" ];
 
 
 	var VL_CHART_CASES_LEGEND = "VL cases";
@@ -436,6 +447,45 @@ $( document ).ready( function() {
 	var LINES_BELOW_LABELS_MONTHLY = [true,true,true,true,true,true,true,true];
 
 	var monthlyArray = create_2_dim_array(MONTHLY_LABELS.length, MONTHLY_LABELS, LABELS_ON_COLUMNS);
+
+	/* Maps */
+	var VL_INDEX = 0;
+	var CL_INDEX = 1;
+	var ACL_INDEX = 2;
+	var ZCL_INDEX = 3;
+	
+	var MAP_CHECKBOXES_LABELS = new Array(4);
+	MAP_CHECKBOXES_LABELS[VL_INDEX] = "VL incidence";
+	MAP_CHECKBOXES_LABELS[CL_INDEX] = "CL incidence";
+	MAP_CHECKBOXES_LABELS[ACL_INDEX] = "ACL incidence";
+	MAP_CHECKBOXES_LABELS[ZCL_INDEX] = "ZCL incidence";
+
+	var GOOGLE_STREETS = 0;
+	var GOOGLE_HYBRID = 1;
+	var OPEN_STREETS = 2;
+	var OSM_LIGHT = 3;
+	var FACILITY = 4;
+
+	var MAP_STYLE = new Array(4);
+	var MAP_STYLE_LABELS = new Array(4);
+
+	MAP_STYLE [GOOGLE_STREETS] = "googleStreets";
+	MAP_STYLE [GOOGLE_HYBRID] = "googleHybrid";
+	MAP_STYLE [OPEN_STREETS] = "openStreetMap";
+	MAP_STYLE [OSM_LIGHT] = "osmLight";
+	MAP_STYLE [FACILITY] = "facility";
+	
+	MAP_STYLE_LABELS [GOOGLE_STREETS] = "Google Streets";
+	MAP_STYLE_LABELS [GOOGLE_HYBRID] = "Google Hybrid";
+	MAP_STYLE_LABELS [OPEN_STREETS] = "Open Street Map";
+	MAP_STYLE_LABELS [OSM_LIGHT] = "OSM Light";
+	MAP_STYLE_LABELS [FACILITY] = "Facility";
+
+	var initalMapDiv = new Array(4);
+	var map_levels = [3, 4, 5];
+	var map_opacity = 80;
+	var map_height = 400;
+	var map_width = 300;
 
 	/* Control and surveillance table */
 	
@@ -604,13 +654,11 @@ $( document ).ready( function() {
 	var UNS_DEAD = "qAneJjz2lLH";
 
 	/* Indicators*/
-	var IN = {
-		VL_INCIDENCE: "znrCp1SsKA8",
-		CL_INCIDENCE: "aZQ1Cmgvnnn",
-		ACL_INCIDENCE: "J6grbcheses",
-		ZCL_INCIDENCE: "nFdRbLa6cj6"
-
-	}	
+	var INCIDENCE = new Array(4);
+	INCIDENCE[VL_INDEX] = "znrCp1SsKA8";
+	INCIDENCE[CL_INDEX] = "aZQ1Cmgvnnn";
+	INCIDENCE[ACL_INDEX] = "J6grbcheses";
+	INCIDENCE[ZCL_INDEX] = "nFdRbLa6cj6";
 
 	var date = dhis2.report.date;
 	var year = date.slice(0,4);
@@ -679,10 +727,13 @@ $( document ).ready( function() {
 	var DIAG_TABLE_TD_ID_PREFIX = "diagTable";
 
 	var CHART_PREFIX = "chart";
+	var MAP_PREFIX = "map";
+	var MAP_STYLE_PREFIX = "mapStyle";
 
 	var LEISH_COLUMN_DETAIL_PREFIX = "LeishDetail";
 
-	var BUTTON_PREFIX = '_b_';
+	var BUTTON_PREFIX = '_BUTTON_';
+	var OPTION_PREFIX = '_OPTION_';
 
 	/****************************************************************************************************
  	 **********                    	     STATIC CONTENT FUNCTIONS         	           	       **********
@@ -700,13 +751,23 @@ $( document ).ready( function() {
 	function generateCheckboxes(htmlObject, labels, title, prefix, newLineOn){
 		var html = '<legend>'+title+'</legend>';
 		for (var i=0; i<labels.length; i++){
-			html+='<input id="'+prefix+BUTTON_PREFIX+i+'" type="checkbox" class="'+prefix+'" checked="checked" />'
-			html+='<label for="'+prefix+BUTTON_PREFIX+i+'">'+labels[i]+'</label>'
+			html+='<input id="' + prefix + BUTTON_PREFIX + i + '" type="checkbox" class="' + prefix + '" checked="checked" />'
+			html+='<label for="' + prefix + BUTTON_PREFIX + i + '">' + labels[i] + '</label>'
 			if(i===newLineOn){
 				html+='<br>';
 			}
 		}
 		    
+		htmlObject.append(html);
+	}
+
+	function generateMapConfigurationList(htmlObject, labels, prefix){
+		var html = '';
+		for (var i=0; i<labels.length; i++){
+			html+='<option id="' + prefix + OPTION_PREFIX + i + '" value="'+i+'" >'
+			html+=labels[i];
+			html+='</option>';
+		}
 		htmlObject.append(html);
 	}
 
@@ -1457,6 +1518,8 @@ $( document ).ready( function() {
 		
 			$('#'+CHART_PREFIX+BUTTON_PREFIX+"0").trigger('click');
 			$('#'+CHART_PREFIX+BUTTON_PREFIX+"3").trigger('click');
+
+			$('#'+MAP_PREFIX+BUTTON_PREFIX+"1").trigger('click');
 		} else {
 			$('#'+MONTHLY_TABLE_TD_ID_PREFIX+BUTTON_PREFIX+ACL_ROW).trigger('click');
 			$('#'+MONTHLY_TABLE_TD_ID_PREFIX+BUTTON_PREFIX+ZCL_ROW).trigger('click');
@@ -1466,9 +1529,14 @@ $( document ).ready( function() {
 
 			$('#'+CHART_PREFIX+BUTTON_PREFIX+"1").trigger('click');
 			$('#'+CHART_PREFIX+BUTTON_PREFIX+"4").trigger('click');
+
+			$('#'+MAP_PREFIX+BUTTON_PREFIX+"2").trigger('click');
+			$('#'+MAP_PREFIX+BUTTON_PREFIX+"3").trigger('click');
+
 		}
 
 		$(':checkbox').button( "refresh" );
+
 	}
 
 	/****************************************************************************************************
@@ -1710,6 +1778,22 @@ $( document ).ready( function() {
 		  }
 		  return itemsArray;
 	}
+	/****************************************************************************************************
+	 **********                               MAPS functions                                 **********
+	 ****************************************************************************************************/
+
+	$( "#updateMapButton" ).click( function( event ) {
+		event.preventDefault();
+		var selected_map_index =  $('#mapSelector').val();
+		var mapStyle = MAP_STYLE[$('#mapStyleSelector').val()];
+
+		$("#map"+selected_map_index).height(map_height);
+		$("#map"+selected_map_index).width(map_width);
+
+		generateMap(selected_map_index, "INDICATOR", map_levels, orgUnit.id, year, "thematic1", mapStyle, map_opacity);
+
+		} );
+
 
 	/****************************************************************************************************
 	 **********                               FOOTNOTES functions                                 **********
@@ -1867,6 +1951,33 @@ $( document ).ready( function() {
 			theCanvas.toggleClass('notShown');
 			
 		});
+
+		//Listener for maps
+		$(":checkbox."+MAP_PREFIX).change(function() {
+			var index = Number(this.id.slice(this.id.length-1, this.id.length));
+			var startingid = this.id.slice(0, -1-BUTTON_PREFIX.length);
+
+			// enables or disables the options of the list
+			$("#"+MAP_PREFIX+index).toggle();
+			var changeOption = $('#' + startingid + OPTION_PREFIX + index);
+			changeOption.prop('disabled', function(_, attr){ return !attr});
+			$( "#mapSelector" ).selectmenu( 'refresh', true);
+
+			// enables or disables the updatedMapButton
+			var selected_map = $("#mapSelector").val();
+			if(selected_map==index){
+				var checked = $("#"+MAP_PREFIX+BUTTON_PREFIX+index).prop('checked');			
+				$("#updateMapButton").prop('disabled', !checked);
+				$( "#updateMapButton" ).button( "refresh" );
+			}
+
+		});
+
+		// enables the updatedMapButton
+		 $('#mapSelector').on('selectmenuchange', function() {
+			$("#updateMapButton").prop('disabled', false);
+			$( "#updateMapButton" ).button( "refresh" );
+		}).change();
 	 }
 
 	// Editor for footnotes
@@ -1898,11 +2009,6 @@ $( document ).ready( function() {
 	 ****************************************************************************************************/
 
 
-
-	$( "#b01" ).attr( "src", API_URL+"maps/uFcRuF2LsOo/data?width=400&date=" + date );
-	$( "#b02" ).attr( "src", API_URL+"maps/xPc4t89kEXl/data?width=400&date=" + date );
-
-
 	$( "#country_name" ).text(country_name);
 	$( "#year" ).text(year);
 	$( "#published_date").text(getDatePublished());
@@ -1912,9 +2018,11 @@ $( document ).ready( function() {
 	console.log(orgUnit);
 	console.log(country_name);
 
-	generateCheckboxes($("#leish_detail_checkboxes"), COLUMNS_LABELS, "Leishmaniasis types to show:",LEISH_COLUMN_DETAIL_PREFIX,-1);
-	generateCheckboxes($("#monthlyCheckboxes"), MONTHLY_LABELS, "Leishmaniasis types to show in monthly table:",MONTHLY_TABLE_TD_ID_PREFIX,-1);
-	generateCheckboxes($("#chartCheckboxes"), CHART_CHECKBOXES_LABELS, "Graphs to show",CHART_PREFIX,2);
+	generateCheckboxes($("#leish_detail_checkboxes"), COLUMNS_LABELS, "Leishmaniasis types to show:", LEISH_COLUMN_DETAIL_PREFIX, -1);
+	generateCheckboxes($("#monthlyCheckboxes"), MONTHLY_LABELS, "Leishmaniasis types to show in monthly table:", MONTHLY_TABLE_TD_ID_PREFIX, -1);
+	generateCheckboxes($("#chartCheckboxes"), CHART_CHECKBOXES_LABELS, "Graphs to show", CHART_PREFIX, 2);
+	generateCheckboxes($("#mapCheckboxes"), MAP_CHECKBOXES_LABELS, "Maps to show", MAP_PREFIX, -1);
+
 	addListenersToCheckboxes();
 
 	$( "#sortable1, #sortable2, #sortable3" ).sortable({
@@ -1926,19 +2034,113 @@ $( document ).ready( function() {
 	$( ".ui-state-hover" ).removeClass( "ui-state-hover" );
 
 
+	// maps jqueryui    
+	$( "#mapSelector" ).selectmenu();
+	$( "#mapStyleSelector" ).selectmenu();
+	$("#updateMapButton").button();
+			$("#updateMapButton").prop('disabled', true);
+			$( "#updateMapButton" ).button( "refresh" );
+
+
+	generateMapConfigurationList($("#mapSelector"), MAP_CHECKBOXES_LABELS, MAP_PREFIX);
+	generateMapConfigurationList($("#mapStyleSelector"), MAP_STYLE_LABELS, MAP_STYLE_PREFIX);
+
+	$("#mapStyleSelector").val(OSM_LIGHT);
+	$('#mapStyleSelector').selectmenu("refresh");
+
+	
+	text_values = [
+		"WHO Global",
+		"WHO Regions",
+		"WHO Member States",
+		"Level 1",
+		"Level 2",
+		"Level 3",
+		"Level 4"		
+	];
+
+	// Org unit level slider
+	var sliderRange = $( "#slider_range" );
+	sliderRange.slider({
+		range: true,
+		min: 1,
+		max: 7,
+		values: [ map_levels[0], map_levels[map_levels.length-1]], // values = [firstValue, lastValue]
+		slide: function( event, ui ) {
+			$( "#ou_level_slider" ).val( text_values[ui.values[ 0 ]-1] + " - " + text_values[ui.values[ 1 ]-1] );
+			map_levels = [];
+			for(var i = ui.values[0]; i<=ui.values[1]; i++){
+				map_levels.push(i);
+			}
+		}
+
+	});
+	$( "#ou_level_slider" ).val( text_values[sliderRange.slider( "values", 0 )-1] + " - " + text_values[sliderRange.slider( "values", 1 )-1] );
+
+	// Opacitity slider  
+	var opacity_slider_handle = $( "#opacity_slider_handle" );
+    $( "#opacity_slider" ).slider({
+	  min: 0,
+	  max: 100,
+	  value: map_opacity,
+      create: function() {
+        opacity_slider_handle.text( $( this ).slider( "value" ) );
+      },
+      slide: function( event, ui ) {
+        opacity_slider_handle.text( ui.value );
+		map_opacity = ui.value;
+      }
+    });
+	
+	// height slider  
+	var height_slider_handle = $( "#height_slider_handle" );
+    $( "#height_slider" ).slider({
+	  min: 100,
+	  max: 900,
+	  value: map_height,
+      create: function() {
+        height_slider_handle.text( $( this ).slider( "value" ) );
+      },
+      slide: function( event, ui ) {
+        height_slider_handle.text( ui.value );
+		map_height = ui.value;
+      }
+    });
+	
+	// width slider  
+	var width_slider_handle = $( "#width_slider_handle" );
+    $( "#width_slider" ).slider({
+	  min: 100,
+	  max: 900,
+	  value: map_width,
+      create: function() {
+        width_slider_handle.text( $( this ).slider( "value" ) );
+      },
+      slide: function( event, ui ) {
+        width_slider_handle.text( ui.value );
+		map_width = ui.value;
+      }
+    });
+	
+
 	fillTableHead(epiTableHead, '', COLUMNS_LABELS);
 	fillTableHead(monthlyDistributionTableHead, '', MONTHS_ABBREV);
 	fillTableHead(diagTableHead, '', COLUMNS_LABELS);
 	fillTableHead(treatmentTableHead, TREATMENT_TABLE_FIRST_COLUMNS, COLUMNS_LABELS.slice(0,1));
 
+
+
+	// Dragable activation
+	$( ".draggable" ).draggable({ grid: [ 10, 10 ] });
+
 	// Code to execute after API calls have been done.
 	// $.when(ajax1(), ajax2(), ajax3(), ajax4()).done(function(a1, a2, a3, a4){
 	// http://stackoverflow.com/questions/3709597/wait-until-all-jquery-ajax-requests-are-done
 	$.when(get_cl_cases(), get_vl_cases(), get_azcl_cases(),
-		getIncidenceFor(IN.VL_INCIDENCE, VL_COLUMN),
-		getIncidenceFor(IN.CL_INCIDENCE, CL_COLUMN),
-		getIncidenceFor(IN.ACL_INCIDENCE, ACL_COLUMN),
-		getIncidenceFor(IN.ZCL_INCIDENCE, ZCL_COLUMN),
+		getIncidenceFor(INCIDENCE[VL_INDEX], VL_COLUMN),
+		getIncidenceFor(INCIDENCE[CL_INDEX], CL_COLUMN),
+		getIncidenceFor(INCIDENCE[ACL_INDEX], ACL_COLUMN),
+		getIncidenceFor(INCIDENCE[ZCL_INDEX], ZCL_COLUMN),
 		getNewCases(DE.VL_EPI_Type, VL_COLUMN),
 		getNewCases(DE.CL_EPI_Type, CL_COLUMN),
 		getNewCases(DE.ACL_EPI_Type, ACL_COLUMN),
@@ -1948,7 +2150,7 @@ $( document ).ready( function() {
 		get_monthly_cases_for_vl_current_year(),
 		get_monthly_cases_for_vl_previous_year(),
 		get_monthly_cases_for_azcl_current_year(),
-		get_monthly_cases_for_azcl_previous_year()).done(function(cl, vl, azcl, a, m1,m2,m3,m4,m5,m6){
+		get_monthly_cases_for_azcl_previous_year()).done(function(cl, vl, azcl, a, m1,m2,m3,m4,m5,m6,m7){
 		// the code here will be executed when all four ajax requests resolve.
 		// a1, a2, a3 and a4 are lists of length 3 containing the response text,
 		// status, and jqXHR object for each of the four ajax calls respectively.
@@ -1970,7 +2172,9 @@ $( document ).ready( function() {
 		fillFootnotes();
 
 		setMonthlyCheckboxes();
-		//test();
+		test();
+		
+
 	});
 
 
@@ -1978,88 +2182,100 @@ $( document ).ready( function() {
 	 ****  **                                TEST ZONE                                          **********
 	 ** ********    ******** **** ********* ******* ************   *********** *********** ******* *******/
 
-	function test(){
-		var base = "https://extranet-uat.who.int/dhis2-dev/";
 
+	/**
+	* @function generateMap
+	* @param  {type} index         {description}
+	* @param  {type} dimentionType {description}
+	* @param  {type} levels        {description}
+	* @param  {type} orgUnitId     {description}
+	* @param  {type} year          {description}
+	* @param  {type} thematic      {description}
+	* @param  {type} mapStyle      {description}
+	* @param  {int} opacityLevel       {opacity percentage between 0 and 100}
+	* @return {type} {description}
+	*/
+	function generateMap(index, dimentionType, levels, orgUnitId, year, thematic, mapStyle, opacityLevel){
+		
+		var base = "https://extranet-uat.who.int/dhis2-dev";
+		var idHtmlElement = MAP_PREFIX+(index);
+		var dimension = INCIDENCE[index];
 
+		//restore map to its initial value
+		$('#'+idHtmlElement).html(initalMapDiv[index]);
+		
 
-
+		var itemsOnRow = [];
+		for(var i=0; i<levels.length; i++){$
+			itemsOnRow.push({id: "LEVEL-"+levels[i]});
+		}
+		console.log(itemsOnRow);
+		itemsOnRow.push({id: orgUnitId});
 
 		Ext.onReady(	function (){
-			 GIS.plugin.getMap({
-				url: base,
-				el: "map1",
-				mapViews: [{
-				columns: [{dimension: "dx", items: [{id: "EPw6gR9fDqt"}, {dimensionItemType: "DATA_ELEMENT"}]}], // data
-				rows: [{dimension: "ou", items: [{id: "LEVEL-3"}, {id: "qbqrFLCJewu"}]}], // organisation units,
-				filters: [{dimension: "pe", items: [{id: "2016"}]}], // period
-				// All following options are optional
-				"valueType": "de",
-      			"layer": "thematic1",
-      			"hidden": false,
-     			 "colorScale": "#ffffd4,#fed98e,#fe9929,#d95f0e,#993404"
-				}],
-				baseLayer :"gs"
-			});
-			
+
 			GIS.plugin.getMap({
-				"url": base,
-				"id": "cwhSUwUxBy4",
-				"el": "map2",
-				"username": "ramon2",
-  				"password": "1234Abcd"
+				url: base,
+				el: idHtmlElement,
+				basemap: mapStyle,
+				mapViews: [{
+					columns: [{dimension: "dx", items: [{id: dimension, dimensionItemType: dimentionType}]}],
+					rows: [{dimension: "ou", items: itemsOnRow}],
+					filters: [{
+							dimension: "pe",
+							items: [{id: year}]}],
+					valueType: "in",
+					layer: thematic,
+ 					legendSet: {id: "gUOjExXros1"},
+//					colorScale: "#ffffe5,#fff7bc,#fee391,#fec44f,#fe9929,#ec7014,#cc4c02,#993404,#662506",
+//					classes:9,
+					labels:true, // labels of the regions
+					opacity:opacityLevel/100
+				}],
+				
+				onReady: function() {
+                    console.log('map is ready!');
+					console.log($(".leaflet-control-zoom"));
+					$(".leaflet-control-zoom").remove();
+					$(".leaflet-control-legend").addClass("leaflet-control-legend-expanded");
+
+					// remove text details from legeng
+					$('.dhis2-legend-predefined dd') .contents().filter(function() {
+						return this.nodeType === 3; //Node.TEXT_NODE
+					}).remove();
+
+					// Removes openmaps signature
+					$(".leaflet-bottom.leaflet-right").remove();
+
+
+					//	var a = $('.dhis2-legend-predefined dd strong:first').next().remove();
+					//	$(".dhis2-legend-predefined dd strong").first().remove();
+					//	$(".dhis2-legend-predefined dd strong").first().contents().eq(1).remove();
+						
+					//	$(".leaflet-control-legend").removeClass("leaflet-control-legend");
+
+                }
+				
 			});
+		});
+	}
+	
+	function test(){
+		var levels = [3,4,5];
+		initalMapDiv[VL_INDEX] = $('#map0').html();
+		initalMapDiv[CL_INDEX] = $('#map1').html();
+		initalMapDiv[ACL_INDEX] = $('#map2').html();
+		initalMapDiv[ZCL_INDEX] = $('#map3').html();
 
 
-			
-			DHIS.getMap({
-			"mapViews": [
-				{
-				"columns": [
-					{
-					"dimension": "dx",
-					"items": [
-						{
-						"id": "EPw6gR9fDqt",
-						"dimensionItemType": "DATA_ELEMENT"
-						}
-					]
-					}
-				],
-				"rows": [
-					{
-					"dimension": "ou",
-					"items": [
-						{
-						"id": "LEVEL-3"
-						},
-						{
-						"id": "qbqrFLCJewu"
-						}
-					]
-					}
-				],
-				"filters": [
-					{
-					"dimension": "pe",
-					"items": [
-						{
-						"id": "2016"
-						}
-					]
-					}
-				],
-				"valueType": "de",
-				"layer": "thematic1",
-				"hidden": false,
-				"colorScale": "#ffffd4,#fed98e,#fe9929,#d95f0e,#993404"
-				}
-			],
-			"url": base,
-			"el": "map3"
-			});
 
-		}); 
+		var mapStyle = MAP_STYLE[$('#mapStyleSelector').val()];
+		console.log(mapStyle);
+		generateMap(VL_INDEX, "INDICATOR", levels, orgUnit.id, year, "thematic1", mapStyle, map_opacity);
+		generateMap(CL_INDEX, "INDICATOR", levels, orgUnit.id, year, "thematic1", mapStyle, map_opacity);
+		generateMap(ACL_INDEX, "INDICATOR", levels, orgUnit.id, year, "thematic1", mapStyle, map_opacity);
+		generateMap(ZCL_INDEX, "INDICATOR", levels, orgUnit.id, year, "thematic1", mapStyle, map_opacity);
+
 
 	}
 
@@ -2084,14 +2300,50 @@ $( document ).ready( function() {
 	<div id="tabs">
 		<ul>
 			<li><a href="#tabs-1">General</a></li>
-			<li><a href="#tabs-2">Footnotes</a></li>
+			<li><a href="#tabs-2">Maps</a></li>
+			<li><a href="#tabs-3">Footnotes</a></li>
 		</ul>
 		<div id="tabs-1">		
 			<fieldset id="leish_detail_checkboxes"></fieldset>
 			<fieldset id="monthlyCheckboxes"></fieldset>
 			<fieldset id="chartCheckboxes"></fieldset>
 		</div>
-		<div id="tabs-2">
+		<div id="tabs-2">		
+			<fieldset id="mapCheckboxes"></fieldset>
+			<fieldset id="mapConfiguration"><legend>Configure map</legend>
+				<select name="mapSelector" id="mapSelector">
+					<option disabled selected value>Select a Map</option>
+				</select>
+				<p>
+					<label for="ou_level_slider">OrgUnit levels:</label>
+					<input type="text" id="ou_level_slider" readonly style="border:0; color:#f6931f; font-weight:bold;  width:260px ">
+					<div id="slider_range"></div>
+
+				</p>
+				<select name="mapStyleSelector" id="mapStyleSelector"></select>
+				<p>
+					<div id="opacity_slider">
+						<div id="opacity_slider_handle" class="ui-slider-handle"></div>
+					</div>
+
+				</p>
+				<p>
+					<div id="height_slider">
+						<div id="height_slider_handle" class="ui-slider-handle"></div>
+					</div>
+
+				</p>
+				<p>
+					<div id="width_slider">
+						<div id="width_slider_handle" class="ui-slider-handle"></div>
+					</div>
+
+				</p>
+				<button id="updateMapButton" class="ui-button ui-widget ui-corner-all">Update Map</button>
+
+			</fieldset>
+		</div>
+		<div id="tabs-3">
 			<div class="FixedHeightContainer">
 				<div class="Content">
 					<h6 class="subHeader">Stored footnotes</h6>
@@ -2171,14 +2423,14 @@ $( document ).ready( function() {
 </div>
 
 <div>
-	<canvas class="sameLine" id="chart0" width="375" height="250" ></canvas>
-	<canvas class="sameLine" id="chart1" width="375" height="250" ></canvas>
-	<canvas class="sameLine" id="chart2" width="375" height="250" ></canvas>
+	<canvas class="sameLine draggable" id="chart0" width="375" height="250" ></canvas>
+	<canvas class="sameLine draggable" id="chart1" width="375" height="250" ></canvas>
+	<canvas class="sameLine draggable" id="chart2" width="375" height="250" ></canvas>
 </div>
 <div>
-	<canvas class="sameLine" id="chart3" width="375" height="250" ></canvas>
-	<canvas class="sameLine" id="chart4" width="375" height="250" ></canvas>
-	<canvas class="sameLine" id="chart5" width="375" height="250" ></canvas>
+	<canvas class="sameLine draggable resizable" id="chart3" width="375" height="250" ></canvas>
+	<canvas class="sameLine draggable resizable" id="chart4" width="375" height="250" ></canvas>
+	<canvas class="sameLine draggable resizable" id="chart5" width="375" height="250" ></canvas>
 </div>
 
 <div class="section">
@@ -2187,14 +2439,11 @@ $( document ).ready( function() {
 </div>
 
 <div class="section">
-	<img id="b01" style="margin-right: 20px">
-	<img id="b02">
-
-	<div id="dialog-editor">
-		<textarea id="editor" title="Edit field"></textarea>
-	</div>
+	<div class="sameLine"> <div id="map0" class="sameLine draggable" style="height: 300px; width: 400px"></div></div>
+	<div class="sameLine"><div id="map1" class="sameLine draggable" style="height: 300px; width: 400px"></div></div>
+	<div class="sameLine"><div id="map2" class="sameLine draggable" style="height: 300px; width: 400px"></div></div>
+	<div class="sameLine"><div id="map3" class="sameLine draggable" style="height: 300px; width: 400px"></div></div>
 </div>
-
 
 
 <div class="section">
@@ -2233,17 +2482,15 @@ $( document ).ready( function() {
 	</table>
 
 </div>
-<!--
-	<div id="map1" class="map wide"></div>
-	<div id="map2" ></div>
 
-	<div id="map3" class="map wide"></div>
-	<div id="map4" class="map wide" ></div>
 
-	<div id="map5" class="map wide"></div>
-	<div id="map6" class="map wide" ></div>
--->
+
 <div class="section">
 	<hr>
 	<div id="footnotes2"></div>
 </div>
+
+
+	<div id="dialog-editor">
+		<textarea id="editor" title="Edit field"></textarea>
+	</div>
