@@ -150,6 +150,8 @@ tr.bottom_line td,th {
 .map {
     border: 0;
     margin: 10px;
+		z-index:0
+
 }
 .map.wide {
     width: 400px;
@@ -228,6 +230,30 @@ tr.bottom_line td,th {
     height: 15px;
     width: 25px;
     padding-left: 5px;
+}
+
+/* legend maps*/
+
+.legendRectangle{
+    width:20px;
+    height:11px;
+	border-style: solid;
+    border-width: thin;
+}
+
+.legendSet{
+	width:120px;
+    height:120px;
+	border-style: solid;
+    border-width: thin;
+	padding: 4px;
+	background:white;
+	z-index:-2
+}
+
+.legentSetElementText{
+	font-size:10px;
+	padding-left: 4px;
 }
 
 </style>
@@ -481,7 +507,13 @@ $( document ).ready( function() {
 	MAP_STYLE_LABELS [OSM_LIGHT] = "OSM Light";
 	MAP_STYLE_LABELS [FACILITY] = "Facility";
 
+	var VL_LEGEND = "gUOjExXros1";
+	var CL_LEGEND = "TnU2O8YxH51";
+	var ACL_LEGEND = "clwSlrqvmMx";
+	var ZCL_LEGEND = "TbrqpLWzLS8";
+
 	var initalMapDiv = new Array(4);
+	var mapLegends = new Array(4);
 	var map_levels = [3, 4, 5];
 	var map_opacity = 80;
 	var map_height = 400;
@@ -729,6 +761,7 @@ $( document ).ready( function() {
 	var CHART_PREFIX = "chart";
 	var MAP_PREFIX = "map";
 	var MAP_STYLE_PREFIX = "mapStyle";
+	var LEGEND_PREFIX = "legendSet";
 
 	var LEISH_COLUMN_DETAIL_PREFIX = "LeishDetail";
 
@@ -775,6 +808,43 @@ $( document ).ready( function() {
 	/****************************************************************************************************
  	 **********                    	    FUNCTIONS CALLING THE API         	           	       **********
 	 ****************************************************************************************************/
+
+
+	function reOrderLegendSet(legendSet) {
+
+	}
+	function getLegendSet(legendSetId, mapId){
+		console.log("getLegendSet");
+		var legendUrl = "https://extranet-uat.who.int/dhis2-dev/api/legendSets/"+legendSetId;
+
+		return $.ajax({
+			url: legendUrl
+		}).then(function(data) {
+			mapLegends[mapId] = {};
+			mapLegends[mapId].legendSetName = data.name;
+		
+
+			return $.ajax({
+				url: legendUrl+"/legends/"
+			}).then(function(data) {
+
+				mapLegends[mapId].legendNames = [];
+				mapLegends[mapId].legendColors = [];
+				mapLegends[mapId].startValue = [];
+				mapLegends[mapId].endValue = [];
+				for (var i =0; i<data.legends.length; i++){
+					mapLegends[mapId].legendNames[i] = data.legends[i].name;
+					mapLegends[mapId].legendColors[i] = data.legends[i].color;
+					mapLegends[mapId].startValue[i] = data.legends[i].startValue;
+					mapLegends[mapId].endValue[i] = data.legends[i].endValue;
+				}
+				console.log(mapLegends[mapId]);
+				reOrderLegendSet(mapLegends[mapId]);
+			});
+			
+		});
+	}
+
 	function get_monthly_cases_for(dataset, row, year) {
 		var params = {
 			dataSet: dataset,
@@ -1112,8 +1182,15 @@ $( document ).ready( function() {
 			var hiv_coinf_total = add([hiv_coinf_new, hiv_coinf_rel, hiv_coinf_uns]);
 
 			diagnosisArray[HIV_COINFECTION_ROW][column] = percentageCasesAndTotal(hiv_coinf_total, total_cases_type);
+			
+		} else {
+			diagnosisArray[VL_CASES_DIAGNOSED_ROW][column] = WHEN_NON_APPLICABLE;
+			diagnosisArray[POSITIVE_RDT_ROW][column] = WHEN_NON_APPLICABLE;
+			diagnosisArray[HIV_COINFECTION_ROW][column] = WHEN_NON_APPLICABLE;
+		}
 
-
+		if (column === VL_COLUMN || column == CL_COLUMN){
+			
 			/* Treatment table */
 		
 			var new_cured = getValueForKey(dataValues, CC_KEY, NEW_CURED, VALUE_KEY);
@@ -1135,12 +1212,8 @@ $( document ).ready( function() {
 			treatmentArray[INITIAL_CURE_RATE_ROW][column] = percentageCasesAndTotal(total_cured, total_cases_type);
 			treatmentArray[FAILURE_RATE_ROW][column] = percentageCasesAndTotal(total_fail, total_cases_type);
 			treatmentArray[CASE_FATALITY_ROW][column] = percentageCasesAndTotal(total_dead, total_cases_type);
-			
-		} else {
-			diagnosisArray[VL_CASES_DIAGNOSED_ROW][column] = WHEN_NON_APPLICABLE;
-			diagnosisArray[POSITIVE_RDT_ROW][column] = WHEN_NON_APPLICABLE;
-			diagnosisArray[HIV_COINFECTION_ROW][column] = WHEN_NON_APPLICABLE;
 		}
+
 
 
 		if (column === PKDL_COLUMN || column === MCL_COLUMN) {
@@ -2126,12 +2199,15 @@ $( document ).ready( function() {
 	fillTableHead(epiTableHead, '', COLUMNS_LABELS);
 	fillTableHead(monthlyDistributionTableHead, '', MONTHS_ABBREV);
 	fillTableHead(diagTableHead, '', COLUMNS_LABELS);
-	fillTableHead(treatmentTableHead, TREATMENT_TABLE_FIRST_COLUMNS, COLUMNS_LABELS.slice(0,1));
+	fillTableHead(treatmentTableHead, TREATMENT_TABLE_FIRST_COLUMNS, COLUMNS_LABELS.slice(0,2));
 
 
 
 	// Dragable activation
 	$( ".draggable" ).draggable({ grid: [ 10, 10 ] });
+	
+	//$( ".resizable" ).resizable();
+
 
 	// Code to execute after API calls have been done.
 	// $.when(ajax1(), ajax2(), ajax3(), ajax4()).done(function(a1, a2, a3, a4){
@@ -2150,7 +2226,11 @@ $( document ).ready( function() {
 		get_monthly_cases_for_vl_current_year(),
 		get_monthly_cases_for_vl_previous_year(),
 		get_monthly_cases_for_azcl_current_year(),
-		get_monthly_cases_for_azcl_previous_year()).done(function(cl, vl, azcl, a, m1,m2,m3,m4,m5,m6,m7){
+		get_monthly_cases_for_azcl_previous_year(),
+		getLegendSet(VL_LEGEND, VL_INDEX),
+		getLegendSet(CL_LEGEND, CL_INDEX),
+		getLegendSet(ACL_LEGEND, ACL_INDEX),
+		getLegendSet(ZCL_LEGEND, ZCL_INDEX)).done(function(cl, vl, azcl, a, m1,m2,m3,m4,m5,m6,m7){
 		// the code here will be executed when all four ajax requests resolve.
 		// a1, a2, a3 and a4 are lists of length 3 containing the response text,
 		// status, and jqXHR object for each of the four ajax calls respectively.
@@ -2200,7 +2280,10 @@ $( document ).ready( function() {
 		var base = "https://extranet-uat.who.int/dhis2-dev";
 		var idHtmlElement = MAP_PREFIX+(index);
 		var dimension = INCIDENCE[index];
-
+	
+		// Move back the legend to the legendPool
+		$("#legendPool").append($('#'+LEGEND_PREFIX+index));
+		
 		//restore map to its initial value
 		$('#'+idHtmlElement).html(initalMapDiv[index]);
 		
@@ -2232,28 +2315,17 @@ $( document ).ready( function() {
 					labels:true, // labels of the regions
 					opacity:opacityLevel/100
 				}],
-				
 				onReady: function() {
-                    console.log('map is ready!');
-					console.log($(".leaflet-control-zoom"));
-					$(".leaflet-control-zoom").remove();
-					$(".leaflet-control-legend").addClass("leaflet-control-legend-expanded");
-
-					// remove text details from legeng
-					$('.dhis2-legend-predefined dd') .contents().filter(function() {
-						return this.nodeType === 3; //Node.TEXT_NODE
-					}).remove();
-
+                    console.log('map '+index +'is ready!');
+					// Removes zoom and legend
+					$('#'+idHtmlElement).find(".leaflet-control-zoom").remove();
+					$('#'+idHtmlElement).find(".leaflet-control-legend").remove();
+					
 					// Removes openmaps signature
-					$(".leaflet-bottom.leaflet-right").remove();
+					$('#'+idHtmlElement).find(".leaflet-bottom.leaflet-right").empty();
 
-
-					//	var a = $('.dhis2-legend-predefined dd strong:first').next().remove();
-					//	$(".dhis2-legend-predefined dd strong").first().remove();
-					//	$(".dhis2-legend-predefined dd strong").first().contents().eq(1).remove();
-						
-					//	$(".leaflet-control-legend").removeClass("leaflet-control-legend");
-
+					// Adds the legend
+					$('#'+idHtmlElement).find(".leaflet-bottom.leaflet-right").append($('#'+LEGEND_PREFIX+index));
                 }
 				
 			});
@@ -2275,8 +2347,28 @@ $( document ).ready( function() {
 		generateMap(CL_INDEX, "INDICATOR", levels, orgUnit.id, year, "thematic1", mapStyle, map_opacity);
 		generateMap(ACL_INDEX, "INDICATOR", levels, orgUnit.id, year, "thematic1", mapStyle, map_opacity);
 		generateMap(ZCL_INDEX, "INDICATOR", levels, orgUnit.id, year, "thematic1", mapStyle, map_opacity);
+		drawLegendSet("legendSet0", VL_INDEX);
+		drawLegendSet("legendSet1", CL_INDEX);
+		drawLegendSet("legendSet2", ACL_INDEX);
+		drawLegendSet("legendSet3", ZCL_INDEX);
 
 
+	}
+
+	function drawLegendSet(htmlElementID, index){
+		var html = '<div class="editable">' + mapLegends[index].legendSetName + '</div>';
+		html+='<br>';
+		
+		
+		for(var i=0; i<mapLegends[index].legendNames.length; i++){
+			html+='<div>';
+			html+='<div class="legendRectangle sameLine" style="background:'+ mapLegends[index].legendColors[i] +'"></div>';
+			html+='<div class="legentSetElementText sameLine editable">  ' + mapLegends[index].legendNames[i] + '</div>';
+			html+='</div>';
+
+		}
+
+		$("#"+htmlElementID).append(html);
 	}
 
 
@@ -2494,3 +2586,9 @@ $( document ).ready( function() {
 	<div id="dialog-editor">
 		<textarea id="editor" title="Edit field"></textarea>
 	</div>
+<div id="legendPool">
+	<div id="legendSet0" class="legendSet draggable resizable" ></div>
+	<div id="legendSet1" class="legendSet draggable resizable" ></div>
+	<div id="legendSet2" class="legendSet draggable resizable" ></div>
+	<div id="legendSet3" class="legendSet draggable resizable" ></div>	
+</div>
