@@ -142,6 +142,10 @@ tr.bottom_line td,th {
 {
 	display: inline-block !important;
 }
+.newLine
+{
+	display: block !important;
+}
 .notShown
 {
 	display: none !important;
@@ -150,12 +154,7 @@ tr.bottom_line td,th {
 .map {
     border: 0;
     margin: 10px;
-		z-index:0
 
-}
-.map.wide {
-    width: 400px;
-    height: 300px;
 }
 
 .twoColumns {
@@ -222,6 +221,12 @@ tr.bottom_line td,th {
 }
 
 /* maps slider */
+div.col {
+    float: left;
+    width: fit-content;
+    padding-right: 20px;
+}
+
 .ui-slider-horizontal {
     height: 8px;
     width: 300px;
@@ -248,7 +253,6 @@ tr.bottom_line td,th {
     border-width: thin;
 	padding: 4px;
 	background:white;
-	z-index:-2
 }
 
 .legentSetElementText{
@@ -516,8 +520,29 @@ $( document ).ready( function() {
 	var mapLegends = new Array(4);
 	var map_levels = [3, 4, 5];
 	var map_opacity = 80;
-	var map_height = 400;
-	var map_width = 300;
+	var map_height = 300;
+	var map_width = 400;
+
+
+	
+	var TOP_LEFT = 0;
+	var TOP_RIGHT = 1;
+	var BOTTOM_LEFT = 2;
+	var BOTTOM_RIGHT = 3;
+
+	var LEGEND_POSITION_LABELS = new Array(4);
+	var LEGEND_POSITIONS = new Array(4);
+
+	LEGEND_POSITION_LABELS[TOP_LEFT] = "Top left corner";
+	LEGEND_POSITION_LABELS[TOP_RIGHT] = "Top right corner";
+	LEGEND_POSITION_LABELS[BOTTOM_LEFT] = "Bottom left corner";
+	LEGEND_POSITION_LABELS[BOTTOM_RIGHT] = "Bottom right corner";
+
+	LEGEND_POSITIONS[TOP_LEFT] = ".leaflet-top.leaflet-left";
+	LEGEND_POSITIONS[TOP_RIGHT] = ".leaflet-top.leaflet-right";
+	LEGEND_POSITIONS[BOTTOM_LEFT] = ".leaflet-bottom.leaflet-left";
+	LEGEND_POSITIONS[BOTTOM_RIGHT] = ".leaflet-bottom.leaflet-right";
+
 
 	/* Control and surveillance table */
 	
@@ -759,14 +784,16 @@ $( document ).ready( function() {
 	var DIAG_TABLE_TD_ID_PREFIX = "diagTable";
 
 	var CHART_PREFIX = "chart";
-	var MAP_PREFIX = "map";
+	var MAP_PREFIX = "map";	
 	var MAP_STYLE_PREFIX = "mapStyle";
-	var LEGEND_PREFIX = "legendSet";
+	var LEGENDSET_PREFIX = "legendSet";
+	var LEGEND_PREFIX = "legend";
 
 	var LEISH_COLUMN_DETAIL_PREFIX = "LeishDetail";
 
 	var BUTTON_PREFIX = '_BUTTON_';
 	var OPTION_PREFIX = '_OPTION_';
+
 
 	/****************************************************************************************************
  	 **********                    	     STATIC CONTENT FUNCTIONS         	           	       **********
@@ -811,6 +838,22 @@ $( document ).ready( function() {
 
 
 	function reOrderLegendSet(legendSet) {
+		
+		
+		if (legendSet.length <= 1) {
+			return legendSet;
+		} else {
+			var temp;
+			for(var i=1; i<legendSet.length; i++){
+				if(legendSet[0].startValue + legendSet[0].endValue > legendSet[i].startValue + legendSet[i].endValue){
+					temp = legendSet[i];
+					legendSet[i] = legendSet[0];
+					legendSet[0] = temp;
+				}
+			}
+			return legendSet.slice(0,1).concat(reOrderLegendSet(legendSet.slice(1,legendSet.length)));
+		}
+
 
 	}
 	function getLegendSet(legendSetId, mapId){
@@ -820,26 +863,21 @@ $( document ).ready( function() {
 		return $.ajax({
 			url: legendUrl
 		}).then(function(data) {
-			mapLegends[mapId] = {};
-			mapLegends[mapId].legendSetName = data.name;
-		
-
+			mapLegends[mapId] = [];
+			var legendSetName = data.name;
 			return $.ajax({
 				url: legendUrl+"/legends/"
 			}).then(function(data) {
-
-				mapLegends[mapId].legendNames = [];
-				mapLegends[mapId].legendColors = [];
-				mapLegends[mapId].startValue = [];
-				mapLegends[mapId].endValue = [];
 				for (var i =0; i<data.legends.length; i++){
-					mapLegends[mapId].legendNames[i] = data.legends[i].name;
-					mapLegends[mapId].legendColors[i] = data.legends[i].color;
-					mapLegends[mapId].startValue[i] = data.legends[i].startValue;
-					mapLegends[mapId].endValue[i] = data.legends[i].endValue;
+
+					mapLegends[mapId][i] = {};
+					mapLegends[mapId][i].legendSetName = legendSetName;
+					mapLegends[mapId][i].legendNames = data.legends[i].name;
+					mapLegends[mapId][i].legendColors = data.legends[i].color;
+					mapLegends[mapId][i].startValue = data.legends[i].startValue;
+					mapLegends[mapId][i].endValue = data.legends[i].endValue;
 				}
-				console.log(mapLegends[mapId]);
-				reOrderLegendSet(mapLegends[mapId]);
+				mapLegends[mapId] =  reOrderLegendSet(mapLegends[mapId]);
 			});
 			
 		});
@@ -1142,10 +1180,6 @@ $( document ).ready( function() {
 			array[FOCI_ROW][column] = WHEN_NON_APPLICABLE; 
 
 		}
-
-	
-
-
 
 
 		/* Diagnosis table */
@@ -1612,6 +1646,17 @@ $( document ).ready( function() {
 
 	}
 
+	/* jQueryUI auxiliary functions */
+	function setButtonDisabledTo(id, value){
+		$( "#" + id ).prop('disabled', value);
+		$( "#" + id ).button( "refresh" );
+	}
+
+	function setOptionSelectMenu(id, value){
+		$( "#" + id ).val(value);
+		$( "#" + id ).selectmenu("refresh");
+	}
+
 	/****************************************************************************************************
 	 **********                               CHARTS functions                                 **********
 	 ****************************************************************************************************/
@@ -1855,17 +1900,32 @@ $( document ).ready( function() {
 	 **********                               MAPS functions                                 **********
 	 ****************************************************************************************************/
 
+	 function moveLegend(index, destination){
+		destination.append($('#'+LEGENDSET_PREFIX+index));
+		
+	 }
+
+
+	$( "#updateLegendButton" ).click( function( event ) {
+		event.preventDefault();
+		var legend_index =  $('#legendSelector').val();
+		var position_index =  $('#positionLegendSelector').val();
+
+		moveLegend(legend_index, $('#'+MAP_PREFIX+ legend_index).find(LEGEND_POSITIONS[position_index]));
+		setButtonDisabledTo("updateLegendButton", true);
+		setOptionSelectMenu("legendSelector", 0);
+		setOptionSelectMenu("positionLegendSelector", BOTTOM_RIGHT);
+
+	} );
+
 	$( "#updateMapButton" ).click( function( event ) {
 		event.preventDefault();
 		var selected_map_index =  $('#mapSelector').val();
 		var mapStyle = MAP_STYLE[$('#mapStyleSelector').val()];
 
-		$("#map"+selected_map_index).height(map_height);
-		$("#map"+selected_map_index).width(map_width);
-
 		generateMap(selected_map_index, "INDICATOR", map_levels, orgUnit.id, year, "thematic1", mapStyle, map_opacity);
 
-		} );
+	} );
 
 
 	/****************************************************************************************************
@@ -2040,17 +2100,53 @@ $( document ).ready( function() {
 			var selected_map = $("#mapSelector").val();
 			if(selected_map==index){
 				var checked = $("#"+MAP_PREFIX+BUTTON_PREFIX+index).prop('checked');			
-				$("#updateMapButton").prop('disabled', !checked);
-				$( "#updateMapButton" ).button( "refresh" );
+				setButtonDisabledTo("updateMapButton", !checked);
 			}
 
 		});
 
 		// enables the updatedMapButton
 		 $('#mapSelector').on('selectmenuchange', function() {
-			$("#updateMapButton").prop('disabled', false);
-			$( "#updateMapButton" ).button( "refresh" );
+			setButtonDisabledTo("updateMapButton", false);
 		}).change();
+
+		 $('#legendSelector').on('selectmenuchange', function() {
+			var selected_legend = $("#legendSelector").val();
+			setButtonDisabledTo("updateLegendButton", false);
+
+
+			// move back the legend to it map
+			var position_index =  $('#positionLegendSelector').val();
+			for (var i=0; i<MAP_CHECKBOXES_LABELS.length; i++){
+				if ( $("#legendPool").find('#' + LEGENDSET_PREFIX + i).length > 0) {
+					$('#' + LEGENDSET_PREFIX + selected_legend).removeClass("resizable");
+
+					moveLegend(i, $('#' + MAP_PREFIX + i).find(LEGEND_POSITIONS[position_index]));	
+				}
+			}
+
+			lastLegendPosition = getLastPosition(selected_legend);
+			setOptionSelectMenu("positionLegendSelector", lastLegendPosition);
+
+			moveLegend(selected_legend, $("#legendPool"));
+
+			
+			$('#' + LEGENDSET_PREFIX + selected_legend).addClass("resizable");
+			$( ".resizable" ).resizable();
+
+		}).change();
+	 }
+
+	 function getLastPosition(selectedlegend){
+		for (var i=0; i<LEGEND_POSITIONS.length; i++){
+			console.log("getLastPosition");
+			console.log($('#' + MAP_PREFIX + selectedlegend));
+			console.log($('#' + MAP_PREFIX + selectedlegend).find(LEGEND_POSITIONS[i]));
+			console.log($('#' + MAP_PREFIX + selectedlegend).find(LEGEND_POSITIONS[i]).find('#'+LEGENDSET_PREFIX + selectedlegend));
+			if ($('#' + MAP_PREFIX + selectedlegend).find(LEGEND_POSITIONS[i]).find('#'+LEGENDSET_PREFIX + selectedlegend).length > 0 ){
+				return i;
+			}
+		}
 	 }
 
 	// Editor for footnotes
@@ -2109,17 +2205,21 @@ $( document ).ready( function() {
 
 	// maps jqueryui    
 	$( "#mapSelector" ).selectmenu();
+	$( "#legendSelector" ).selectmenu();
+	$( "#positionLegendSelector" ).selectmenu();
 	$( "#mapStyleSelector" ).selectmenu();
-	$("#updateMapButton").button();
-			$("#updateMapButton").prop('disabled', true);
-			$( "#updateMapButton" ).button( "refresh" );
-
+	$( "#updateMapButton").button();
+	$( "#updateLegendButton").button();
+	setButtonDisabledTo("updateMapButton", true);
+	setButtonDisabledTo("updateLegendButton", true);
+	setOptionSelectMenu("positionLegendSelector", BOTTOM_RIGHT);
 
 	generateMapConfigurationList($("#mapSelector"), MAP_CHECKBOXES_LABELS, MAP_PREFIX);
+	generateMapConfigurationList($("#legendSelector"), MAP_CHECKBOXES_LABELS, LEGENDSET_PREFIX);
+	generateMapConfigurationList($("#positionLegendSelector"), LEGEND_POSITION_LABELS, LEGEND_PREFIX);
 	generateMapConfigurationList($("#mapStyleSelector"), MAP_STYLE_LABELS, MAP_STYLE_PREFIX);
 
-	$("#mapStyleSelector").val(OSM_LIGHT);
-	$('#mapStyleSelector').selectmenu("refresh");
+	setOptionSelectMenu("mapStyleSelector", OSM_LIGHT);
 
 	
 	text_values = [
@@ -2206,7 +2306,7 @@ $( document ).ready( function() {
 	// Dragable activation
 	$( ".draggable" ).draggable({ grid: [ 10, 10 ] });
 	
-	//$( ".resizable" ).resizable();
+	$( ".resizable" ).resizable();
 
 
 	// Code to execute after API calls have been done.
@@ -2280,9 +2380,13 @@ $( document ).ready( function() {
 		var base = "https://extranet-uat.who.int/dhis2-dev";
 		var idHtmlElement = MAP_PREFIX+(index);
 		var dimension = INCIDENCE[index];
+
+		// Resizes the map contener
+		$("#" + MAP_PREFIX + index).height(map_height);
+		$("#" + MAP_PREFIX + index).width(map_width);
 	
 		// Move back the legend to the legendPool
-		$("#legendPool").append($('#'+LEGEND_PREFIX+index));
+		$("#legendPool").append($('#'+LEGENDSET_PREFIX+index));
 		
 		//restore map to its initial value
 		$('#'+idHtmlElement).html(initalMapDiv[index]);
@@ -2310,9 +2414,7 @@ $( document ).ready( function() {
 					valueType: "in",
 					layer: thematic,
  					legendSet: {id: "gUOjExXros1"},
-//					colorScale: "#ffffe5,#fff7bc,#fee391,#fec44f,#fe9929,#ec7014,#cc4c02,#993404,#662506",
-//					classes:9,
-					labels:true, // labels of the regions
+					labels: true, // labels of the regions
 					opacity:opacityLevel/100
 				}],
 				onReady: function() {
@@ -2325,12 +2427,34 @@ $( document ).ready( function() {
 					$('#'+idHtmlElement).find(".leaflet-bottom.leaflet-right").empty();
 
 					// Adds the legend
-					$('#'+idHtmlElement).find(".leaflet-bottom.leaflet-right").append($('#'+LEGEND_PREFIX+index));
+					//$('#'+idHtmlElement).find(".leaflet-bottom.leaflet-right").append($('#'+LEGENDSET_PREFIX+index));
+					moveLegend(index, $('#'+idHtmlElement).find(LEGEND_POSITIONS[BOTTOM_RIGHT]));
+
                 }
 				
 			});
 		});
 	}
+
+
+/*
+
+		LEGEND_POSITION_LABELS[TOP_LEFT] = "Top left corner";
+	LEGEND_POSITION_LABELS[TOP_RIGHT] = "Top right corner";
+	LEGEND_POSITION_LABELS[BOTTOM_LEFT] = "Bottom left corner";
+	LEGEND_POSITION_LABELS[BOTTOM_RIGHT] = "Bottom right corner";
+
+	LEGEND_POSITIONS[TOP_LEFT] = ".leaflet-top.leaflet-left";
+	LEGEND_POSITIONS[TOP_RIGHT] = ".leaflet-top.leaflet-right";
+	LEGEND_POSITIONS[BOTTOM_LEFT] = ".leaflet-bottom.leaflet-left";
+	LEGEND_POSITIONS[BOTTOM_RIGHT] = ".leaflet-bottom.leaflet-right";
+
+	 function moveLegend(index, destination){
+		destination.append($('#'+LEGENDSET_PREFIX+index));
+	 }*/
+
+
+
 	
 	function test(){
 		var levels = [3,4,5];
@@ -2356,14 +2480,14 @@ $( document ).ready( function() {
 	}
 
 	function drawLegendSet(htmlElementID, index){
-		var html = '<div class="editable">' + mapLegends[index].legendSetName + '</div>';
+		var html = '<div class="editableElement">' + mapLegends[index][0].legendSetName + '</div>';
 		html+='<br>';
 		
 		
-		for(var i=0; i<mapLegends[index].legendNames.length; i++){
+		for(var i=0; i<mapLegends[index].length; i++){
 			html+='<div>';
-			html+='<div class="legendRectangle sameLine" style="background:'+ mapLegends[index].legendColors[i] +'"></div>';
-			html+='<div class="legentSetElementText sameLine editable">  ' + mapLegends[index].legendNames[i] + '</div>';
+			html+='<div class="legendRectangle sameLine" style="background:'+ mapLegends[index][i].legendColors +'"></div>';
+			html+='<div class="legentSetElementText sameLine editableElement">  ' + mapLegends[index][i].legendNames + '</div>';
 			html+='</div>';
 
 		}
@@ -2403,35 +2527,46 @@ $( document ).ready( function() {
 		<div id="tabs-2">		
 			<fieldset id="mapCheckboxes"></fieldset>
 			<fieldset id="mapConfiguration"><legend>Configure map</legend>
-				<select name="mapSelector" id="mapSelector">
-					<option disabled selected value>Select a Map</option>
-				</select>
-				<p>
-					<label for="ou_level_slider">OrgUnit levels:</label>
-					<input type="text" id="ou_level_slider" readonly style="border:0; color:#f6931f; font-weight:bold;  width:260px ">
-					<div id="slider_range"></div>
-
-				</p>
-				<select name="mapStyleSelector" id="mapStyleSelector"></select>
-				<p>
-					<div id="opacity_slider">
-						<div id="opacity_slider_handle" class="ui-slider-handle"></div>
+				<div>
+					<div class="col">
+						<select name="mapSelector" id="mapSelector">
+							<option disabled selected value>Select a Map</option>
+						</select>
+						<p>
+							<label for="ou_level_slider">OrgUnit levels:</label>
+							<input type="text" id="ou_level_slider" readonly style="border:0; color:#f6931f; font-weight:bold;  width:260px ">
+							<div id="slider_range"></div>
+						</p>
+						<select name="mapStyleSelector" id="mapStyleSelector"></select>
+						<p> Opacity:
+							<div id="opacity_slider"><div id="opacity_slider_handle" class="ui-slider-handle"></div></div>
+						</p>
+						<p> Height:
+							<div id="height_slider"><div id="height_slider_handle" class="ui-slider-handle"></div></div>
+						</p>
+						<p>	Width:
+							<div id="width_slider"><div id="width_slider_handle" class="ui-slider-handle"></div></div>
+						</p>
+						<button id="updateMapButton" class="ui-button ui-widget ui-corner-all">Update Map</button>
+					</div>
+					<div class="col">
+						<p>
+							<select name="legendSelector" id="legendSelector">
+							<option disabled selected value>Select a Legend</option>
+							</select>
+						</p>
+						<p><select name="positionLegendSelector" id="positionLegendSelector"></select></p>
+						<p><button id="updateLegendButton" class="ui-button ui-widget ui-corner-all">Update Legend</button></p>
+										
+					</div>
+					<div id="legendPool" class="col">
+						<div id="legendSet0" class="legendSet" ></div>
+						<div id="legendSet1" class="legendSet" ></div>
+						<div id="legendSet2" class="legendSet" ></div>
+						<div id="legendSet3" class="legendSet" ></div>	
 					</div>
 
-				</p>
-				<p>
-					<div id="height_slider">
-						<div id="height_slider_handle" class="ui-slider-handle"></div>
-					</div>
-
-				</p>
-				<p>
-					<div id="width_slider">
-						<div id="width_slider_handle" class="ui-slider-handle"></div>
-					</div>
-
-				</p>
-				<button id="updateMapButton" class="ui-button ui-widget ui-corner-all">Update Map</button>
+				</div>
 
 			</fieldset>
 		</div>
@@ -2442,15 +2577,11 @@ $( document ).ready( function() {
 					<ul id="sortable1" class="connectedSortable">
 					</ul>
 				</div>
-		<!--	</div>
-			<div class="FixedHeightContainer">-->
 				<div class="Content"> 
 					<h6 class="subHeader">Footnotes page 1</h6>
 					<ul id="sortable2" class="connectedSortable">
 					</ul>
 				</div>
-		<!--	</div>
-			<div class="FixedHeightContainer">-->
 				<div class="Content">
 					<h6 class="subHeader">Footnotes page 2</h6>
 					<ul id="sortable3" class="connectedSortable">
@@ -2520,9 +2651,9 @@ $( document ).ready( function() {
 	<canvas class="sameLine draggable" id="chart2" width="375" height="250" ></canvas>
 </div>
 <div>
-	<canvas class="sameLine draggable resizable" id="chart3" width="375" height="250" ></canvas>
-	<canvas class="sameLine draggable resizable" id="chart4" width="375" height="250" ></canvas>
-	<canvas class="sameLine draggable resizable" id="chart5" width="375" height="250" ></canvas>
+	<canvas class="sameLine draggable" id="chart3" width="375" height="250" ></canvas>
+	<canvas class="sameLine draggable" id="chart4" width="375" height="250" ></canvas>
+	<canvas class="sameLine draggable" id="chart5" width="375" height="250" ></canvas>
 </div>
 
 <div class="section">
@@ -2531,10 +2662,10 @@ $( document ).ready( function() {
 </div>
 
 <div class="section">
-	<div class="sameLine"> <div id="map0" class="sameLine draggable" style="height: 300px; width: 400px"></div></div>
-	<div class="sameLine"><div id="map1" class="sameLine draggable" style="height: 300px; width: 400px"></div></div>
-	<div class="sameLine"><div id="map2" class="sameLine draggable" style="height: 300px; width: 400px"></div></div>
-	<div class="sameLine"><div id="map3" class="sameLine draggable" style="height: 300px; width: 400px"></div></div>
+	<div class="sameLine"> <div id="map0" class="sameLine draggable"></div></div>
+	<div class="sameLine"><div id="map1" class="sameLine draggable"></div></div>
+	<div class="sameLine"><div id="map2" class="sameLine draggable"></div></div>
+	<div class="sameLine"><div id="map3" class="sameLine draggable"></div></div>
 </div>
 
 
@@ -2583,12 +2714,6 @@ $( document ).ready( function() {
 </div>
 
 
-	<div id="dialog-editor">
-		<textarea id="editor" title="Edit field"></textarea>
-	</div>
-<div id="legendPool">
-	<div id="legendSet0" class="legendSet draggable resizable" ></div>
-	<div id="legendSet1" class="legendSet draggable resizable" ></div>
-	<div id="legendSet2" class="legendSet draggable resizable" ></div>
-	<div id="legendSet3" class="legendSet draggable resizable" ></div>	
+<div id="dialog-editor">
+	<textarea id="editor" title="Edit field"></textarea>
 </div>
