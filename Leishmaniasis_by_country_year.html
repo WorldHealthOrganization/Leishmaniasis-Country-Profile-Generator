@@ -86,6 +86,8 @@ h6 {
 	/*width: 900px;*/
 	font-size: 15px;
 }
+
+
 .configuration-section{
 	/*width: 1200px;*/
 }
@@ -120,11 +122,20 @@ img.center {
 }
 
 /* Organize content of div in equal-sized colons*/
-.container {
-  display: flex;
+.head_container {
+	margin-top:2px;
+	border-top: solid 2px #39547d ;
+  	display: flex;
 }
-.container > div {
+.head_container > div {
   flex: 1; /*grow*/
+}
+
+.textUnderTable {
+	display: flex;
+	justify-content: space-between;
+	font-size: 10px;
+	width: 100%;
 }
 
 /* lines for tables */
@@ -153,8 +164,11 @@ tr.bottom_line td,th {
 
 .map {
     border: 0;
-    margin: 10px;
-
+    margin: 10px 10px 2px 10px;
+}
+.chart {
+    border: 0;
+    margin: 15px 20px 0px 20px;
 }
 
 .twoColumns {
@@ -169,7 +183,7 @@ tr.bottom_line td,th {
 	height:fit-content;
 }
 
-#tabs-3 {
+.configuration-section {
     counter-reset: footNoteListCounter;
 }
 
@@ -265,6 +279,19 @@ div.col {
 .legentSetTitle{
 	font-size:12px;
 }
+
+#notaBeneMaps{
+	font-size:10px;
+	width:864px;
+	height:65px;
+	padding: 4px;
+	border-style: solid;
+    border-width: thin;
+	margin: 0px 0px 10px 10px;
+
+}
+
+.ui-dialog { z-index: 10000 !important ;}
 
 </style>
 <!-- 
@@ -430,6 +457,13 @@ $( document ).ready( function() {
 							"PKDL",
 							"MCL"
 							];
+	var COLUMNS_LABELS_DESC = [ 	"visceral leishmaniasis",
+									"cutaneous leishmaniasis",
+									"anthroponotic cutaneous leishmaniasis",
+									"zoonotic cutaneous leishmaniasis",
+									"post-kala-azar dermal leishmaniasis",
+									"mucocutaneous leishmaniasis"
+									];
 
 
 	var ENDEMICITY_ROW = 0;
@@ -526,13 +560,16 @@ $( document ).ready( function() {
 	var mapLegends = new Array(4);
 	var map_levels = [3, 4, 5];
 	var map_opacity = 80;
-	var map_height = 300;
-	var map_width = 400;
+	var map_height = 315;
+	var map_width = 420;
 
 	var TOP_LEFT = 0;
 	var TOP_RIGHT = 1;
 	var BOTTOM_LEFT = 2;
 	var BOTTOM_RIGHT = 3;
+
+	var LEGEND_TO_REPORT = 0;
+	var LEGEND_TO_LEGEND_POOL = 1;
 
 	var LEGEND_POSITION_LABELS = new Array(4);
 	var LEGEND_POSITIONS = new Array(4);
@@ -802,6 +839,8 @@ $( document ).ready( function() {
 	var BUTTON_PREFIX = '_BUTTON_';
 	var OPTION_PREFIX = '_OPTION_';
 
+	var TEXT_UNDER_EPI = 'TEXT_UNDER_EPI';
+
 
 	/****************************************************************************************************
  	 **********                    	     STATIC CONTENT FUNCTIONS         	           	       **********
@@ -837,6 +876,20 @@ $( document ).ready( function() {
 			html+='</option>';
 		}
 		htmlObject.append(html);
+	}
+
+	function setTextUnderTables(){
+
+		var html = '';
+		
+		html +='<span class="'+CLASS_EDITABLE_ELEMENT+'">N/A not applicable</span>';
+		for (var i=0; i<COLUMNS_LABELS.length;i++){
+			html +='<span id="'+TEXT_UNDER_EPI+i+'" class="'+CLASS_EDITABLE_ELEMENT+'">'+COLUMNS_LABELS[i]+' = '+ COLUMNS_LABELS_DESC[i]+'</span>';
+		}
+
+		$("#textUnderEpiTable").append(html);
+
+
 	}
 
 
@@ -926,7 +979,7 @@ $( document ).ready( function() {
 
 					// Adds the legend
 					//$('#'+idHtmlElement).find(".leaflet-bottom.leaflet-right").append($('#'+LEGENDSET_PREFIX+index));
-					moveLegend(index, $('#'+idHtmlElement).find(LEGEND_POSITIONS[BOTTOM_RIGHT]));
+					moveLegend(index, $('#'+idHtmlElement).find(LEGEND_POSITIONS[BOTTOM_RIGHT]), LEGEND_TO_REPORT);
 
                 }
 				
@@ -1977,10 +2030,19 @@ $( document ).ready( function() {
 	 **********                               MAPS functions                                 **********
 	 ****************************************************************************************************/
 
-	 function moveLegend(index, destination){
-		destination.append($('#'+LEGENDSET_PREFIX+index));
-		
+	 function moveLegend(index, destination, destinationCode){
+		var legendObject = $('#' + LEGENDSET_PREFIX + index);
+
+		if (destinationCode == LEGEND_TO_REPORT){
+			legendObject.resizable({ disabled: true });
+			legendObject.removeClass("resizable");
+		} else {
+			editingLegend = legendObject;
+			editingLegend.resizable( "enable" );
+		}
+		destination.append(legendObject);
 	 }
+
 
 
 	$( "#updateLegendButton" ).click( function( event ) {
@@ -1988,9 +2050,9 @@ $( document ).ready( function() {
 		var legend_index =  $('#legendSelector').val();
 		var position_index =  $('#positionLegendSelector').val();
 
-		moveLegend(legend_index, $('#'+MAP_PREFIX+ legend_index).find(LEGEND_POSITIONS[position_index]));
+		moveLegend(legend_index, $('#'+MAP_PREFIX+ legend_index).find(LEGEND_POSITIONS[position_index]), LEGEND_TO_REPORT);
 		setButtonDisabledTo("updateLegendButton", true);
-		setOptionSelectMenu("legendSelector", 0);
+		setOptionSelectMenu("legendSelector", $("#legendSelector option:first").val());
 		setOptionSelectMenu("positionLegendSelector", BOTTOM_RIGHT);
 		font_size_slider.slider("value", 10 );
 		font_size_slider_handle.text( 10 );
@@ -2027,6 +2089,14 @@ $( document ).ready( function() {
 		drawLegendSet("legendSet3", ZCL_INDEX);
 	}
 
+	function fillNotaBeneMaps(){
+		var text = "The boundaries and names shown and the designations used on this map do not imply the expression of any opinion whatsoever "
+					+ "on the part of the World Health Organization concerning the legal status of any country, territory, city or area or of "
+					+ "its authorities, or concerning the delimitation of its frontiers or boundaries. Dotted and dashed lines on maps represent "
+					+ "approximate border lines for which there may not yet be full agreement. <br>Map production: WHO/HTM/NTD/IDM";
+		$('#notaBeneMaps').html(text);
+		
+	}
 
 
 	/****************************************************************************************************
@@ -2167,6 +2237,10 @@ $( document ).ready( function() {
 			$('#epiTable tr, #diagTable tr').each(function() {
 				$(this).find("td,th").eq(index+1).toggle();
 			});
+
+			$('#textUnderEpiTable').each(function() {
+				$(this).find("span").eq(index+1).toggle();
+			});
 		});
 		
 		// Listener monthly buttons
@@ -2207,6 +2281,16 @@ $( document ).ready( function() {
 
 		});
 
+			$(".radioButton").change(function() {
+
+				if($(this)[0].id==="disableNBMaps"){
+					$("#notaBeneMaps").resizable({ disabled: true });
+				} else {
+					$("#notaBeneMaps").resizable( "enable");
+				}
+
+			});
+
 		// enables the updatedMapButton
 		 $('#mapSelector').on('selectmenuchange', function() {
 			setButtonDisabledTo("updateMapButton", false);
@@ -2221,20 +2305,15 @@ $( document ).ready( function() {
 			var position_index =  $('#positionLegendSelector').val();
 			for (var i=0; i<MAP_CHECKBOXES_LABELS.length; i++){
 				if ( $("#legendPool").find('#' + LEGENDSET_PREFIX + i).length > 0) {
-					$('#' + LEGENDSET_PREFIX + i).removeClass("resizable");
-
-					moveLegend(i, $('#' + MAP_PREFIX + i).find(LEGEND_POSITIONS[position_index]));	
+					moveLegend(i, $('#' + MAP_PREFIX + i).find(LEGEND_POSITIONS[position_index]), LEGEND_TO_REPORT);	
 				}
 			}
 
 			lastLegendPosition = getLastPosition(selected_legend);
 			setOptionSelectMenu("positionLegendSelector", lastLegendPosition);
 
-			moveLegend(selected_legend, $("#legendPool"));
+			moveLegend(selected_legend, $("#legendPool"), LEGEND_TO_LEGEND_POOL);
 
-			editingLegend = $('#' + LEGENDSET_PREFIX + selected_legend);
-			editingLegend.addClass("resizable");
-			$( ".resizable" ).resizable();
 
 		}).change();
 	 }
@@ -2312,6 +2391,10 @@ $( document ).ready( function() {
 	$( "#mapStyleSelector" ).selectmenu();
 	$( "#updateMapButton").button();
 	$( "#updateLegendButton").button();
+	$( ".radioButton" ).checkboxradio();
+
+
+
 	setButtonDisabledTo("updateMapButton", true);
 	setButtonDisabledTo("updateLegendButton", true);
 	setOptionSelectMenu("positionLegendSelector", BOTTOM_RIGHT);
@@ -2323,6 +2406,8 @@ $( document ).ready( function() {
 
 	setOptionSelectMenu("mapStyleSelector", OSM_LIGHT);
 
+	fillNotaBeneMaps();
+	setTextUnderTables();
 	
 	text_values = [
 		"WHO Global",
@@ -2472,6 +2557,13 @@ $( document ).ready( function() {
 			makeElementsEditables();
 			makeElementsFootnotables();
 
+			$("#disableNBMaps").prop('checked', true);
+			$("#notaBeneMaps").resizable({ disabled: true });
+			$( ".radioButton" ).checkboxradio("refresh");
+
+		//	$("#disableNBMaps").trigger('click');
+			//$(".radioButton").change();
+
 	});
 
 
@@ -2551,6 +2643,15 @@ $( document ).ready( function() {
 							<div id="font_size_slider"><div id="font_size_slider_handle" class="ui-slider-handle"></div></div>
 						</p>
 						<p><button id="updateLegendButton" class="ui-button ui-widget ui-corner-all">Update Legend</button></p>
+						<p>
+							<fieldset>
+								<legend>Resize Nota Bene for Maps: </legend>
+								<label for="disableNBMaps">Disabled</label>
+								<input type="radio" name="NBMaps" class="radioButton" id="disableNBMaps">
+								<label for="enableNBMaps">Enabled</label>
+								<input type="radio" name="NBMaps" class="radioButton" id="enableNBMaps">
+							</fieldset>
+						</p>
 										
 					</div>
 					<div id="legendPool" class="col">
@@ -2595,7 +2696,7 @@ $( document ).ready( function() {
 <div class="section">
     <img class="head_logo center" src="http://www.who.int/about/Logo-WHO.jpg" />
 
-	<div class="container">	
+	<div class="head_container">	
 		<div class="editableElement">Leishmaniasis</div>
 		<div class="center_text editableElement" id="country_name"></div>
 		<div class="align_to_right">
@@ -2624,6 +2725,7 @@ $( document ).ready( function() {
 			</thead>
 			<tbody id="epiTableBody"></tbody>
 	</table>
+	<div id="textUnderEpiTable" class="textUnderTable"></div>
 </div>
 
 
@@ -2640,14 +2742,14 @@ $( document ).ready( function() {
 </div>
 
 <div>
-	<canvas class="sameLine draggable" id="chart0" width="375" height="250" ></canvas>
-	<canvas class="sameLine draggable" id="chart1" width="375" height="250" ></canvas>
-	<canvas class="sameLine draggable" id="chart2" width="375" height="250" ></canvas>
+	<canvas class="sameLine draggable chart" id="chart0" width="400" height="250" ></canvas>
+	<canvas class="sameLine draggable chart" id="chart1" width="400" height="250" ></canvas>
+	<canvas class="sameLine draggable chart" id="chart2" width="400" height="250" ></canvas>
 </div>
 <div>
-	<canvas class="sameLine draggable" id="chart3" width="375" height="250" ></canvas>
-	<canvas class="sameLine draggable" id="chart4" width="375" height="250" ></canvas>
-	<canvas class="sameLine draggable" id="chart5" width="375" height="250" ></canvas>
+	<canvas class="sameLine draggable chart" id="chart3" width="400" height="250" ></canvas>
+	<canvas class="sameLine draggable chart" id="chart4" width="400" height="250" ></canvas>
+	<canvas class="sameLine draggable chart" id="chart5" width="400" height="250" ></canvas>
 </div>
 
 <div class="section">
@@ -2656,10 +2758,11 @@ $( document ).ready( function() {
 </div>
 
 <div class="section">
-	<div class="sameLine"> <div id="map0" class="sameLine draggable"></div></div>
-	<div class="sameLine"><div id="map1" class="sameLine draggable"></div></div>
-	<div class="sameLine"><div id="map2" class="sameLine draggable"></div></div>
-	<div class="sameLine"><div id="map3" class="sameLine draggable"></div></div>
+	<div class="sameLine map"> <div id="map0" class="sameLine draggable"></div></div>
+	<div class="sameLine map"><div id="map1" class="sameLine draggable"></div></div>
+	<div class="sameLine map"><div id="map2" class="sameLine draggable"></div></div>
+	<div class="sameLine map"><div id="map3" class="sameLine draggable"></div></div>
+	<div id="notaBeneMaps"  class="editableElement draggable"></div>
 </div>
 
 
