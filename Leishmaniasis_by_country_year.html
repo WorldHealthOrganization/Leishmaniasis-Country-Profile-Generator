@@ -83,14 +83,10 @@ h6 {
 	border-bottom: 0px solid #ccc;  /* line at the end of the section */
 	margin-bottom: 0px; 
 	padding-bottom: 0px;
-	/*width: 900px;*/
+	width: 900px;
 	font-size: 15px;
 }
 
-
-.configuration-section{
-	/*width: 1200px;*/
-}
 
 .comment {
 	font-style: italic;
@@ -142,11 +138,6 @@ img.center {
 tr.bottom_line td,th {
   border-bottom: 1px solid #cad5e5;	/* Info : Border from first row table doesn't come from here. Just same property. */
 }
-
-.footNotedElement {
-  /*  color: red; */	
-}
-
 
 /* for graphs */
 .sameLine
@@ -281,25 +272,25 @@ div.col {
 	font-size:12px;
 }
 
+#notaBene{
+	width: 200px;
+	height: 35px;	
+}
 #notaBeneMaps{
+	width: 864px;
+	height: 65px;
+}
+.notasBene{
 	font-size:10px;
-	width:864px;
-	height:65px;
 	padding: 4px;
 	border-style: solid;
     border-width: thin;
 	margin: 0px 0px 10px 10px;
-
 }
 
 .ui-dialog { z-index: 10000 !important ;}
 
-/*
-#editor {
-	position:absolute; 
-	top:-9999px;
-}
-*/
+
 </style>
 <!-- 
 
@@ -394,7 +385,7 @@ $( document ).ready( function() {
 	var CL_CHART_LEGEND = "CL ";	
 	var ACL_CHART_LEGEND = "ACL ";
 	var ZCL_CHART_LEGEND = "ZCL ";
-	var TREATMENT_TABLE_FIRST_COLUMNS = "TREATMENT OUTCOME";
+	var TOUTCOME_TABLE_FIRST_COLUMNS = "TREATMENT OUTCOME";
 
 	var CHART_CHECKBOXES_LABELS = ["CL monthly", "AZCL monthly", "VL monthly", "CL yearly", "AZCL yearly", "VL yearly" ];
 
@@ -465,6 +456,14 @@ $( document ).ready( function() {
 
 	/* Country General Information Texts */
 	
+	var CIG_ROW_POP = 0;
+	var CIG_ROW_SEX = 1;
+	var CIG_ROW_GDP = 2;
+	var CIG_ROW_INCOME = 3;
+	var CIG_ROW_AGEG = 4;
+	var CIG_ROW_LIFE = 5;
+	var CIG_ROW_DIVIS = 6;
+
 	var CGI_LABELS = [	"Total population:",
 						"Gender (%, F/M):",
 						"GDP (PPP int $):",
@@ -626,6 +625,14 @@ $( document ).ready( function() {
 
 
 	/* Control and surveillance table */
+	var CAS_ROW_LNCP = 0;
+	var CAS_ROW_TYPE = 1;
+	var CAS_ROW_PROGRAMME = 2;
+	var CAS_ROW_IRS = 3;
+	var CAS_ROW_GUIDELINES = 4;
+	var CAS_ROW_NOTIF = 5;
+	var CAS_ROW_RESER = 6;
+	var CAS_ROW_FACIL = 7;
 	
 	var CAS_LABELS = [	"Year Leishmaniasis National Control<br>Programme (LNCP) was established:",
 						"Type of surveillance:",
@@ -695,20 +702,29 @@ $( document ).ready( function() {
 
 	var diagnosisArray = create_2_dim_array(diagnosisLabels.length, diagnosisLabels, LABELS_ON_COLUMNS);
 
-	/* Treatment table */
+	/* Treatment and medicines table*/
+	var TAM_ROW_FREEOFCHARGE = 0;
+	var TAM_ROW_ANTILEISHMANIAL = 1;
+	var TAM_LABELS = [	"Is treatment provided free of charge in the public sector?",
+						"Antileishmanial medicines included in the national List of Essential Medicines:"
+						];
+	var LINES_BELOW_LABELS_TAM = [true,true];
+	var tamArray = create_2_dim_array(TAM_LABELS.length, TAM_LABELS, LABELS_ON_COLUMNS);
+
+	/* Treatment outcome table */
 	
 	var RELAPSE_PROPORTION_ROW = 0;
 	var INITIAL_CURE_RATE_ROW = 1;
 	var FAILURE_RATE_ROW = 2;
 	var CASE_FATALITY_ROW = 3;
 
-	var treatmentLabels = [ "Proportion of relapse cases:",
+	var toutcomeLabels = [ "Proportion of relapse cases:",
 							"Initial cure rate:",
 							"Failure rate:",				
 							"Case-fatality rate:"
 							];
 	var LINES_BELOW_LABELS_TREAT = [true, false, false, true];
-	var treatmentArray = create_2_dim_array(treatmentLabels.length, treatmentLabels, LABELS_ON_COLUMNS);
+	var toutcomeArray = create_2_dim_array(toutcomeLabels.length, toutcomeLabels, LABELS_ON_COLUMNS);
 	
 	var historicLength = HISTORIC_DEFAULT_VALUE;
 	var historicIncidence = create_2_dim_array(5,"",LABELS_ON_ROWS);
@@ -721,7 +737,8 @@ $( document ).ready( function() {
 		AZCL : "Uc3j0vpsfSB", 
 		CL_MONTHLY : "pWGPGaE6knJ",
 		VL_MONTHLY : "GW4lVTTLWfW",
-		AZCL_MONTHLY : "YfnF9NPpP4c"
+		AZCL_MONTHLY : "YfnF9NPpP4c",
+		DAM : "qzlf5flidcm"
 
 	};
 	// DATA_ELEMENTS
@@ -741,8 +758,10 @@ $( document ).ready( function() {
 		PKDL_EPID_sex: "ipWXN3NeXac",
 		PKDL_EPID_age : "rw4tu6PNGKO",
 		PKDL_LAB_HIV: "sxjZutF1AMx",
-		VL_TREATMENT_OUTCOME: "eh7Lbb7Rslc"
-
+		VL_TREATMENT_OUTCOME: "eh7Lbb7Rslc",
+		UNS_ANTIL_LEM : "aPl9zoV5ZIV",
+		UNS_FREE_TREATMENT : "Ycax41CQNec",
+		UNS_USE_PREVIOUS_DATA : "ZjIDKHFwMUw"
 	};
 
 	var DE_SCREEN_ACTIVE = {};
@@ -873,8 +892,10 @@ $( document ).ready( function() {
 	var diagTableBody = $("#diagTableBody");
 	var diagTableHead = $("#diagTableHead");
 
-	var treatmentTableBody = $("#treatmentTableBody");
-	var treatmentTableHead = $("#treatmentTableHead");
+	var tamTableBody = $("#tamTableBody");
+	var tamTableHead = $("#tamTableHead");
+	var toutcomeTableBody = $("#toutcomeTableBody");
+	var toutcomeTableHead = $("#toutcomeTableHead");
 
 	var editor = $("#editor");
 
@@ -939,8 +960,9 @@ $( document ).ready( function() {
 
 	function generateMapConfigurationList(htmlObject, labels, prefix){
 		var html = '';
+		
 		for (var i=0; i<labels.length; i++){
-			html+='<option id="' + prefix + OPTION_PREFIX + i + '" value="'+i+'" >'
+			html+='<option id="' + prefix + OPTION_PREFIX + i + '" value="' + i + '" >';
 			html+=labels[i];
 			html+='</option>';
 		}
@@ -972,8 +994,28 @@ $( document ).ready( function() {
  	 **********                    	    FUNCTIONS CALLING THE API         	           	       **********
 	 ****************************************************************************************************/
 
-
-
+	function getTreatmentAndMedicines(theYear){
+		var params = {
+			dataSet : DATASET.DAM,
+			period: theYear,
+			orgUnit: orgUnit.id
+		}
+		
+		builtUrl = buildAPIUrl(DATA_VALUE_SETS, params);
+		
+		return $.ajax({
+			url: builtUrl
+		}).then(function(data) {
+			if(data.dataValues) {
+				var usePreviousData = getValueForKey(data.dataValues, DE_KEY, DE.UNS_USE_PREVIOUS_DATA, VALUE_KEY);
+				if (usePreviousData){
+					return getTreatmentAndMedicines(theYear-1);
+				} else {
+					fillTreatmentAndMedicines(data.dataValues, theYear);
+				}
+			}
+		});
+	}
 
 	function getNumberOfDivisions(lvl, object){
 		var params = {
@@ -1438,10 +1480,10 @@ $( document ).ready( function() {
 			var uns_dead = getValueForKey(dataValues, CC_KEY, UNS_DEAD, VALUE_KEY);
 			var total_dead = add([new_dead, rel_dead, uns_dead]);
 
-			treatmentArray[RELAPSE_PROPORTION_ROW][column] = percentageCasesAndTotal(relapse, total_cases_type);
-			treatmentArray[INITIAL_CURE_RATE_ROW][column] = percentageCasesAndTotal(total_cured, total_cases_type);
-			treatmentArray[FAILURE_RATE_ROW][column] = percentageCasesAndTotal(total_fail, total_cases_type);
-			treatmentArray[CASE_FATALITY_ROW][column] = percentageCasesAndTotal(total_dead, total_cases_type);
+			toutcomeArray[RELAPSE_PROPORTION_ROW][column] = percentageCasesAndTotal(relapse, total_cases_type);
+			toutcomeArray[INITIAL_CURE_RATE_ROW][column] = percentageCasesAndTotal(total_cured, total_cases_type);
+			toutcomeArray[FAILURE_RATE_ROW][column] = percentageCasesAndTotal(total_fail, total_cases_type);
+			toutcomeArray[CASE_FATALITY_ROW][column] = percentageCasesAndTotal(total_dead, total_cases_type);
 		}
 
 
@@ -1486,17 +1528,44 @@ $( document ).ready( function() {
  	 **********                     		 AUXILIARY FUNCTIONS          	    		       **********
 	 ****************************************************************************************************/
 
+	function fillTreatmentAndMedicines(dataValues, yearInfo){
+		tamArray[TAM_ROW_FREEOFCHARGE][1] = getValueForKey(dataValues, DE_KEY, DE.UNS_FREE_TREATMENT, VALUE_KEY);
+		tamArray[TAM_ROW_ANTILEISHMANIAL][1] = getValueForKey(dataValues, DE_KEY, DE.UNS_ANTIL_LEM, VALUE_KEY);
+
+		if (yearInfo < year){
+			$("#tamTitle").append(" (" + yearInfo + ")");
+		}
+	}
+
+	function fillControlAndSurveillance(){
+		controlArray[CAS_ROW_LNCP][1] = "2006 (TEST)";
+		controlArray[CAS_ROW_TYPE][1] = "Integrated (TEST)";
+		controlArray[CAS_ROW_PROGRAMME][1] = "Yes (TEST)";
+		controlArray[CAS_ROW_IRS][1] = "Propoxur (TEST)";
+		controlArray[CAS_ROW_GUIDELINES][1] = "2013 (TEST)";
+		controlArray[CAS_ROW_NOTIF][1] = "No (TEST)";
+		controlArray[CAS_ROW_RESER][1] = "No (TEST)";
+		controlArray[CAS_ROW_FACIL][1] = "18 (TEST)";
+	}
+
 	function fillCountryGeneralInformation(level){
-		generalInformationArray[6][0] = LEVEL_REPORT_LABELS[level];
-		getNumberOfDivisions((level+1), generalInformationArray);
+		generalInformationArray[CIG_ROW_POP][1] = "96,101,000 (TEST)";
+		generalInformationArray[CIG_ROW_SEX][1] = "49.95% / 50.1% (TEST)";
+		generalInformationArray[CIG_ROW_GDP][1] = "1350 (TEST)";
+		generalInformationArray[CIG_ROW_INCOME][1] = "Low (TEST)";
+		generalInformationArray[CIG_ROW_AGEG][1] = "43% / 57% (TEST)";
+		generalInformationArray[CIG_ROW_LIFE][1] = "65 / 62 (TEST)";
+
+		generalInformationArray[CIG_ROW_DIVIS][0] = LEVEL_REPORT_LABELS[level];
 		setOptionSelectMenu("subnationalLevelSelector", level);
+		return getNumberOfDivisions((level+1), generalInformationArray);
 	}
 
 	function setNumberOfDivisions(object, value){
 		if (typeof object === 'string'){
 			$("#"+object).html(value);
 		} else {
-			object[6][1] = value;
+			object[CIG_ROW_DIVIS][1] = value;
 		}
 	}
 
@@ -2211,6 +2280,14 @@ $( document ).ready( function() {
 		drawLegendSet("legendSet3", ZCL_INDEX);
 	}
 
+	function fillNotaBene(){
+		var text = "Data source: Ministry of Health, "
+					+ country_name +
+					"<br>WHO " + year + ". All rights reserved.";
+		$('#notaBene div').html(text);
+		
+	}
+
 	function fillNotaBeneMaps(){
 		var text = "The boundaries and names shown and the designations used on this map do not imply the expression of any opinion whatsoever "
 					+ "on the part of the World Health Organization concerning the legal status of any country, territory, city or area or of "
@@ -2409,15 +2486,23 @@ $( document ).ready( function() {
 
 		});
 
-			$(".radioButton").change(function() {
+		$(".radioButton").change(function() {
 
-				if($(this)[0].id==="disableNBMaps"){
-					$("#notaBeneMaps").resizable({ disabled: true });
-				} else {
-					$("#notaBeneMaps").resizable( "enable");
-				}
-
-			});
+			switch($(this)[0].id){
+				case "disableNBMaps":
+						$("#notaBeneMaps").resizable({ disabled: true });
+						break;
+				case "enableNBMaps":
+						$("#notaBeneMaps").resizable( "enable");
+						break;
+				case "disableNB":
+						$("#notaBene").resizable({ disabled: true });
+						break;
+				case "enableNB":
+						$("#notaBene").resizable( "enable");
+						break;
+			}
+		});
 
 		// enables the updatedMapButton
 		 $('#mapSelector').on('selectmenuchange', function() {
@@ -2543,10 +2628,16 @@ $( document ).ready( function() {
 	generateMapConfigurationList($("#positionLegendSelector"), LEGEND_POSITION_LABELS, LEGEND_PREFIX);
 	generateMapConfigurationList($("#mapStyleSelector"), MAP_STYLE_LABELS, MAP_STYLE_PREFIX);
 
+	// Disables Google options
+	$('#' + MAP_STYLE_PREFIX + OPTION_PREFIX + GOOGLE_STREETS).prop('disabled', function(_, attr){ return !attr});
+	$('#' + MAP_STYLE_PREFIX + OPTION_PREFIX + GOOGLE_HYBRID).prop('disabled', function(_, attr){ return !attr});
+	$( "#mapStyleSelector" ).selectmenu( 'refresh', true);
+
 	setOptionSelectMenu("mapStyleSelector", OSM_LIGHT);
 	
 	generateMapConfigurationList($("#subnationalLevelSelector"), LEVEL_CONFIG_LABELS, LEVEL_PREFIX);
 
+	fillNotaBene();
 	fillNotaBeneMaps();
 
 	/*
@@ -2656,15 +2747,11 @@ $( document ).ready( function() {
 	fillTableHead(epiTableHead, '', COLUMNS_LABELS);
 	fillTableHead(monthlyDistributionTableHead, '', MONTHS_ABBREV);
 	fillTableHead(diagTableHead, '', COLUMNS_LABELS);
-	fillTableHead(treatmentTableHead, TREATMENT_TABLE_FIRST_COLUMNS, COLUMNS_LABELS.slice(0,2));
-
-
+	fillTableHead(toutcomeTableHead, TOUTCOME_TABLE_FIRST_COLUMNS, COLUMNS_LABELS.slice(0,2));
 
 	// Dragable activation
-	$( ".draggable" ).draggable({ grid: [ 10, 10 ] });
-	
+	$( ".draggable" ).draggable({ grid: [ 10, 10 ] });	
 	$( ".resizable" ).resizable();
-
 
 	// Code to execute after API calls have been done.
 	// $.when(ajax1(), ajax2(), ajax3(), ajax4()).done(function(a1, a2, a3, a4){
@@ -2688,7 +2775,8 @@ $( document ).ready( function() {
 		getLegendSet(CL_LEGEND, CL_INDEX),
 		getLegendSet(ACL_LEGEND, ACL_INDEX),
 		getLegendSet(ZCL_LEGEND, ZCL_INDEX),
-		fillCountryGeneralInformation(LEVEL2)).done(function(cl, vl, azcl, a, m1,m2,m3,m4,m5,m6,m7){
+		fillCountryGeneralInformation(LEVEL2),
+		getTreatmentAndMedicines(year)).done(function(cl, vl, azcl, a, m1,m2,m3,m4,m5,m6,m7){
 		// the code here will be executed when all four ajax requests resolve.
 		// a1, a2, a3 and a4 are lists of length 3 containing the response text,
 		// status, and jqXHR object for each of the four ajax calls respectively.
@@ -2697,7 +2785,8 @@ $( document ).ready( function() {
 			writeTable(monthlyDistributionTableBody, monthlyArray, MONTHLY_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_MONTHLY);
 			writeTable(casTableBody, controlArray, CAS_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_CAS);
 			writeTable(diagTableBody, diagnosisArray, DIAG_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_DIAG);
-			writeTable(treatmentTableBody, treatmentArray, "", LINES_BELOW_LABELS_TREAT);
+			writeTable(toutcomeTableBody, toutcomeArray, "", LINES_BELOW_LABELS_TREAT);
+			writeTable(tamTableBody, tamArray, "", LINES_BELOW_LABELS_TAM);
 
 			generate_cl_vl_new_monthly_charts();
 			generate_cl_vl_new_and_incidence_yearly_charts();
@@ -2705,6 +2794,9 @@ $( document ).ready( function() {
 			fillHTMLListWithArray(sortableListNotSelected, storedFootnotes, 'ui-state-default '+CLASS_EDITABLE_ELEMENT);
 			fillHTMLListWithArray(sortableListPage1, activeFootnotes, 'ui-state-highlight '+CLASS_EDITABLE_ELEMENT);
 			fillFootnotes();
+
+			fillControlAndSurveillance();
+			fillTreatmentAndMedicines();
 
 			setMonthlyCheckboxes();
 			generateMaps();
@@ -2714,6 +2806,8 @@ $( document ).ready( function() {
 
 			$("#disableNBMaps").prop('checked', true);
 			$("#notaBeneMaps").resizable({ disabled: true });
+			$("#disableNB").prop('checked', true);
+			$("#notaBene").resizable({ disabled: true });
 			$( ".radioButton" ).checkboxradio("refresh");
 
 		//	$("#disableNBMaps").trigger('click');
@@ -2806,6 +2900,15 @@ $( document ).ready( function() {
 								<input type="radio" name="NBMaps" class="radioButton" id="disableNBMaps">
 								<label for="enableNBMaps">Enabled</label>
 								<input type="radio" name="NBMaps" class="radioButton" id="enableNBMaps">
+							</fieldset>
+						</p>
+						<p>
+							<fieldset>
+								<legend>Resize Nota Bene: </legend>
+								<label for="disableNB">Disabled</label>
+								<input type="radio" name="NB" class="radioButton" id="disableNB">
+								<label for="enableNB">Enabled</label>
+								<input type="radio" name="NB" class="radioButton" id="enableNB">
 							</fieldset>
 						</p>
 										
@@ -2919,7 +3022,7 @@ $( document ).ready( function() {
 	<div class="sameLine map"><div id="map1" class="sameLine draggable"></div></div>
 	<div class="sameLine map"><div id="map2" class="sameLine draggable"></div></div>
 	<div class="sameLine map"><div id="map3" class="sameLine draggable"></div></div>
-	<div id="notaBeneMaps"  class="draggable"><div class="editableElement"></div></div>
+	<div id="notaBeneMaps"  class="notasBene draggable"><div class="editableElement"></div></div>
 </div>
 
 
@@ -2951,15 +3054,21 @@ $( document ).ready( function() {
 
 
 <div class="section">
-	<h4 class="editableElement footnotable" >Treatment and medicines</h4>
+	<h4 id="tamTitle" class="editableElement footnotable" >Treatment and medicines</h4>
 
-	<table id="treatmentTable" class="display" cellspacing="0" width="100%">
+	<table id="tamTable" class="display" cellspacing="0" width="100%">
 			<thead>
-				<tr id ="treatmentTableHead"></tr>
+				<tr id ="tamTableHead"></tr>
 			</thead>
-			<tbody id="treatmentTableBody"></tbody>
+			<tbody id="tamTableBody"></tbody>
 	</table>
-
+	<br>
+	<table id="toutcomeTable" class="display" cellspacing="0" width="100%">
+			<thead>
+				<tr id ="toutcomeTableHead"></tr>
+			</thead>
+			<tbody id="toutcomeTableBody"></tbody>
+	</table>
 </div>
 
 
@@ -2967,6 +3076,8 @@ $( document ).ready( function() {
 <div class="section">
 	<hr>
 	<div id="footnotes2"></div>
+	<div id="notaBene"  class="notasBene draggable"><div class="editableElement"></div></div>
+
 </div>
 
 
