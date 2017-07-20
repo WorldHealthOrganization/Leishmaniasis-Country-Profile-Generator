@@ -348,6 +348,7 @@ $( document ).ready( function() {
 	var ORG_UNITS = "organisationUnits";
 
 	var ANALYTICS = "analytics";
+	var EVENTS = "events";
 	var WHEN_UNDEFINED = "No data";
 	var WHEN_NON_APPLICABLE = "N/A";
 	var WHEN_DIV_0 = "-";
@@ -632,7 +633,9 @@ $( document ).ready( function() {
 	var CAS_ROW_GUIDELINES = 4;
 	var CAS_ROW_NOTIF = 5;
 	var CAS_ROW_RESER = 6;
-	var CAS_ROW_FACIL = 7;
+	var CAS_ROW_FACIL_D = 7;
+	var CAS_ROW_FACIL_T = 8;
+	var CAS_ROW_FREE = 9;
 	
 	var CAS_LABELS = [	"Year Leishmaniasis National Control<br>Programme (LNCP) was established:",
 						"Type of surveillance:",
@@ -641,9 +644,11 @@ $( document ).ready( function() {
 						"Year latest national guidelines were published:",
 						"Is leishmaniasis notifiable (mandatory reporting)?",
 						"Is there a reservoir host control programme?",
-						"Number of leishmaniasis health facilities:"
+						"Number of leishmaniasis health facilities (diagnosis):",
+						"Number of leishmaniasis health facilities (treatment):",
+						"Is treatment provided for free in the public sector?"
 						];
-	var LINES_BELOW_LABELS_CAS = [true,true,true,false,true,true,true];
+	var LINES_BELOW_LABELS_CAS = [true,true,true,true,false,true,true,false,true,true];
 	var controlArray = create_2_dim_array(CAS_LABELS.length, CAS_LABELS, LABELS_ON_COLUMNS);
 
 
@@ -849,6 +854,52 @@ $( document ).ready( function() {
 	INCIDENCE[ACL_INDEX] = "J6grbcheses";
 	INCIDENCE[ZCL_INDEX] = "nFdRbLa6cj6";
 
+	/* Events Programs*/
+
+	var PR_LEISHMANIASIS = "Cp9FLBrMK3z";
+	
+	var Leish_PROG_outbreak_VL = "LAoaCOjm1Hh";
+	var Leish_PROG_outbreak_CL = "CaIjvfbG8IX";
+	var Leish_PROG_newfoci_VL = "IdqQo9DBLek";
+	var Leish_PROG_newfoci_CL = "X5cOiCBAVwe";
+	var Leish_PROG_notifiable = "hjKuzePrJxM";
+	var Leish_PROG_surveillance = "fsrINvFJez6";
+	var Leish_PROG_surveillance_private = "DuqsDgyQM1L";
+	var Leish_PROG_vectorControl = "pZezLr9qAs6";
+	var Leish_PROG_vectorControl_ITN = "xVElTlorOHs";
+	var Leish_PROG_vectorControl_IRS = "b4RbLFKhbLG";
+	var Leish_PROG_IRS_insecticide = "zw2eJWO7Jj7";
+	var Leish_PROG_IRS_integrated = "mZ9qCbGp0fQ";
+	var Leish_PROG_vectorControl_EnvM = "kTarSQJ3s78";
+	var Leish_PROG_vectorControl_Other = "xbHi2a9Kozj";
+	var Leish_PROG_reservoirControl = "fED4Gk3zMLd";
+	var Leish_PROG_NbLeishHF_Dx = "DhDfyUo3Zc7";
+	var Leish_PROG_NbLeishHF_Tx = "M4kwSPihMPd";
+	var Leish_PROG_Tx_free = "HyuWmbIIhve";
+	var Leish_PROG_MedList_AmphotB = "PY8IWZKCkVv";
+	var Leish_PROG_MedAvail_AmphotB = "eNYVU0xHAVA";
+	var Leish_PROG_MedList_LiposoB = "ivpC92bcEks";
+	var Leish_PROG_MedAvail_LiposoB = "QabUgQwlLFA";
+	var Leish_PROG_MedList_MegAntimo = "ZfvQnbMjt05";
+	var Leish_PROG_MedAvail_MegAntimo = "uXSw8gECtG4";
+	var Leish_PROG_MedList_Miltefo = "TLaxUgOnjB5";
+	var Leish_PROG_MedAvail_Miltefo = "JRJqXJIrDJv";
+	var Leish_PROG_MedList_SSG = "OsifTHIUDwH";
+	var Leish_PROG_MedAvail_SSG = "nez8QCLHo47";
+	var Leish_PROG_LNCP_Year = "POg6OTIF5cT";
+	var Leish_PROG_guidelines_year = "LzpzN2lDa2J";
+	var Leish_PROG_failure_VL = "QLua1huBl2j";
+	var Leish_PROG_relapse_VL = "raOths7lqh1";
+	var Leish_PROG_relapse_CL = "yOMQ6PsnoU4";
+	var Leish_PROG_MedAvail_Paramo = "xGChEADcavt";
+	var Leish_PROG_MedAvail_Penta = "tmkNB5FZdWx";
+	var Leish_PROG_MedList_Paramo = "EQ2Vi7oIFSC";
+	var Leish_PROG_MedList_Penta = "Wu6U3ASLTUl";
+	var Leish_PROG_guidelines = "je5s4nR4uSM";
+
+
+
+
 	var date = dhis2.report.date;
 	var year = date.slice(0,4);
 	var orgUnit = dhis2.report.organisationUnit;
@@ -988,11 +1039,126 @@ $( document ).ready( function() {
 	}
 
 
+/*
+	var PR_LEISHMANIASIS = "Cp9FLBrMK3z";
+	
+	var Leish_PROG_outbreak_VL = "LAoaCOjm1Hh";
+	var Leish_PROG_outbreak_CL = "CaIjvfbG8IX";
+	var Leish_PROG_newfoci_VL = "IdqQo9DBLek";
+	var Leish_PROG_newfoci_CL = "X5cOiCBAVwe";
+	var Leish_PROG_notifiable = "hjKuzePrJxM";
+	var Leish_PROG_surveillance = "fsrINvFJez6";
+	var Leish_PROG_surveillance_private = "DuqsDgyQM1L";
+	var Leish_PROG_vectorControl = "pZezLr9qAs6";
+	var Leish_PROG_vectorControl_ITN = "xVElTlorOHs";
+	var Leish_PROG_vectorControl_IRS = "b4RbLFKhbLG";
+	var Leish_PROG_IRS_insecticide = "zw2eJWO7Jj7";
+	var Leish_PROG_IRS_integrated = "mZ9qCbGp0fQ";
+	var Leish_PROG_vectorControl_EnvM = "kTarSQJ3s78";
+	var Leish_PROG_vectorControl_Other = "xbHi2a9Kozj";
+	var Leish_PROG_reservoirControl = "fED4Gk3zMLd";
+	var Leish_PROG_NbLeishHF_Dx = "DhDfyUo3Zc7";
+	var Leish_PROG_NbLeishHF_Tx = "M4kwSPihMPd";
+	var Leish_PROG_Tx_free = "HyuWmbIIhve";
+	var Leish_PROG_MedList_AmphotB = "PY8IWZKCkVv";
+	var Leish_PROG_MedAvail_AmphotB = "eNYVU0xHAVA";
+	var Leish_PROG_MedList_LiposoB = "ivpC92bcEks";
+	var Leish_PROG_MedAvail_LiposoB = "QabUgQwlLFA";
+	var Leish_PROG_MedList_MegAntimo = "ZfvQnbMjt05";
+	var Leish_PROG_MedAvail_MegAntimo = "uXSw8gECtG4";
+	var Leish_PROG_MedList_Miltefo = "TLaxUgOnjB5";
+	var Leish_PROG_MedAvail_Miltefo = "JRJqXJIrDJv";
+	var Leish_PROG_MedList_SSG = "OsifTHIUDwH";
+	var Leish_PROG_MedAvail_SSG = "nez8QCLHo47";
+	var Leish_PROG_LNCP_Year = "POg6OTIF5cT";
+	var Leish_PROG_guidelines_year = "LzpzN2lDa2J";
+	var Leish_PROG_failure_VL = "QLua1huBl2j";
+	var Leish_PROG_relapse_VL = "raOths7lqh1";
+	var Leish_PROG_relapse_CL = "yOMQ6PsnoU4";
+	var Leish_PROG_MedAvail_Paramo = "xGChEADcavt";
+	var Leish_PROG_MedAvail_Penta = "tmkNB5FZdWx";
+	var Leish_PROG_MedList_Paramo = "EQ2Vi7oIFSC";
+	var Leish_PROG_MedList_Penta = "Wu6U3ASLTUl";
+	var Leish_PROG_guidelines = "je5s4nR4uSM";
 
+
+*/
 
 	/****************************************************************************************************
  	 **********                    	    FUNCTIONS CALLING THE API         	           	       **********
 	 ****************************************************************************************************/
+
+	function getLastEvent(theYear){
+
+		var params = {
+			period: theYear,
+			orgUnit: orgUnit.id,
+			program: PR_LEISHMANIASIS,
+			order: "eventDate:desc",
+			pageSize:1,
+			page: 1
+		}
+
+		builtUrl = buildAPIUrl(EVENTS, params);
+		return $.ajax({
+			url: builtUrl
+		}).then(function(data) {
+			console.log(data);
+			if(data.events) {
+				var dataValues = data.events[0].dataValues;
+				var eventDate = data.events[0].eventDate;
+				var eventYear = eventDate.slice(0,4);
+				var yearText = "("+eventYear+")";
+
+				if(eventYear >= year){
+					yearText = "";
+				}
+
+				array[OUTBK_ROW][VL_COLUMN] = toBoolText(getValueForKey(dataValues, DE_KEY, Leish_PROG_outbreak_VL, VALUE_KEY));
+				array[OUTBK_ROW][CL_COLUMN] = toBoolText(getValueForKey(dataValues, DE_KEY, Leish_PROG_outbreak_CL, VALUE_KEY)); 
+				array[FOCI_ROW][VL_COLUMN] = getValueForKey(dataValues, DE_KEY, Leish_PROG_newfoci_VL, VALUE_KEY); 
+				array[FOCI_ROW][CL_COLUMN] = getValueForKey(dataValues, DE_KEY, Leish_PROG_newfoci_CL, VALUE_KEY); 
+				
+				array[OUTBK_ROW][FIRST_COLUMN] = array[OUTBK_ROW][FIRST_COLUMN] + "<sup>"+yearText+"</sup>";
+				array[FOCI_ROW][FIRST_COLUMN] = array[FOCI_ROW][FIRST_COLUMN] + "<sup>"+yearText+"</sup>";
+
+				controlArray[CAS_ROW_NOTIF][1] = toBoolText(getValueForKey(dataValues, DE_KEY, Leish_PROG_notifiable, VALUE_KEY)); 
+				controlArray[CAS_ROW_TYPE][1] = toBoolText(getValueForKey(dataValues, DE_KEY, Leish_PROG_surveillance, VALUE_KEY)); 
+				controlArray[CAS_ROW_PROGRAMME][1] = toBoolText(getValueForKey(dataValues, DE_KEY, Leish_PROG_vectorControl, VALUE_KEY)); 
+				controlArray[CAS_ROW_RESER][1] = toBoolText(getValueForKey(dataValues, DE_KEY, Leish_PROG_reservoirControl, VALUE_KEY)); 
+				controlArray[CAS_ROW_FACIL_D][1] = getValueForKey(dataValues, DE_KEY, Leish_PROG_NbLeishHF_Dx, VALUE_KEY); 
+				controlArray[CAS_ROW_FACIL_T][1] = getValueForKey(dataValues, DE_KEY, Leish_PROG_NbLeishHF_Dx, VALUE_KEY); 
+				controlArray[CAS_ROW_GUIDELINES][1] = toBoolText(getValueForKey(dataValues, DE_KEY, Leish_PROG_guidelines, VALUE_KEY)); 
+				controlArray[CAS_ROW_FREE][1] = toBoolText(getValueForKey(dataValues, DE_KEY, Leish_PROG_Tx_free, VALUE_KEY)); 
+				controlArray[CAS_ROW_LNCP][1] = getValueForKey(dataValues, DE_KEY, Leish_PROG_LNCP_Year, VALUE_KEY); 
+				controlArray[CAS_ROW_IRS][1] = getValueForKey(dataValues, DE_KEY, Leish_PROG_IRS_insecticide, VALUE_KEY); 
+
+				$( "#casTitle" ).append("<sup>"+yearText+"</sup>");
+
+			}
+		});
+
+
+	}
+
+	function toBoolText(text){
+		switch(text){
+			case "0": 
+				return "No";
+				break;
+			case "1":
+				return "Yes";
+				break;
+			case "9":
+				return "Unknown";
+				break;
+			case "8":
+				return WHEN_NON_APPLICABLE;
+				break;
+			default:
+				return text;
+		}
+	}
 
 	function getTreatmentAndMedicines(theYear){
 		var params = {
@@ -1537,24 +1703,13 @@ $( document ).ready( function() {
 		}
 	}
 
-	function fillControlAndSurveillance(){
-		controlArray[CAS_ROW_LNCP][1] = "2006 (TEST)";
-		controlArray[CAS_ROW_TYPE][1] = "Integrated (TEST)";
-		controlArray[CAS_ROW_PROGRAMME][1] = "Yes (TEST)";
-		controlArray[CAS_ROW_IRS][1] = "Propoxur (TEST)";
-		controlArray[CAS_ROW_GUIDELINES][1] = "2013 (TEST)";
-		controlArray[CAS_ROW_NOTIF][1] = "No (TEST)";
-		controlArray[CAS_ROW_RESER][1] = "No (TEST)";
-		controlArray[CAS_ROW_FACIL][1] = "18 (TEST)";
-	}
-
 	function fillCountryGeneralInformation(level){
-		generalInformationArray[CIG_ROW_POP][1] = "96,101,000 (TEST)";
-		generalInformationArray[CIG_ROW_SEX][1] = "49.95% / 50.1% (TEST)";
-		generalInformationArray[CIG_ROW_GDP][1] = "1350 (TEST)";
-		generalInformationArray[CIG_ROW_INCOME][1] = "Low (TEST)";
-		generalInformationArray[CIG_ROW_AGEG][1] = "43% / 57% (TEST)";
-		generalInformationArray[CIG_ROW_LIFE][1] = "65 / 62 (TEST)";
+		generalInformationArray[CIG_ROW_POP][1] = "96,101,000";
+		generalInformationArray[CIG_ROW_SEX][1] = "49.95% / 50.1%";
+		generalInformationArray[CIG_ROW_GDP][1] = "1350";
+		generalInformationArray[CIG_ROW_INCOME][1] = "Low";
+		generalInformationArray[CIG_ROW_AGEG][1] = "43% / 57%";
+		generalInformationArray[CIG_ROW_LIFE][1] = "65 / 62";
 
 		generalInformationArray[CIG_ROW_DIVIS][0] = LEVEL_REPORT_LABELS[level];
 		setOptionSelectMenu("subnationalLevelSelector", level);
@@ -1733,7 +1888,7 @@ $( document ).ready( function() {
 			valueName : the name of the key of the value to return
 	*/
 	function getValueForKey(array, keyName, keyValue, valueName){
-		var returnValue;
+		var returnValue = WHEN_UNDEFINED;
 		if (array === undefined){
 			return returnValue;
 		}
@@ -2154,69 +2309,6 @@ $( document ).ready( function() {
 		});
 	}
 
-/*
-	function setChartPlugin(chartPlugin){
-	 	chartPlugin.url = "";
-		chartPlugin.username = "ramon2";
-		chartPlugin.password = "1234Abcd";
-
-		return chartPlugin;
-	}
-
-	function setChartParams(columnDimension, dataId, dataName, orgUnitId, chatType, url, htmlElement){
-
-		chartTestParams = {
-		"columns": [
-			{
-			"dimension": columnDimension,
-			"items": [
-				{
-				"id": dataId,
-				"name": dataName
-				}
-			]
-			}
-		],
-		
-		"rows": [
-			{
-			"dimension": "pe",
-			"items": []
-			}
-		],
-		"filters": [
-			{
-			"dimension": "ou",
-			"items": [
-				{
-				"id": orgUnit.id
-				}
-			]
-			}
-		],
-		"type": chatType,
-		"url": url,
-		"el": htmlElement
-		}
-		var items = generateChartRowParams();
-		chartTestParams["rows"][0]["items"] = items;
-		return chartTestParams;
-	}
-
-	function generateChartRowParams(){
-		var itemsArray = [];
-		var rows = [{ 
-      "dimension": "pe",
-      "items": itemsArray}];
-	  	var element = {};
-		  for(var i = 0; i<MONTHS.length;i++){
-			element = {};
-			element.id = year+""+numberToTwoDigits(i+1);
-			element.name = MONTHS_ABBREV[i];
-			itemsArray[i] = element;
-		  }
-		  return itemsArray;
-	}*/
 	/****************************************************************************************************
 	 **********                               MAPS functions                                 **********
 	 ****************************************************************************************************/
@@ -2776,7 +2868,8 @@ $( document ).ready( function() {
 		getLegendSet(ACL_LEGEND, ACL_INDEX),
 		getLegendSet(ZCL_LEGEND, ZCL_INDEX),
 		fillCountryGeneralInformation(LEVEL2),
-		getTreatmentAndMedicines(year)).done(function(cl, vl, azcl, a, m1,m2,m3,m4,m5,m6,m7){
+		getTreatmentAndMedicines(year),
+		getLastEvent(year)).done(function(cl, vl, azcl, a, m1,m2,m3,m4,m5,m6,m7){
 		// the code here will be executed when all four ajax requests resolve.
 		// a1, a2, a3 and a4 are lists of length 3 containing the response text,
 		// status, and jqXHR object for each of the four ajax calls respectively.
@@ -2795,7 +2888,6 @@ $( document ).ready( function() {
 			fillHTMLListWithArray(sortableListPage1, activeFootnotes, 'ui-state-highlight '+CLASS_EDITABLE_ELEMENT);
 			fillFootnotes();
 
-			fillControlAndSurveillance();
 			fillTreatmentAndMedicines();
 
 			setMonthlyCheckboxes();
@@ -3027,7 +3119,7 @@ $( document ).ready( function() {
 
 
 <div class="section">
-	<h4 class="editableElement footnotable" >Control and Surveillance</h4>
+	<h4 id="casTitle" class="editableElement footnotable" >Control and Surveillance</h4>
 	<div class="twoColumns"><table id="casTable" class="display" cellspacing="0" width="100%">
 			<thead>
 				<tr id ="casTableHead"></tr>
