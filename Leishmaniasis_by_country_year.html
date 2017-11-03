@@ -857,7 +857,9 @@ $( document ).ready( function() {
 	/* Events Programs*/
 
 	var PR_LEISHMANIASIS = "Cp9FLBrMK3z";
-	
+	var FOOTNOTE_PROGRAM = "NVUlJzIakuO";
+
+
 	var Leish_PROG_outbreak_VL = "LAoaCOjm1Hh";
 	var Leish_PROG_outbreak_CL = "CaIjvfbG8IX";
 	var Leish_PROG_newfoci_VL = "IdqQo9DBLek";
@@ -898,7 +900,9 @@ $( document ).ready( function() {
 	var Leish_PROG_guidelines = "je5s4nR4uSM";
 
 
-
+	var RG_footnote_active = "GBOpGIZ0QDU";
+	var RG_footnote_page = "SrHddMhflZZ";
+	var RG_footnote_text = "rWAis0fAWw9";
 
 	var date = dhis2.report.date;
 	var year = date.slice(0,4);
@@ -1039,54 +1043,99 @@ $( document ).ready( function() {
 	}
 
 
-/*
-	var PR_LEISHMANIASIS = "Cp9FLBrMK3z";
-	
-	var Leish_PROG_outbreak_VL = "LAoaCOjm1Hh";
-	var Leish_PROG_outbreak_CL = "CaIjvfbG8IX";
-	var Leish_PROG_newfoci_VL = "IdqQo9DBLek";
-	var Leish_PROG_newfoci_CL = "X5cOiCBAVwe";
-	var Leish_PROG_notifiable = "hjKuzePrJxM";
-	var Leish_PROG_surveillance = "fsrINvFJez6";
-	var Leish_PROG_surveillance_private = "DuqsDgyQM1L";
-	var Leish_PROG_vectorControl = "pZezLr9qAs6";
-	var Leish_PROG_vectorControl_ITN = "xVElTlorOHs";
-	var Leish_PROG_vectorControl_IRS = "b4RbLFKhbLG";
-	var Leish_PROG_IRS_insecticide = "zw2eJWO7Jj7";
-	var Leish_PROG_IRS_integrated = "mZ9qCbGp0fQ";
-	var Leish_PROG_vectorControl_EnvM = "kTarSQJ3s78";
-	var Leish_PROG_vectorControl_Other = "xbHi2a9Kozj";
-	var Leish_PROG_reservoirControl = "fED4Gk3zMLd";
-	var Leish_PROG_NbLeishHF_Dx = "DhDfyUo3Zc7";
-	var Leish_PROG_NbLeishHF_Tx = "M4kwSPihMPd";
-	var Leish_PROG_Tx_free = "HyuWmbIIhve";
-	var Leish_PROG_MedList_AmphotB = "PY8IWZKCkVv";
-	var Leish_PROG_MedAvail_AmphotB = "eNYVU0xHAVA";
-	var Leish_PROG_MedList_LiposoB = "ivpC92bcEks";
-	var Leish_PROG_MedAvail_LiposoB = "QabUgQwlLFA";
-	var Leish_PROG_MedList_MegAntimo = "ZfvQnbMjt05";
-	var Leish_PROG_MedAvail_MegAntimo = "uXSw8gECtG4";
-	var Leish_PROG_MedList_Miltefo = "TLaxUgOnjB5";
-	var Leish_PROG_MedAvail_Miltefo = "JRJqXJIrDJv";
-	var Leish_PROG_MedList_SSG = "OsifTHIUDwH";
-	var Leish_PROG_MedAvail_SSG = "nez8QCLHo47";
-	var Leish_PROG_LNCP_Year = "POg6OTIF5cT";
-	var Leish_PROG_guidelines_year = "LzpzN2lDa2J";
-	var Leish_PROG_failure_VL = "QLua1huBl2j";
-	var Leish_PROG_relapse_VL = "raOths7lqh1";
-	var Leish_PROG_relapse_CL = "yOMQ6PsnoU4";
-	var Leish_PROG_MedAvail_Paramo = "xGChEADcavt";
-	var Leish_PROG_MedAvail_Penta = "tmkNB5FZdWx";
-	var Leish_PROG_MedList_Paramo = "EQ2Vi7oIFSC";
-	var Leish_PROG_MedList_Penta = "Wu6U3ASLTUl";
-	var Leish_PROG_guidelines = "je5s4nR4uSM";
 
-
-*/
 
 	/****************************************************************************************************
  	 **********                    	    FUNCTIONS CALLING THE API         	           	       **********
 	 ****************************************************************************************************/
+
+/*
+  	var storedFootnotes = [];
+    var activeFootnotesPage1 = [];
+	var activeFootnotesPage2 = [];*/
+
+	function getFootnotes(){
+		var params = {
+			skipPaging : true
+		} 
+		$.when(getParents(orgUnit)).done(function(res){
+
+			return getAndFillEventsFor(FOOTNOTE_PROGRAM, res, params);
+/*			for (var i = 0; i<res.length; i++){
+				$.when(getEventsFor(FOOTNOTE_PROGRAM, res[i], params)).done(function(res){
+					var  footnote = getValueForKey(res.dataValues, DE_KEY, RG_footnote_text, VALUE_KEY);
+					if (getValueForKey(res.dataValues, DE_KEY, RG_footnote_active, VALUE_KEY)) {
+						var page = getValueForKey(res.dataValues, DE_KEY, RG_footnote_page, VALUE_KEY);
+						if (page == '2') {
+							activeFootnotesPage2.push(footnote);
+						} else {
+							activeFootnotesPage1.push(footnote);
+						}
+					} else {
+						storedFootnotes.push(footnote);
+					}
+				});
+			}*/
+
+			
+
+
+		});
+	}
+
+	function getAndFillEventsFor(FOOTNOTE_PROGRAM, res, params){
+		return $.when(getEventsFor(FOOTNOTE_PROGRAM, res[0], params)).done(function(res){
+					var  footnote = getValueForKey(res.dataValues, DE_KEY, RG_footnote_text, VALUE_KEY);
+					if (getValueForKey(res.dataValues, DE_KEY, RG_footnote_active, VALUE_KEY)) {
+						var page = getValueForKey(res.dataValues, DE_KEY, RG_footnote_page, VALUE_KEY);
+						if (page == '2') {
+							activeFootnotesPage2.push(footnote);
+						} else {
+							activeFootnotesPage1.push(footnote);
+						}
+					} else {
+						storedFootnotes.push(footnote);
+					}
+					if (res.length <= 1) {
+						return;
+					} else {
+						return getAndFillEventsFor(FOOTNOTE_PROGRAM, res.slice(1), params)
+					}
+				});
+	}
+
+	function getParents(id){
+		var params = {
+			fields: "path",
+			filter: "id:eq:"+id,
+			paging: false
+		}
+
+		var builtUrl = buildAPIUrl(ORG_UNITS, params);
+		return $.ajax({
+			url: builtUrl
+		}).done(function(data) {
+			return data.organisationUnits.organisationUnit.path.split("/");
+		}).fail(function(data) {
+			console.log ("ERROR. getParents");
+			console.log (data);
+		});
+	}
+
+	function getEventsFor(program, orgUnit, params) {
+		params.orgUnit = orgUnit;
+		params.program = program;
+		var builtUrl = buildAPIUrl(EVENTS, params);
+		return $.ajax({
+			url: builtUrl
+		}).done(function(data) {
+			return data;
+		}).fail(function(data) {
+			console.log ("ERROR. getEventsFor");
+			console.log (data);
+		});
+	}
+
 
 	function getLastEvent(theYear){
 
@@ -2395,22 +2444,9 @@ $( document ).ready( function() {
 	 ****************************************************************************************************/
 
 
-  var storedFootnotes = [
-       "For this reporting period, an area at the 2nd sub-national administrative level reporting cases for the first time ever",
-        " In Afghanistan, VL diganosis is available only in two centres (Regional Hospital of Kandahar and Children´s Hospital in Kabul). The cases are reported mainly"
-            +"from four provinces, but the surveillance system is too week to identify the endemicity status of the others. ",
-        "In the Region of the Americas, the age groups used for reporting are <5 years, 5-9y, 10-19y, 20-49y and 50y and older",
-        " In the Region of the Americas, except for the number of cases, all the indicators include both CL and MCL cases",
-        " In the Region of the Americas, the endemic areas used for the calculation of incidence rate and population-at-risk were the lowest sub-national administrative levels"
-            +"reporting cases in 2014."
-
-    ];
-    var activeFootnotes = [
-        "Defined as “Number of people living in 2nd sub-national administrative level endemic areas”",
-        "For Sierra Leone, monthly number of cases (both new and relapse cases)",
-        "Incidence rate at the national level"
-        ];
-    
+  	var storedFootnotes = [];
+    var activeFootnotesPage1 = [];
+	var activeFootnotesPage2 = [];
 
 	function addNewFootnote(){
 		if($("#newFootnoteText").html()){
@@ -2840,6 +2876,8 @@ $( document ).ready( function() {
 	fillTableHead(monthlyDistributionTableHead, '', MONTHS_ABBREV);
 	fillTableHead(diagTableHead, '', COLUMNS_LABELS);
 	fillTableHead(toutcomeTableHead, TOUTCOME_TABLE_FIRST_COLUMNS, COLUMNS_LABELS.slice(0,2));
+
+	getFootnotes();
 
 	// Dragable activation
 	$( ".draggable" ).draggable({ grid: [ 10, 10 ] });	
