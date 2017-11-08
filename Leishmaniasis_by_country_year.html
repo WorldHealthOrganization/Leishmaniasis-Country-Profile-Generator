@@ -1049,57 +1049,40 @@ $( document ).ready( function() {
  	 **********                    	    FUNCTIONS CALLING THE API         	           	       **********
 	 ****************************************************************************************************/
 
-/*
-  	var storedFootnotes = [];
-    var activeFootnotesPage1 = [];
-	var activeFootnotesPage2 = [];*/
-
 	function getFootnotes(){
 		var params = {
 			skipPaging : true
 		} 
-		$.when(getParents(orgUnit)).done(function(res){
-
-			return getAndFillEventsFor(FOOTNOTE_PROGRAM, res, params);
-/*			for (var i = 0; i<res.length; i++){
-				$.when(getEventsFor(FOOTNOTE_PROGRAM, res[i], params)).done(function(res){
-					var  footnote = getValueForKey(res.dataValues, DE_KEY, RG_footnote_text, VALUE_KEY);
-					if (getValueForKey(res.dataValues, DE_KEY, RG_footnote_active, VALUE_KEY)) {
-						var page = getValueForKey(res.dataValues, DE_KEY, RG_footnote_page, VALUE_KEY);
-						if (page == '2') {
-							activeFootnotesPage2.push(footnote);
-						} else {
-							activeFootnotesPage1.push(footnote);
-						}
-					} else {
-						storedFootnotes.push(footnote);
-					}
-				});
-			}*/
-
-			
-
-
+		return $.when(getParents(orgUnit.id)).then(function(data){
+			var orgUnitArray = [];
+			if (typeof data.organisationUnits !== 'undefined' ) {
+				var orgUnitArray = data.organisationUnits[0].path.replace(/^\/|\/$/, "").split("/");
+			}
+			return getAndFillEventsFor(FOOTNOTE_PROGRAM, orgUnitArray, params);
 		});
 	}
 
-	function getAndFillEventsFor(FOOTNOTE_PROGRAM, res, params){
-		return $.when(getEventsFor(FOOTNOTE_PROGRAM, res[0], params)).done(function(res){
-					var  footnote = getValueForKey(res.dataValues, DE_KEY, RG_footnote_text, VALUE_KEY);
-					if (getValueForKey(res.dataValues, DE_KEY, RG_footnote_active, VALUE_KEY)) {
-						var page = getValueForKey(res.dataValues, DE_KEY, RG_footnote_page, VALUE_KEY);
-						if (page == '2') {
-							activeFootnotesPage2.push(footnote);
+	function getAndFillEventsFor(FOOTNOTE_PROGRAM, orgUnitArray, params){
+		return $.when(getEventsFor(FOOTNOTE_PROGRAM, orgUnitArray[0], params), orgUnitArray).then(function(eventRes, orgUnitArray){
+					for (var i = 0; i<eventRes[0].events.length; i++) {
+						var event = eventRes[0].events[i];
+						var  footnote = getValueForKey(event.dataValues, DE_KEY, RG_footnote_text, VALUE_KEY);
+						if (getValueForKey(event.dataValues, DE_KEY, RG_footnote_active, VALUE_KEY).localeCompare("true")==0) {
+							var page = getValueForKey(event.dataValues, DE_KEY, RG_footnote_page, VALUE_KEY);
+							if (page.localeCompare("2")==0) {
+								activeFootnotesPage2.push(footnote);
+							} else {
+								activeFootnotesPage1.push(footnote);
+							}
 						} else {
-							activeFootnotesPage1.push(footnote);
+							storedFootnotes.push(footnote);
 						}
-					} else {
-						storedFootnotes.push(footnote);
 					}
-					if (res.length <= 1) {
+					
+					if (orgUnitArray.length <= 1) {
 						return;
 					} else {
-						return getAndFillEventsFor(FOOTNOTE_PROGRAM, res.slice(1), params)
+						return getAndFillEventsFor(FOOTNOTE_PROGRAM, orgUnitArray.slice(1), params)
 					}
 				});
 	}
@@ -1107,15 +1090,15 @@ $( document ).ready( function() {
 	function getParents(id){
 		var params = {
 			fields: "path",
-			filter: "id:eq:"+id,
 			paging: false
 		}
 
 		var builtUrl = buildAPIUrl(ORG_UNITS, params);
+		builtUrl += "&filter=id:eq:"+id;
 		return $.ajax({
 			url: builtUrl
-		}).done(function(data) {
-			return data.organisationUnits.organisationUnit.path.split("/");
+		}).then(function(data) {
+			return data;
 		}).fail(function(data) {
 			console.log ("ERROR. getParents");
 			console.log (data);
@@ -1143,17 +1126,17 @@ $( document ).ready( function() {
 			period: theYear,
 			orgUnit: orgUnit.id,
 			program: PR_LEISHMANIASIS,
-			order: "eventDate:desc",
 			pageSize:1,
 			page: 1
 		}
 
 		builtUrl = buildAPIUrl(EVENTS, params);
+		builtUrl += "&order=eventDate:desc";
 		return $.ajax({
 			url: builtUrl
 		}).then(function(data) {
 			console.log(data);
-			if(data.events) {
+			if(data.events.length) {
 				var dataValues = data.events[0].dataValues;
 				var eventDate = data.events[0].eventDate;
 				var eventYear = eventDate.slice(0,4);
@@ -1241,13 +1224,15 @@ $( document ).ready( function() {
 
 		
 		return $.ajax({
-			url: builtUrl,
-			 error: function (data) {
+			url: builtUrl//,
+			/* error: function (data) {
 				setNumberOfDivisions(object, WHEN_UNDEFINED);
-			}
+			}*/
 		}).then(function(data) {
 			setNumberOfDivisions(object, data.organisationUnits.length);
-		});
+		}).fail(function(data) {
+			setNumberOfDivisions(object, WHEN_UNDEFINED);
+		});;
 	}
 	function getLegendSet(legendSetId, mapId){
 		console.log("getLegendSet");
@@ -2877,11 +2862,12 @@ $( document ).ready( function() {
 	fillTableHead(diagTableHead, '', COLUMNS_LABELS);
 	fillTableHead(toutcomeTableHead, TOUTCOME_TABLE_FIRST_COLUMNS, COLUMNS_LABELS.slice(0,2));
 
-	getFootnotes();
-
 	// Dragable activation
 	$( ".draggable" ).draggable({ grid: [ 10, 10 ] });	
 	$( ".resizable" ).resizable();
+
+
+	fillCountryGeneralInformation(LEVEL2); //TODO: Manage error when not level 2
 
 	// Code to execute after API calls have been done.
 	// $.when(ajax1(), ajax2(), ajax3(), ajax4()).done(function(a1, a2, a3, a4){
@@ -2905,9 +2891,9 @@ $( document ).ready( function() {
 		getLegendSet(CL_LEGEND, CL_INDEX),
 		getLegendSet(ACL_LEGEND, ACL_INDEX),
 		getLegendSet(ZCL_LEGEND, ZCL_INDEX),
-		fillCountryGeneralInformation(LEVEL2),
 		getTreatmentAndMedicines(year),
-		getLastEvent(year)).done(function(cl, vl, azcl, a, m1,m2,m3,m4,m5,m6,m7){
+		getLastEvent(year),
+		getFootnotes()).done(function(i1,i2,i3,i4,nc1,nc2,nc3,nc4,m1,m2,m3,m4,m5,m6,ls1,ls2,ls3,ls4,f1,tm1,le1,ft1){
 		// the code here will be executed when all four ajax requests resolve.
 		// a1, a2, a3 and a4 are lists of length 3 containing the response text,
 		// status, and jqXHR object for each of the four ajax calls respectively.
@@ -2923,7 +2909,8 @@ $( document ).ready( function() {
 			generate_cl_vl_new_and_incidence_yearly_charts();
 
 			fillHTMLListWithArray(sortableListNotSelected, storedFootnotes, 'ui-state-default '+CLASS_EDITABLE_ELEMENT);
-			fillHTMLListWithArray(sortableListPage1, activeFootnotes, 'ui-state-highlight '+CLASS_EDITABLE_ELEMENT);
+			fillHTMLListWithArray(sortableListPage1, activeFootnotesPage1, 'ui-state-highlight '+CLASS_EDITABLE_ELEMENT);
+			fillHTMLListWithArray(sortableListPage2, activeFootnotesPage2, 'ui-state-highlight '+CLASS_EDITABLE_ELEMENT);
 			fillFootnotes();
 
 			fillTreatmentAndMedicines();
@@ -2943,6 +2930,9 @@ $( document ).ready( function() {
 		//	$("#disableNBMaps").trigger('click');
 			//$(".radioButton").change();
 
+	}).fail(function(data) {
+		console.log ("ERROR. WHEN");
+		console.log (data);
 	});
 
 
