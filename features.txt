@@ -6,3 +6,5 @@ MAps
 resizable,  
 dragable 10x10
 legends order automatically
+
+getLegends from DHIS2 programs (global, regional, national). Autoplacing in footnotes 1, 2 or stack
