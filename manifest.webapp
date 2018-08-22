@@ -1,0 +1,21 @@
+{
+    "version": "beta 2",
+    "name": "App Report Leishmaniasis",
+    "description": "App Report Leishmaniasis",
+    "launch_path": "index.html",
+    "appType": "APP",
+    "icons": {
+            "48": "img/icons/logo.png"
+    },
+    "developer": {
+        "url": "http://www.pomareta.ch",
+        "name": "Ramon Jose Jimenez Pomareta",
+        "company": "WHO",
+        "email": "ramon@pomareta.ch"
+    },
+    "activities": {
+        "dhis": {
+            "href": "*"
+        }
+    }
+}
