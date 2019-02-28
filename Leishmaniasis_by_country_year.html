@@ -306,10 +306,10 @@ div.col {
  -->
 <script type="text/javascript" src ="https://cdn.rawgit.com/Rjjp/plugins/master/jquery-te-1.4.0-oms.js"></script>
 <script type="text/javascript" src ="https://cdn.rawgit.com/Rjjp/plugins/master/jquery-ui/jquery-ui.js">//TODO:use the cdn officiel</script>
-<script type="text/javascript" src="//dhis2-cdn.org/v226/plugin/chart.js"></script>
+<script type="text/javascript" src="../dhis-web-visualizer/chart.js?_rev=@cacheBuster"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.js"></script>
-<script type="text/javascript" src="https://dhis2-cdn.org/v222/ext/ext-all.js"></script>
-<script type="text/javascript" src="https://dhis2-cdn.org/v226/plugin/map.js"></script>
+<script type="text/javascript" src="../dhis-web-commons/javascripts/ext/ext-all.js"></script>
+<script type="text/javascript" src="../dhis-web-mapping/map.js?_rev=@cacheBuster"></script>
 
 
 
@@ -332,7 +332,7 @@ $( document ).ready( function() {
  	$('head').append('<link rel="stylesheet" href="https://jqueryui.com/resources/demos/style.css" type="text/css" />');
 
 	$('head').append('<link href="//fonts.googleapis.com/css?family=Roboto:400" rel="stylesheet">');
-	$('head').append('<link rel="stylesheet" href="https://dhis2-cdn.org/v222/ext/resources/css/ext-plugin-gray.css" type="text/css" />');
+	$('head').append('<link rel="stylesheet" href="../dhis-web-commons/javascripts/ext/resources/css/ext-plugin-gray.css" type="text/css" />');
 
 
 	
@@ -2389,7 +2389,7 @@ $( document ).ready( function() {
 
 	
 	function generateMaps(){
-		var levels = [3,4,5];
+		var levels = [3,4];
 		initalMapDiv[VL_INDEX] = $('#map0').html();
 		initalMapDiv[CL_INDEX] = $('#map1').html();
 		initalMapDiv[ACL_INDEX] = $('#map2').html();

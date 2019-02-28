@@ -62,7 +62,9 @@
 <script type="text/javascript" src="../../../dhis-web-commons/javascripts/ext/ext-all.js"></script>
 <script type="text/javascript" src="../../../dhis-web-mapping/map.js"></script>
 <script type="text/javascript" src="commons/api.js"></script>
+<script type="text/javascript" src="commons/feedbacks.js"></script>
 <script type="text/javascript" src="commons/inputControl.js"></script>
+<script type="text/javascript" src="commons/progressBar.js"></script>
 <script type="text/javascript" src="commons/tools.js"></script>
 
 
@@ -74,33 +76,15 @@
 
 <script type="text/javascript">
 
-$( document ).ready( function() {
-
 	
 	/****************************************************************************************************
 	 **********                               CSS imports    		                           **********
 	 ****************************************************************************************************/
 
-	$('head').append('<link rel="stylesheet" href="css/style.css" type="text/css" />');
-	$('head').append('<link rel="stylesheet" href="css/jquery-te-1.4.0.css" type="text/css" />');
- 	$('head').append('<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" type="text/css" />');
- 	$('head').append('<link rel="stylesheet" href="https://jqueryui.com/resources/demos/style.css" type="text/css" />');
-
-	$('head').append('<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400" />');
-	$('head').append('<link rel="stylesheet" href="../../../dhis-web-commons/javascripts/ext/resources/css/ext-plugin-gray.css" type="text/css" />');
-
-
-	
-
-
-
-
 	/****************************************************************************************************
  	 **********                      	       CONSTANTS            	              	       **********
 	 ****************************************************************************************************/
-	var API_URL = "../api/";
 	var DATA_VALUE_SETS = "dataValueSets";
-	var ORG_UNITS = "organisationUnits";
 
 	var ANALYTICS = "analytics";
 	var EVENTS = "events";
@@ -732,6 +716,8 @@ $( document ).ready( function() {
 	var TEXT_UNDER_DIAG2 = 'TEXT_UNDER_DIAG2';
 
 	var generatedYears = [], organisationUnits = [];
+
+    var FEEDBACK_FILL_ALL_FIELDS = "Please, fill all fields.";
 
 
 
@@ -2490,6 +2476,11 @@ $( document ).ready( function() {
 
 	
 	$(function() {
+		initializeProgressBar("progressbar", "dialog");
+
+
+		openProgressBar(INDETERMINATE);
+
 
 		var thisYear = parseInt(getCurrentDate(true, false, false));
 
@@ -2502,6 +2493,7 @@ $( document ).ready( function() {
 				autocompleteSearcher("yearField", generatedYears, doNothing, 1, 200);
 				autocompleteSearcher("destinationCountry", organisationUnits, doNothing, 2, 200);
 
+				closeProgressBar();
 				dialog_cs.dialog( "open" );
 
 			});
@@ -2525,246 +2517,256 @@ $( document ).ready( function() {
 	function startPreparingReport() {
 	
 	
-		$( "#country_name" ).text(country_name);
-		$( "#year" ).text(year);
-		$( "#published_date").text(getDatePublished());
+		// check if fields are filled
+		if (!$( "#destinationCountry").val() || !$( "#yearField").val() ){
 
-		console.log(dhis2);
-		console.log(dhis2.report);
-		console.log(orgUnit);
-		console.log(country_name);
+			updateFeedback(FEEDBACK_INFO, "dialog-country-selector-check-message", FEEDBACK_FILL_ALL_FIELDS);
+		} else {
+			updateFeedback(FEEDBACK_HIDE, "dialog-country-selector-check-message", "");
 
-		generateCheckboxes($("#leish_detail_checkboxes"), COLUMNS_LABELS, "Leishmaniasis types to show:", LEISH_COLUMN_DETAIL_PREFIX, -1);
-		generateCheckboxes($("#monthlyCheckboxes"), MONTHLY_LABELS, "Leishmaniasis types to show in monthly table:", MONTHLY_TABLE_TD_ID_PREFIX, -1);
-		generateCheckboxes($("#chartCheckboxes"), CHART_CHECKBOXES_LABELS, "Graphs to show", CHART_PREFIX, 2);
-		generateCheckboxes($("#mapCheckboxes"), MAP_CHECKBOXES_LABELS, "Maps to show", MAP_PREFIX, -1);
+			var countryName =  $( "#destinationCountry" ).val(); 
+            var countryID =  $( "#destinationCountry" ).text(); 
+			var year = $( "#yearField" ).val(); 
+            var date = year + "-01-02";
 
-		addListenersToCheckboxes();
-
-		$( "#sortable1, #sortable2, #sortable3" ).sortable({
-		connectWith: ".connectedSortable"
-		}).disableSelection();
-		$('input[type=checkbox]').checkboxradio();
-		$( "#tabs" ).tabs({heightStyle: "content"});
-		// corrects bug on checkboxes
-		$( ".ui-state-hover" ).removeClass( "ui-state-hover" );
-
-
-		// maps jqueryui    
-		$( "#mapSelector" ).selectmenu();
-		$( "#legendSelector" ).selectmenu();
-		$( "#positionLegendSelector" ).selectmenu();
-		$( "#subnationalLevelSelector" ).selectmenu();
-		$( "#mapStyleSelector" ).selectmenu();
-		$( "#updateMapButton").button();
-		$( "#updateLegendButton").button();
-		$( ".radioButton" ).checkboxradio();
+			$( "#country_name" ).text(countryName);
+			$( "#year" ).text(year);
+			$( "#published_date").text(getDatePublished());
 
 
 
-		setButtonDisabledTo("updateMapButton", true);
-		setButtonDisabledTo("updateLegendButton", true);
-		setOptionSelectMenu("positionLegendSelector", BOTTOM_RIGHT);
+			generateCheckboxes($("#leish_detail_checkboxes"), COLUMNS_LABELS, "Leishmaniasis types to show:", LEISH_COLUMN_DETAIL_PREFIX, -1);
+			generateCheckboxes($("#monthlyCheckboxes"), MONTHLY_LABELS, "Leishmaniasis types to show in monthly table:", MONTHLY_TABLE_TD_ID_PREFIX, -1);
+			generateCheckboxes($("#chartCheckboxes"), CHART_CHECKBOXES_LABELS, "Graphs to show", CHART_PREFIX, 2);
+			generateCheckboxes($("#mapCheckboxes"), MAP_CHECKBOXES_LABELS, "Maps to show", MAP_PREFIX, -1);
 
-		generateMapConfigurationList($("#mapSelector"), MAP_CHECKBOXES_LABELS, MAP_PREFIX);
-		generateMapConfigurationList($("#legendSelector"), MAP_CHECKBOXES_LABELS, LEGENDSET_PREFIX);
-		generateMapConfigurationList($("#positionLegendSelector"), LEGEND_POSITION_LABELS, LEGEND_PREFIX);
-		generateMapConfigurationList($("#mapStyleSelector"), MAP_STYLE_LABELS, MAP_STYLE_PREFIX);
+			addListenersToCheckboxes();
 
-		// Disables Google options
-		$('#' + MAP_STYLE_PREFIX + OPTION_PREFIX + GOOGLE_STREETS).prop('disabled', function(_, attr){ return !attr});
-		$('#' + MAP_STYLE_PREFIX + OPTION_PREFIX + GOOGLE_HYBRID).prop('disabled', function(_, attr){ return !attr});
-		$( "#mapStyleSelector" ).selectmenu( 'refresh', true);
-
-		setOptionSelectMenu("mapStyleSelector", OSM_LIGHT);
-		
-		generateMapConfigurationList($("#subnationalLevelSelector"), LEVEL_CONFIG_LABELS, LEVEL_PREFIX);
-
-		fillNotaBene();
-		fillNotaBeneMaps();
-
-		/*
-		DIAG_LEGEND_LABELS_DESC_2
-			var DIAG_ASTERISK_RDT_COMMENT = "<sup>*</sup> These indicators apply only for primary VL cases";
-		var PUT_NA_TEXT = true;
-		*/
+			$( "#sortable1, #sortable2, #sortable3" ).sortable({
+			connectWith: ".connectedSortable"
+			}).disableSelection();
+			$('input[type=checkbox]').checkboxradio();
+			$( "#tabs" ).tabs({heightStyle: "content"});
+			// corrects bug on checkboxes
+			$( ".ui-state-hover" ).removeClass( "ui-state-hover" );
 
 
-		setTextUnderTables("textUnderEpiTable", TEXT_UNDER_EPI, COLUMNS_LABELS, COLUMNS_LABELS_DESC, PUT_NA_TEXT);
-		setTextUnderTables("textUnderDiagTable1", TEXT_UNDER_DIAG1, 
-								DIAG_LEGEND_LABELS.slice(0, DIAG_LEGEND_LABELS.length-1), 
-								DIAG_LEGEND_LABELS_DESC.slice(0, DIAG_LEGEND_LABELS_DESC.length-1), 
-								DIAG_ASTERISK_RDT_COMMENT);
-		setTextUnderTables("textUnderDiagTable2", TEXT_UNDER_DIAG2, DIAG_LEGEND_LABELS_2, DIAG_LEGEND_LABELS_DESC_2, PUT_NA_TEXT);
-		
-		text_values = [
-			"WHO Global",
-			"WHO Regions",
-			"WHO Member States",
-			"Level 1",
-			"Level 2",
-			"Level 3",
-			"Level 4"		
-		];
+			// maps jqueryui    
+			$( "#mapSelector" ).selectmenu();
+			$( "#legendSelector" ).selectmenu();
+			$( "#positionLegendSelector" ).selectmenu();
+			$( "#subnationalLevelSelector" ).selectmenu();
+			$( "#mapStyleSelector" ).selectmenu();
+			$( "#updateMapButton").button();
+			$( "#updateLegendButton").button();
+			$( ".radioButton" ).checkboxradio();
 
-		// Org unit level slider
-		var sliderRange = $( "#slider_range" );
-		sliderRange.slider({
-			range: true,
-			min: 1,
-			max: 7,
-			values: [ map_levels[0], map_levels[map_levels.length-1]], // values = [firstValue, lastValue]
-			slide: function( event, ui ) {
-				$( "#ou_level_slider" ).val( text_values[ui.values[ 0 ]-1] + " - " + text_values[ui.values[ 1 ]-1] );
-				map_levels = [];
-				for(var i = ui.values[0]; i<=ui.values[1]; i++){
-					map_levels.push(i);
+
+
+			setButtonDisabledTo("updateMapButton", true);
+			setButtonDisabledTo("updateLegendButton", true);
+			setOptionSelectMenu("positionLegendSelector", BOTTOM_RIGHT);
+
+			generateMapConfigurationList($("#mapSelector"), MAP_CHECKBOXES_LABELS, MAP_PREFIX);
+			generateMapConfigurationList($("#legendSelector"), MAP_CHECKBOXES_LABELS, LEGENDSET_PREFIX);
+			generateMapConfigurationList($("#positionLegendSelector"), LEGEND_POSITION_LABELS, LEGEND_PREFIX);
+			generateMapConfigurationList($("#mapStyleSelector"), MAP_STYLE_LABELS, MAP_STYLE_PREFIX);
+
+			// Disables Google options
+			$('#' + MAP_STYLE_PREFIX + OPTION_PREFIX + GOOGLE_STREETS).prop('disabled', function(_, attr){ return !attr});
+			$('#' + MAP_STYLE_PREFIX + OPTION_PREFIX + GOOGLE_HYBRID).prop('disabled', function(_, attr){ return !attr});
+			$( "#mapStyleSelector" ).selectmenu( 'refresh', true);
+
+			setOptionSelectMenu("mapStyleSelector", OSM_LIGHT);
+			
+			generateMapConfigurationList($("#subnationalLevelSelector"), LEVEL_CONFIG_LABELS, LEVEL_PREFIX);
+
+			fillNotaBene();
+			fillNotaBeneMaps();
+
+			/*
+			DIAG_LEGEND_LABELS_DESC_2
+				var DIAG_ASTERISK_RDT_COMMENT = "<sup>*</sup> These indicators apply only for primary VL cases";
+			var PUT_NA_TEXT = true;
+			*/
+
+
+			setTextUnderTables("textUnderEpiTable", TEXT_UNDER_EPI, COLUMNS_LABELS, COLUMNS_LABELS_DESC, PUT_NA_TEXT);
+			setTextUnderTables("textUnderDiagTable1", TEXT_UNDER_DIAG1, 
+									DIAG_LEGEND_LABELS.slice(0, DIAG_LEGEND_LABELS.length-1), 
+									DIAG_LEGEND_LABELS_DESC.slice(0, DIAG_LEGEND_LABELS_DESC.length-1), 
+									DIAG_ASTERISK_RDT_COMMENT);
+			setTextUnderTables("textUnderDiagTable2", TEXT_UNDER_DIAG2, DIAG_LEGEND_LABELS_2, DIAG_LEGEND_LABELS_DESC_2, PUT_NA_TEXT);
+			
+			text_values = [
+				"WHO Global",
+				"WHO Regions",
+				"WHO Member States",
+				"Level 1",
+				"Level 2",
+				"Level 3",
+				"Level 4"		
+			];
+
+			// Org unit level slider
+			var sliderRange = $( "#slider_range" );
+			sliderRange.slider({
+				range: true,
+				min: 1,
+				max: 7,
+				values: [ map_levels[0], map_levels[map_levels.length-1]], // values = [firstValue, lastValue]
+				slide: function( event, ui ) {
+					$( "#ou_level_slider" ).val( text_values[ui.values[ 0 ]-1] + " - " + text_values[ui.values[ 1 ]-1] );
+					map_levels = [];
+					for(var i = ui.values[0]; i<=ui.values[1]; i++){
+						map_levels.push(i);
+					}
 				}
+
+			});
+			$( "#ou_level_slider" ).val( text_values[sliderRange.slider( "values", 0 )-1] + " - " + text_values[sliderRange.slider( "values", 1 )-1] );
+
+			// Opacitity slider  
+			var opacity_slider_handle = $( "#opacity_slider_handle" );
+			$( "#opacity_slider" ).slider({
+			min: 0,
+			max: 100,
+			value: map_opacity,
+			create: function() {
+				opacity_slider_handle.text( $( this ).slider( "value" ) );
+			},
+			slide: function( event, ui ) {
+				opacity_slider_handle.text( ui.value );
+				map_opacity = ui.value;
 			}
+			});
+			
+			// height slider  
+			var height_slider_handle = $( "#height_slider_handle" );
+			$( "#height_slider" ).slider({
+			min: 100,
+			max: 900,
+			value: map_height,
+			create: function() {
+				height_slider_handle.text( $( this ).slider( "value" ) );
+			},
+			slide: function( event, ui ) {
+				height_slider_handle.text( ui.value );
+				map_height = ui.value;
+			}
+			});
+			
+			// width slider  
+			var width_slider_handle = $( "#width_slider_handle" );
+			$( "#width_slider" ).slider({
+			min: 100,
+			max: 900,
+			value: map_width,
+			create: function() {
+				width_slider_handle.text( $( this ).slider( "value" ) );
+			},
+			slide: function( event, ui ) {
+				width_slider_handle.text( ui.value );
+				map_width = ui.value;
+			}
+			});
 
-		});
-		$( "#ou_level_slider" ).val( text_values[sliderRange.slider( "values", 0 )-1] + " - " + text_values[sliderRange.slider( "values", 1 )-1] );
+			// Font size slider  
+			
+			font_size_slider.slider({
+			min: 6,
+			max: 24,
+			value: 10,
+			create: function() {
+				font_size_slider_handle.text( $( this ).slider( "value" ) );
+			},
+			slide: function( event, ui ) {
+				font_size_slider_handle.text( ui.value );
+				editingLegend.find(".legentSetElementText").css({ 'font-size': $( this ).slider( "value" ) });
+				editingLegend.find(".legentSetTitle").css({ 'font-size': $( this ).slider( "value" )+2 });
+			}
+			});
+			
 
-		// Opacitity slider  
-		var opacity_slider_handle = $( "#opacity_slider_handle" );
-		$( "#opacity_slider" ).slider({
-		min: 0,
-		max: 100,
-		value: map_opacity,
-		create: function() {
-			opacity_slider_handle.text( $( this ).slider( "value" ) );
-		},
-		slide: function( event, ui ) {
-			opacity_slider_handle.text( ui.value );
-			map_opacity = ui.value;
+			fillTableHead(epiTableHead, '', COLUMNS_LABELS);
+			fillTableHead(monthlyDistributionTableHead, '', MONTHS_ABBREV);
+			fillTableHead(diagTableHead, '', COLUMNS_LABELS);
+			fillTableHead(toutcomeTableHead, TOUTCOME_TABLE_FIRST_COLUMNS, COLUMNS_LABELS.slice(0,2));
+
+			// Dragable activation
+			$( ".draggable" ).draggable({ grid: [ 10, 10 ] });	
+			$( ".resizable" ).resizable();
+
+
+			fillCountryGeneralInformation(LEVEL2); //TODO: Manage error when not level 2
+
+			// Code to execute after API calls have been done.
+			// $.when(ajax1(), ajax2(), ajax3(), ajax4()).done(function(a1, a2, a3, a4){
+			// http://stackoverflow.com/questions/3709597/wait-until-all-jquery-ajax-requests-are-done
+			$.when(get_cl_cases(), get_vl_cases(), get_azcl_cases(),
+				getIncidenceFor(INCIDENCE[VL_INDEX], VL_COLUMN),
+				getIncidenceFor(INCIDENCE[CL_INDEX], CL_COLUMN),
+				getIncidenceFor(INCIDENCE[ACL_INDEX], ACL_COLUMN),
+				getIncidenceFor(INCIDENCE[ZCL_INDEX], ZCL_COLUMN),
+				getNewCases(DE.VL_EPI_Type, VL_COLUMN),
+				getNewCases(DE.CL_EPI_Type, CL_COLUMN),
+				getNewCases(DE.ACL_EPI_Type, ACL_COLUMN),
+				getNewCases(DE.ZCL_EPI_Type, ZCL_COLUMN),
+				get_monthly_cases_for_cl_current_year(),
+				get_monthly_cases_for_cl_previous_year(),
+				get_monthly_cases_for_vl_current_year(),
+				get_monthly_cases_for_vl_previous_year(),
+				get_monthly_cases_for_azcl_current_year(),
+				get_monthly_cases_for_azcl_previous_year(),
+				getLegendSet(VL_LEGEND, VL_INDEX),
+				getLegendSet(CL_LEGEND, CL_INDEX),
+				getLegendSet(ACL_LEGEND, ACL_INDEX),
+				getLegendSet(ZCL_LEGEND, ZCL_INDEX),
+				getTreatmentAndMedicines(year),
+				getLastEvent(year),
+				getFootnotes()).done(function(i1,i2,i3,i4,nc1,nc2,nc3,nc4,m1,m2,m3,m4,m5,m6,ls1,ls2,ls3,ls4,f1,tm1,le1,ft1){
+				// the code here will be executed when all four ajax requests resolve.
+				// a1, a2, a3 and a4 are lists of length 3 containing the response text,
+				// status, and jqXHR object for each of the four ajax calls respectively.
+					writeTable(cgiTableBody, generalInformationArray, CGI_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_CGI);
+					writeTable(epiTableBody, array, EPI_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_EPI);
+					writeTable(monthlyDistributionTableBody, monthlyArray, MONTHLY_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_MONTHLY);
+					writeTable(casTableBody, controlArray, CAS_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_CAS);
+					writeTable(diagTableBody, diagnosisArray, DIAG_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_DIAG);
+					writeTable(toutcomeTableBody, toutcomeArray, "", LINES_BELOW_LABELS_TREAT);
+					writeTable(tamTableBody, tamArray, "", LINES_BELOW_LABELS_TAM);
+
+					generate_cl_vl_new_monthly_charts();
+					generate_cl_vl_new_and_incidence_yearly_charts();
+
+					fillHTMLListWithArray(sortableListNotSelected, storedFootnotes, 'ui-state-default '+CLASS_EDITABLE_ELEMENT);
+					fillHTMLListWithArray(sortableListPage1, activeFootnotesPage1, 'ui-state-highlight '+CLASS_EDITABLE_ELEMENT);
+					fillHTMLListWithArray(sortableListPage2, activeFootnotesPage2, 'ui-state-highlight '+CLASS_EDITABLE_ELEMENT);
+					fillFootnotes();
+
+					fillTreatmentAndMedicines();
+
+					setMonthlyCheckboxes();
+					generateMaps();
+					
+					makeElementsEditables();
+					makeElementsFootnotables();
+
+					$("#disableNBMaps").prop('checked', true);
+					$("#notaBeneMaps").resizable({ disabled: true });
+					$("#disableNB").prop('checked', true);
+					$("#notaBene").resizable({ disabled: true });
+					$( ".radioButton" ).checkboxradio("refresh");
+
+				//	$("#disableNBMaps").trigger('click');
+					//$(".radioButton").change();
+
+			}).fail(function(data) {
+				console.log ("ERROR. WHEN");
+				console.log (data);
+			});
+
 		}
-		});
-		
-		// height slider  
-		var height_slider_handle = $( "#height_slider_handle" );
-		$( "#height_slider" ).slider({
-		min: 100,
-		max: 900,
-		value: map_height,
-		create: function() {
-			height_slider_handle.text( $( this ).slider( "value" ) );
-		},
-		slide: function( event, ui ) {
-			height_slider_handle.text( ui.value );
-			map_height = ui.value;
-		}
-		});
-		
-		// width slider  
-		var width_slider_handle = $( "#width_slider_handle" );
-		$( "#width_slider" ).slider({
-		min: 100,
-		max: 900,
-		value: map_width,
-		create: function() {
-			width_slider_handle.text( $( this ).slider( "value" ) );
-		},
-		slide: function( event, ui ) {
-			width_slider_handle.text( ui.value );
-			map_width = ui.value;
-		}
-		});
-
-		// Font size slider  
-		
-		font_size_slider.slider({
-		min: 6,
-		max: 24,
-		value: 10,
-		create: function() {
-			font_size_slider_handle.text( $( this ).slider( "value" ) );
-		},
-		slide: function( event, ui ) {
-			font_size_slider_handle.text( ui.value );
-			editingLegend.find(".legentSetElementText").css({ 'font-size': $( this ).slider( "value" ) });
-			editingLegend.find(".legentSetTitle").css({ 'font-size': $( this ).slider( "value" )+2 });
-		}
-		});
-		
-
-		fillTableHead(epiTableHead, '', COLUMNS_LABELS);
-		fillTableHead(monthlyDistributionTableHead, '', MONTHS_ABBREV);
-		fillTableHead(diagTableHead, '', COLUMNS_LABELS);
-		fillTableHead(toutcomeTableHead, TOUTCOME_TABLE_FIRST_COLUMNS, COLUMNS_LABELS.slice(0,2));
-
-		// Dragable activation
-		$( ".draggable" ).draggable({ grid: [ 10, 10 ] });	
-		$( ".resizable" ).resizable();
-
-
-		fillCountryGeneralInformation(LEVEL2); //TODO: Manage error when not level 2
-
-		// Code to execute after API calls have been done.
-		// $.when(ajax1(), ajax2(), ajax3(), ajax4()).done(function(a1, a2, a3, a4){
-		// http://stackoverflow.com/questions/3709597/wait-until-all-jquery-ajax-requests-are-done
-		$.when(get_cl_cases(), get_vl_cases(), get_azcl_cases(),
-			getIncidenceFor(INCIDENCE[VL_INDEX], VL_COLUMN),
-			getIncidenceFor(INCIDENCE[CL_INDEX], CL_COLUMN),
-			getIncidenceFor(INCIDENCE[ACL_INDEX], ACL_COLUMN),
-			getIncidenceFor(INCIDENCE[ZCL_INDEX], ZCL_COLUMN),
-			getNewCases(DE.VL_EPI_Type, VL_COLUMN),
-			getNewCases(DE.CL_EPI_Type, CL_COLUMN),
-			getNewCases(DE.ACL_EPI_Type, ACL_COLUMN),
-			getNewCases(DE.ZCL_EPI_Type, ZCL_COLUMN),
-			get_monthly_cases_for_cl_current_year(),
-			get_monthly_cases_for_cl_previous_year(),
-			get_monthly_cases_for_vl_current_year(),
-			get_monthly_cases_for_vl_previous_year(),
-			get_monthly_cases_for_azcl_current_year(),
-			get_monthly_cases_for_azcl_previous_year(),
-			getLegendSet(VL_LEGEND, VL_INDEX),
-			getLegendSet(CL_LEGEND, CL_INDEX),
-			getLegendSet(ACL_LEGEND, ACL_INDEX),
-			getLegendSet(ZCL_LEGEND, ZCL_INDEX),
-			getTreatmentAndMedicines(year),
-			getLastEvent(year),
-			getFootnotes()).done(function(i1,i2,i3,i4,nc1,nc2,nc3,nc4,m1,m2,m3,m4,m5,m6,ls1,ls2,ls3,ls4,f1,tm1,le1,ft1){
-			// the code here will be executed when all four ajax requests resolve.
-			// a1, a2, a3 and a4 are lists of length 3 containing the response text,
-			// status, and jqXHR object for each of the four ajax calls respectively.
-				writeTable(cgiTableBody, generalInformationArray, CGI_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_CGI);
-				writeTable(epiTableBody, array, EPI_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_EPI);
-				writeTable(monthlyDistributionTableBody, monthlyArray, MONTHLY_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_MONTHLY);
-				writeTable(casTableBody, controlArray, CAS_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_CAS);
-				writeTable(diagTableBody, diagnosisArray, DIAG_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_DIAG);
-				writeTable(toutcomeTableBody, toutcomeArray, "", LINES_BELOW_LABELS_TREAT);
-				writeTable(tamTableBody, tamArray, "", LINES_BELOW_LABELS_TAM);
-
-				generate_cl_vl_new_monthly_charts();
-				generate_cl_vl_new_and_incidence_yearly_charts();
-
-				fillHTMLListWithArray(sortableListNotSelected, storedFootnotes, 'ui-state-default '+CLASS_EDITABLE_ELEMENT);
-				fillHTMLListWithArray(sortableListPage1, activeFootnotesPage1, 'ui-state-highlight '+CLASS_EDITABLE_ELEMENT);
-				fillHTMLListWithArray(sortableListPage2, activeFootnotesPage2, 'ui-state-highlight '+CLASS_EDITABLE_ELEMENT);
-				fillFootnotes();
-
-				fillTreatmentAndMedicines();
-
-				setMonthlyCheckboxes();
-				generateMaps();
-				
-				makeElementsEditables();
-				makeElementsFootnotables();
-
-				$("#disableNBMaps").prop('checked', true);
-				$("#notaBeneMaps").resizable({ disabled: true });
-				$("#disableNB").prop('checked', true);
-				$("#notaBene").resizable({ disabled: true });
-				$( ".radioButton" ).checkboxradio("refresh");
-
-			//	$("#disableNBMaps").trigger('click');
-				//$(".radioButton").change();
-
-		}).fail(function(data) {
-			console.log ("ERROR. WHEN");
-			console.log (data);
-		});
-
 	}
 		/****  **********  ******  ********  ******  ******   *****  *//***** ********  *****  *** *//****
 	 ****  **                                TEST ZONE                                          **********
@@ -2772,13 +2774,6 @@ $( document ).ready( function() {
 
 
 
-
-
-
-
-
-
-} );
 </script>
 
 <!--
@@ -2788,261 +2783,300 @@ $( document ).ready( function() {
  	**********		   																		   **********
 	 ****************************************************************************************************/
 	-->
-<div class="non-printable configuration-section section"><hr>
 
-	<div class="comment">
-		Configuration Area - Wont be printed<br>
-		Instructions : Left click to add a footnote number.<br>
-						Right click to edit an element.
-	</div>
-	<div id="tabs">
-		<ul>
-			<li><a href="#tabs-1">General</a></li>
-			<li><a href="#tabs-2">Maps</a></li>
-			<li><a href="#tabs-3">Footnotes</a></li>
-		</ul>
-		<div id="tabs-1">		
-			<fieldset id="leish_detail_checkboxes"></fieldset>
-			<fieldset id="monthlyCheckboxes"></fieldset>
-			<fieldset id="chartCheckboxes"></fieldset>
-			<p><select name="subnationalLevelSelector" id="subnationalLevelSelector"></select></p>
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Leishmaniasis Report Generator</title>
+		<meta charset="utf-8">	
+		
+
+		<link rel="stylesheet" href="css/style.css" type="text/css" />
+		<link rel="stylesheet" href="css/jquery-te-1.4.0.css" type="text/css" />
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" type="text/css" />
+		<link rel="stylesheet" href="https://jqueryui.com/resources/demos/style.css" type="text/css" />
+
+		<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400" />
+		<link rel="stylesheet" href="../../../dhis-web-commons/javascripts/ext/resources/css/ext-plugin-gray.css" type="text/css" />
+
+		<link rel="stylesheet" href="commons/feedbacks.css">
+			
+	</head>
+	<body>
+
+	<div class="non-printable configuration-section section"><hr>
+
+		<div class="comment">
+			Configuration Area - Wont be printed<br>
+			Instructions : Left click to add a footnote number.<br>
+							Right click to edit an element.
 		</div>
-		<div id="tabs-2">		
-			<fieldset id="mapCheckboxes"></fieldset>
-			<fieldset id="mapConfiguration"><legend>Configure map</legend>
-				<div>
-					<div class="col">
-						<select name="mapSelector" id="mapSelector">
-							<option disabled selected value>Select a Map</option>
-						</select>
-						<p>
-							<label for="ou_level_slider">OrgUnit levels:</label>
-							<input type="text" id="ou_level_slider" readonly style="border:0; color:#f6931f; font-weight:bold;  width:260px ">
-							<div id="slider_range"></div>
-						</p>
-						<select name="mapStyleSelector" id="mapStyleSelector"></select>
-						<p> Opacity:
-							<div id="opacity_slider"><div id="opacity_slider_handle" class="ui-slider-handle"></div></div>
-						</p>
-						<p> Height:
-							<div id="height_slider"><div id="height_slider_handle" class="ui-slider-handle"></div></div>
-						</p>
-						<p>	Width:
-							<div id="width_slider"><div id="width_slider_handle" class="ui-slider-handle"></div></div>
-						</p>
-						<button id="updateMapButton" class="ui-button ui-widget ui-corner-all">Update Map</button>
-					</div>
-					<div class="col">
-						<p>
-							<select name="legendSelector" id="legendSelector">
-							<option disabled selected value>Select a Legend</option>
-							</select>
-						</p>
-						<p><select name="positionLegendSelector" id="positionLegendSelector"></select></p>
-						<p> Font size :
-							<div id="font_size_slider"><div id="font_size_slider_handle" class="ui-slider-handle"></div></div>
-						</p>
-						<p><button id="updateLegendButton" class="ui-button ui-widget ui-corner-all">Update Legend</button></p>
-						<p>
-							<fieldset>
-								<legend>Resize Nota Bene for Maps: </legend>
-								<label for="disableNBMaps">Disabled</label>
-								<input type="radio" name="NBMaps" class="radioButton" id="disableNBMaps">
-								<label for="enableNBMaps">Enabled</label>
-								<input type="radio" name="NBMaps" class="radioButton" id="enableNBMaps">
-							</fieldset>
-						</p>
-						<p>
-							<fieldset>
-								<legend>Resize Nota Bene: </legend>
-								<label for="disableNB">Disabled</label>
-								<input type="radio" name="NB" class="radioButton" id="disableNB">
-								<label for="enableNB">Enabled</label>
-								<input type="radio" name="NB" class="radioButton" id="enableNB">
-							</fieldset>
-						</p>
-										
-					</div>
-					<div id="legendPool" class="col">
-						<div id="legendSet0" class="legendSet" ></div>
-						<div id="legendSet1" class="legendSet" ></div>
-						<div id="legendSet2" class="legendSet" ></div>
-						<div id="legendSet3" class="legendSet" ></div>	
-					</div>
-
-				</div>
-
-			</fieldset>
-		</div>
-		<div id="tabs-3">
-			<div class="FixedHeightContainer">
-				<div class="Content">
-					<h6 class="subHeader">Stored footnotes</h6>
-					<ul id="sortable1" class="connectedSortable">
-					</ul>
-				</div>
-				<div class="Content"> 
-					<h6 class="subHeader">Footnotes page 1</h6>
-					<ul id="sortable2" class="connectedSortable">
-					</ul>
-				</div>
-				<div class="Content">
-					<h6 class="subHeader">Footnotes page 2</h6>
-					<ul id="sortable3" class="connectedSortable">
-					</ul>
-				</div>
+		<div id="tabs">
+			<ul>
+				<li><a href="#tabs-1">General</a></li>
+				<li><a href="#tabs-2">Maps</a></li>
+				<li><a href="#tabs-3">Footnotes</a></li>
+			</ul>
+			<div id="tabs-1">		
+				<fieldset id="leish_detail_checkboxes"></fieldset>
+				<fieldset id="monthlyCheckboxes"></fieldset>
+				<fieldset id="chartCheckboxes"></fieldset>
+				<p><select name="subnationalLevelSelector" id="subnationalLevelSelector"></select></p>
 			</div>
-			 <button id="newfootnote" class="ui-button ui-widget ui-corner-all">
-    			<span class="ui-icon ui-icon-document"></span> Add new footnote
-  			</button>
-			<div id="newFootnoteText" style="display:none"></div>
+			<div id="tabs-2">		
+				<fieldset id="mapCheckboxes"></fieldset>
+				<fieldset id="mapConfiguration"><legend>Configure map</legend>
+					<div>
+						<div class="col">
+							<select name="mapSelector" id="mapSelector">
+								<option disabled selected value>Select a Map</option>
+							</select>
+							<p>
+								<label for="ou_level_slider">OrgUnit levels:</label>
+								<input type="text" id="ou_level_slider" readonly style="border:0; color:#f6931f; font-weight:bold;  width:260px ">
+								<div id="slider_range"></div>
+							</p>
+							<select name="mapStyleSelector" id="mapStyleSelector"></select>
+							<p> Opacity:
+								<div id="opacity_slider"><div id="opacity_slider_handle" class="ui-slider-handle"></div></div>
+							</p>
+							<p> Height:
+								<div id="height_slider"><div id="height_slider_handle" class="ui-slider-handle"></div></div>
+							</p>
+							<p>	Width:
+								<div id="width_slider"><div id="width_slider_handle" class="ui-slider-handle"></div></div>
+							</p>
+							<button id="updateMapButton" class="ui-button ui-widget ui-corner-all">Update Map</button>
+						</div>
+						<div class="col">
+							<p>
+								<select name="legendSelector" id="legendSelector">
+								<option disabled selected value>Select a Legend</option>
+								</select>
+							</p>
+							<p><select name="positionLegendSelector" id="positionLegendSelector"></select></p>
+							<p> Font size :
+								<div id="font_size_slider"><div id="font_size_slider_handle" class="ui-slider-handle"></div></div>
+							</p>
+							<p><button id="updateLegendButton" class="ui-button ui-widget ui-corner-all">Update Legend</button></p>
+							<p>
+								<fieldset>
+									<legend>Resize Nota Bene for Maps: </legend>
+									<label for="disableNBMaps">Disabled</label>
+									<input type="radio" name="NBMaps" class="radioButton" id="disableNBMaps">
+									<label for="enableNBMaps">Enabled</label>
+									<input type="radio" name="NBMaps" class="radioButton" id="enableNBMaps">
+								</fieldset>
+							</p>
+							<p>
+								<fieldset>
+									<legend>Resize Nota Bene: </legend>
+									<label for="disableNB">Disabled</label>
+									<input type="radio" name="NB" class="radioButton" id="disableNB">
+									<label for="enableNB">Enabled</label>
+									<input type="radio" name="NB" class="radioButton" id="enableNB">
+								</fieldset>
+							</p>
+											
+						</div>
+						<div id="legendPool" class="col">
+							<div id="legendSet0" class="legendSet" ></div>
+							<div id="legendSet1" class="legendSet" ></div>
+							<div id="legendSet2" class="legendSet" ></div>
+							<div id="legendSet3" class="legendSet" ></div>	
+						</div>
 
+					</div>
+
+				</fieldset>
+			</div>
+			<div id="tabs-3">
+				<div class="FixedHeightContainer">
+					<div class="Content">
+						<h6 class="subHeader">Stored footnotes</h6>
+						<ul id="sortable1" class="connectedSortable">
+						</ul>
+					</div>
+					<div class="Content"> 
+						<h6 class="subHeader">Footnotes page 1</h6>
+						<ul id="sortable2" class="connectedSortable">
+						</ul>
+					</div>
+					<div class="Content">
+						<h6 class="subHeader">Footnotes page 2</h6>
+						<ul id="sortable3" class="connectedSortable">
+						</ul>
+					</div>
+				</div>
+				<button id="newfootnote" class="ui-button ui-widget ui-corner-all">
+					<span class="ui-icon ui-icon-document"></span> Add new footnote
+				</button>
+				<div id="newFootnoteText" style="display:none"></div>
+
+			</div>
+		</div>
+		<hr>
+	</div>
+
+	<div class="section">
+		<img class="head_logo center" src="http://www.who.int/about/Logo-WHO.jpg" />
+
+		<div class="head_container">	
+			<div class="editableElement">Leishmaniasis</div>
+			<div class="center_text editableElement" id="country_name"></div>
+			<div class="align_to_right">
+				<div class="editableElement" id="year"></div>
+				<div class="editableElement comment" id="published_date"></div>
+			</div>
 		</div>
 	</div>
-	<hr>
-</div>
 
-<div class="section">
-    <img class="head_logo center" src="http://www.who.int/about/Logo-WHO.jpg" />
+	<div class="section">
+		<h4 class="editableElement footnotable">Country General Information</h4>
+		<div class="twoColumns"><table id="cgiTable" class="display" cellspacing="0" width="100%">
+				<thead>
+					<tr id ="cgiTableHead"></tr>
+				</thead>
+				<tbody id="cgiTableBody"></tbody>
+		</table></div>
+	</div>
 
-	<div class="head_container">	
-		<div class="editableElement">Leishmaniasis</div>
-		<div class="center_text editableElement" id="country_name"></div>
-		<div class="align_to_right">
-			<div class="editableElement" id="year"></div>
-			<div class="editableElement comment" id="published_date"></div>
+	<div class="section">
+		<h4 class="editableElement footnotable">Epidemiology</h4>
+
+		<table id="epiTable" class="display" cellspacing="0" width="100%">
+				<thead>
+					<tr id ="epiTableHead"></tr>
+				</thead>
+				<tbody id="epiTableBody"></tbody>
+		</table>
+		<div id="textUnderEpiTable" class="textUnderTable"></div>
+	</div>
+
+
+	<div class="section">
+		<h4 class="editableElement footnotable" >Monthly distribution of new cases January-December</h4>
+
+		<table id="monthlyDistributionTable" class="display" cellspacing="0" width="100%">
+				<thead>
+					<tr id ="monthlyDistributionTableHead"></tr>
+				</thead>
+				<tbody id="monthlyDistributionTableBody"></tbody>
+		</table>
+
+	</div>
+
+	<div>
+		<canvas class="sameLine draggable chart" id="chart0" width="425" height="260" ></canvas>
+		<canvas class="sameLine draggable chart" id="chart1" width="425" height="260" ></canvas>
+		<canvas class="sameLine draggable chart" id="chart2" width="425" height="260" ></canvas>
+	</div>
+	<div>
+		<canvas class="sameLine draggable chart" id="chart3" width="425" height="260" ></canvas>
+		<canvas class="sameLine draggable chart" id="chart4" width="425" height="260" ></canvas>
+		<canvas class="sameLine draggable chart" id="chart5" width="425" height="260" ></canvas>
+	</div>
+
+	<div class="section">
+		<hr>
+		<div id="footnotes1"></div>
+	</div>
+
+	<div class="section">
+		<h4 class="editableElement footnotable" >Distribution of new CL (left) and new (primary) VL (right) cases per 10 000 population</h4>
+		<div class="sameLine map"> <div id="map0" class="sameLine draggable"></div></div>
+		<div class="sameLine map"><div id="map1" class="sameLine draggable"></div></div>
+		<div class="sameLine map"><div id="map2" class="sameLine draggable"></div></div>
+		<div class="sameLine map"><div id="map3" class="sameLine draggable"></div></div>
+		<div id="notaBeneMaps"  class="notasBene draggable"><div class="editableElement"></div></div>
+	</div>
+
+
+	<div class="section">
+		<h4 id="casTitle" class="editableElement footnotable" >Control and Surveillance</h4>
+		<div class="twoColumns"><table id="casTable" class="display" cellspacing="0" width="100%">
+				<thead>
+					<tr id ="casTableHead"></tr>
+				</thead>
+				<tbody id="casTableBody"></tbody>
+		</table></div>
+
+	</div>
+
+	<div class="section">
+		<h4 class="editableElement footnotable" >Diagnosis</h4>
+
+		<table id="diagTable" class="display" cellspacing="0" width="100%">
+				<thead>
+					<tr id ="diagTableHead"></tr>
+				</thead>
+				<tbody id="diagTableBody"></tbody>
+		</table>
+		<div id="textUnderDiagTable1" class="textUnderTable"></div>
+		<div id="textUnderDiagTable2" class="textUnderTable"></div>
+
+
+	</div>
+
+
+	<div class="section">
+		<h4 id="tamTitle" class="editableElement footnotable" >Treatment and medicines</h4>
+
+		<table id="tamTable" class="display" cellspacing="0" width="100%">
+				<thead>
+					<tr id ="tamTableHead"></tr>
+				</thead>
+				<tbody id="tamTableBody"></tbody>
+		</table>
+		<br>
+		<table id="toutcomeTable" class="display" cellspacing="0" width="100%">
+				<thead>
+					<tr id ="toutcomeTableHead"></tr>
+				</thead>
+				<tbody id="toutcomeTableBody"></tbody>
+		</table>
+	</div>
+
+
+
+	<div class="section">
+		<hr>
+		<div id="footnotes2"></div>
+		<div id="notaBene"  class="notasBene draggable"><div class="editableElement"></div></div>
+
+	</div>
+
+
+	<div id="dialog-editor">
+		<textarea id="editor"></textarea>
+	</div>
+
+	<div id="dialog-country-selector" title="Select country and year">
+		<div id="country-selector" ></div>
+			Year: 
+		<input id="yearField">
+										
+		<div class="ui-widget">
+			<label for="destinationCountry">Country: </label>
+			<input id="destinationCountry">
 		</div>
+		<div id="dialog-country-selector-check-message" class="">
+			<i class="fa "></i>
+			<div></div>
+		</div>
+								
 	</div>
-</div>
 
-<div class="section">
-	<h4 class="editableElement footnotable">Country General Information</h4>
-	<div class="twoColumns"><table id="cgiTable" class="display" cellspacing="0" width="100%">
-			<thead>
-				<tr id ="cgiTableHead"></tr>
-			</thead>
-			<tbody id="cgiTableBody"></tbody>
-	</table></div>
-</div>
-
-<div class="section">
-	<h4 class="editableElement footnotable">Epidemiology</h4>
-
-	<table id="epiTable" class="display" cellspacing="0" width="100%">
-			<thead>
-				<tr id ="epiTableHead"></tr>
-			</thead>
-			<tbody id="epiTableBody"></tbody>
-	</table>
-	<div id="textUnderEpiTable" class="textUnderTable"></div>
-</div>
-
-
-<div class="section">
-	<h4 class="editableElement footnotable" >Monthly distribution of new cases January-December</h4>
-
-	<table id="monthlyDistributionTable" class="display" cellspacing="0" width="100%">
-			<thead>
-				<tr id ="monthlyDistributionTableHead"></tr>
-			</thead>
-			<tbody id="monthlyDistributionTableBody"></tbody>
-	</table>
-
-</div>
-
-<div>
-	<canvas class="sameLine draggable chart" id="chart0" width="425" height="260" ></canvas>
-	<canvas class="sameLine draggable chart" id="chart1" width="425" height="260" ></canvas>
-	<canvas class="sameLine draggable chart" id="chart2" width="425" height="260" ></canvas>
-</div>
-<div>
-	<canvas class="sameLine draggable chart" id="chart3" width="425" height="260" ></canvas>
-	<canvas class="sameLine draggable chart" id="chart4" width="425" height="260" ></canvas>
-	<canvas class="sameLine draggable chart" id="chart5" width="425" height="260" ></canvas>
-</div>
-
-<div class="section">
-	<hr>
-	<div id="footnotes1"></div>
-</div>
-
-<div class="section">
-	<h4 class="editableElement footnotable" >Distribution of new CL (left) and new (primary) VL (right) cases per 10 000 population</h4>
-	<div class="sameLine map"> <div id="map0" class="sameLine draggable"></div></div>
-	<div class="sameLine map"><div id="map1" class="sameLine draggable"></div></div>
-	<div class="sameLine map"><div id="map2" class="sameLine draggable"></div></div>
-	<div class="sameLine map"><div id="map3" class="sameLine draggable"></div></div>
-	<div id="notaBeneMaps"  class="notasBene draggable"><div class="editableElement"></div></div>
-</div>
-
-
-<div class="section">
-	<h4 id="casTitle" class="editableElement footnotable" >Control and Surveillance</h4>
-	<div class="twoColumns"><table id="casTable" class="display" cellspacing="0" width="100%">
-			<thead>
-				<tr id ="casTableHead"></tr>
-			</thead>
-			<tbody id="casTableBody"></tbody>
-	</table></div>
-
-</div>
-
-<div class="section">
-	<h4 class="editableElement footnotable" >Diagnosis</h4>
-
-	<table id="diagTable" class="display" cellspacing="0" width="100%">
-			<thead>
-				<tr id ="diagTableHead"></tr>
-			</thead>
-			<tbody id="diagTableBody"></tbody>
-	</table>
-	<div id="textUnderDiagTable1" class="textUnderTable"></div>
-	<div id="textUnderDiagTable2" class="textUnderTable"></div>
-
-
-</div>
-
-
-<div class="section">
-	<h4 id="tamTitle" class="editableElement footnotable" >Treatment and medicines</h4>
-
-	<table id="tamTable" class="display" cellspacing="0" width="100%">
-			<thead>
-				<tr id ="tamTableHead"></tr>
-			</thead>
-			<tbody id="tamTableBody"></tbody>
-	</table>
-	<br>
-	<table id="toutcomeTable" class="display" cellspacing="0" width="100%">
-			<thead>
-				<tr id ="toutcomeTableHead"></tr>
-			</thead>
-			<tbody id="toutcomeTableBody"></tbody>
-	</table>
-</div>
-
-
-
-<div class="section">
-	<hr>
-	<div id="footnotes2"></div>
-	<div id="notaBene"  class="notasBene draggable"><div class="editableElement"></div></div>
-
-</div>
-
-
-<div id="dialog-editor">
-	<textarea id="editor"></textarea>
-</div>
-
-<div id="dialog-country-selector" title="Select country and year">
-	<div id="country-selector" ></div>
-	    Year: 
-    <input id="yearField">
-									
-	<div class="ui-widget">
-		<label for="destinationCountry">Country: </label>
-		<input id="destinationCountry">
+	<div id="dialog" title="Please wait">
+		<div class="progress-label">Loading countries...</div>
+		<div id="progressbar"></div>
 	</div>
-                               
-</div>
+
+
+	<div class="non-printable">
+		<div id="footer"> Leishmaniasis Report Generator 0.1</div>
+	</div>
+
+	</body>
+</html>
