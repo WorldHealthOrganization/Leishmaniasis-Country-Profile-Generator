@@ -1,7 +1,7 @@
 {
-    "version": "0.1",
-    "name": "App Report Leishmaniasis",
-    "description": "App Report Leishmaniasis",
+    "version": "0.2",
+    "name": "Leishmaniasis Country Profile Generator",
+    "description": "Leishmaniasis Country Profile Generator",
     "launch_path": "index.html",
     "appType": "APP",
     "icons": {
