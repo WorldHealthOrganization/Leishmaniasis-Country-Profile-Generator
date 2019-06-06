@@ -51,9 +51,9 @@
  ****************************************************************************************************/
  -->
  <script
-  src="https://code.jquery.com/jquery-2.2.4.min.js"
-  integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
-  crossorigin="anonymous"></script>
+ src="https://code.jquery.com/jquery-2.2.4.js"
+ integrity="sha256-iT6Q9iMJYuQiMWNd9lDyBUStIq/8PuOW33aOqmvFpqI="
+ crossorigin="anonymous"></script>
 <script type="text/javascript" src ="js/jquery-te-1.4.0-oms.js"></script>
 <script type="text/javascript" src ="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js">//TODO:use the cdn officiel</script>
 <script type="text/javascript" src="../../../dhis-web-visualizer/chart.js"></script>
@@ -647,35 +647,9 @@
 	var CLASS_EDITABLE_ELEMENT = "editableElement";
 	var CLASS_FOOTNOTABLE_ELEMENT = "footnotable";
 
-	/* HTML elements */
-	var cgiTable = 	$("#cgiTable");
-	var cgiTableBody = 	$("#cgiTableBody");
-	var cgiTableHead = 	$("#cgiTableHead");
-
-	var epiTable = 	$("#epiTable");
-	var epiTableBody = 	$("#epiTableBody");
-	var epiTableHead = 	$("#epiTableHead");
-
-	var monthlyDistributionTableBody = $("#monthlyDistributionTableBody");
-	var monthlyDistributionTableHead = $("#monthlyDistributionTableHead");
-
-	var casTable = 	$("#casTable");
-	var casTableBody = 	$("#casTableBody");
-	var casTableHead = 	$("#casTableHead");
-
-	var diagTableBody = $("#diagTableBody");
-	var diagTableHead = $("#diagTableHead");
-
-	var tamTableBody = $("#tamTableBody");
-	var tamTableHead = $("#tamTableHead");
-	var toutcomeTableBody = $("#toutcomeTableBody");
-	var toutcomeTableHead = $("#toutcomeTableHead");
-
-	var editor = $("#editor");
-
-	var sortableListNotSelected = $("#sortable1");
-	var sortableListPage1 = $("#sortable2");
-	var sortableListPage2 = $("#sortable3");
+	var SORTABLE_LIST_1_NAME = "sortable1";
+	var SORTABLE_LIST_2_NAME = "sortable2";
+	var SORTABLE_LIST_3_NAME = "sortable3";
 
 	var newCLCasesChartID = "chart0";	
 	var newAZCLCasesChartID = "chart1";
@@ -685,12 +659,16 @@
 	var newAZCLAndHistoricIncidenceID = "chart4";
 	var newVLAndHistoricIncidenceID = "chart5";
 
-	var CGI_TABLE_TD_ID_PREFIX = "cgiTable";
-	var EPI_TABLE_TD_ID_PREFIX = "epiTable";
-	var MONTHLY_TABLE_TD_ID_PREFIX = "monthlyTable";
-	var CAS_TABLE_TD_ID_PREFIX = "casTable";
-	var DIAG_TABLE_TD_ID_PREFIX = "diagTable";
+	/* HTML elements */
 
+	var CGI_TABLE_NAME = "cgiTable";
+	var EPI_TABLE_NAME = "epiTable";
+	var MONTHLY_TABLE_NAME = "monthlyTable";
+	var CAS_TABLE_NAME = "casTable";
+	var TAM_TABLE_NAME = "tamTable";
+	var DIAG_TABLE_NAME = "diagTable";
+	var MONTH_DIST_TABLE_NAME = "monthlyDistributionTable";
+	var TOUTCOME_TABLE_NAME = "toutcomeTable";
 
 	var BUTTON_PREFIX = '_BUTTON_';
 	var CHART_PREFIX = "chart";
@@ -715,14 +693,13 @@
 	/****************************************************************************************************
  	 **********                    	     STATIC CONTENT FUNCTIONS         	           	       **********
 	 ****************************************************************************************************/
-	function fillTableHead(htmlObject, firstColumn, headObjects){
+	function fillTableHead(tableName, extName, firstColumn, headObjects){
 		var html = '<th>'+firstColumn+'</th>';
 		
 		for (var i=0; i<headObjects.length;i++){
 			html +='<th class="'+CLASS_EDITABLE_ELEMENT+'">'+headObjects[i]+'</th>';
 		}
-
-		htmlObject.append(html);
+		document.getElementById(tableName + extName).innerHTML = html;
 	}
 
 	function generateCheckboxes(htmlObject, labels, title, prefix, newLineOn){
@@ -1529,7 +1506,7 @@
 	/*
 		linesOnRows : An array with the number of the rows which must have a line below
 	*/
-	function writeTable(htmlObject, array, tdIdPrefix, linesOnRows) {
+	function writeTable(tableName, extName, array, linesOnRows) {
 		// declare html variable (a string holder):
 		var html = '';
 		var count = 0;
@@ -1542,7 +1519,7 @@
 				lineClass ="";
 			}
 			// add opening <tr> tag to the string:
-			html += '<tr id="'+tdIdPrefix+i+'" class="'+lineClass+'">';
+			html += '<tr id="'+tableName+i+'" class="'+lineClass+'">';
 			for (var j = 0; j < array[i].length; j++) {
 				// add <td> elements to the string:
 				html += '<td>' + '<span class="'+CLASS_FOOTNOTABLE_ELEMENT+' '+CLASS_EDITABLE_ELEMENT+'" >' + array[i][j] + '</span>' + '</td>';
@@ -1553,7 +1530,8 @@
 		}
 		//append created html to the table body:
 	
-		htmlObject.append(html);
+		document.getElementById(tableName + extName).innerHTML = html;
+
 		// reset the count:
 		count = 0;
 	}
@@ -1561,21 +1539,20 @@
 
 	/* Fills and ul list jquery html object with the elements of the array
 
-		htmlObject: a jquery object
+		htmlObjectName: the name of the HTML object
 		array: a one dimension javascript array
 		classes: a string with the classes to add to li elemenets separated by spaces
 	*/
-    function fillHTMLListWithArray(htmlObject, array, classes){
+    function fillHTMLListWithArray(htmlObjectName, array, classes){
         var html = '';
 		for (var i=0; i<array.length; i++){
 			html+='<li class="'+classes+'">'
 			html+= array[i];
 			html+= '</li>';
 		}
-		    
-		htmlObject.append(html);
-    }
+		document.getElementById(htmlObjectName).innerHTML = html;
 
+    }
 	
 
 	function makeElementsEditables(){
@@ -1819,17 +1796,17 @@
 
 	function setMonthlyCheckboxes(){
 		// checked by default, trigger click for desactivate and for fire behaviour.
-		$('#'+MONTHLY_TABLE_TD_ID_PREFIX+BUTTON_PREFIX+VL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
-		$('#'+MONTHLY_TABLE_TD_ID_PREFIX+BUTTON_PREFIX+CL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
-		$('#'+MONTHLY_TABLE_TD_ID_PREFIX+BUTTON_PREFIX+ACL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
-		$('#'+MONTHLY_TABLE_TD_ID_PREFIX+BUTTON_PREFIX+ZCL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
+		$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+VL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
+		$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+CL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
+		$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+ACL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
+		$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+ZCL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
 
 		//$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+VL_COLUMN).trigger('click');
 		//$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+MCL_COLUMN).trigger('click');
 
 		if(acl_and_zcl_activated){
 			
-			$('#'+MONTHLY_TABLE_TD_ID_PREFIX+BUTTON_PREFIX+CL_ROW).trigger('click');
+			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+CL_ROW).trigger('click');
 
 			$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(CL_COLUMN-1)).trigger('click');
 			$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(PKDL_COLUMN-1)).trigger('click');
@@ -1840,8 +1817,8 @@
 
 			$('#'+MAP_PREFIX+BUTTON_PREFIX+"1").trigger('click');
 		} else {
-			$('#'+MONTHLY_TABLE_TD_ID_PREFIX+BUTTON_PREFIX+ACL_ROW).trigger('click');
-			$('#'+MONTHLY_TABLE_TD_ID_PREFIX+BUTTON_PREFIX+ZCL_ROW).trigger('click');
+			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+ACL_ROW).trigger('click');
+			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+ZCL_ROW).trigger('click');
 
 			$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(ACL_COLUMN-1)).trigger('click');
 			$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(ZCL_COLUMN-1)).trigger('click');
@@ -2172,7 +2149,8 @@
 			html+='<li class="'+liClass+' '+CLASS_EDITABLE_ELEMENT+'">'
 			html+= $("#newFootnoteText").html();
 			html+= '</li>';
-			sortableListNotSelected.append(html);
+			document.getElementById(SORTABLE_LIST_1_NAME).innerHTML += html;
+
 		}
 		deleteNewFootnote();
 	}
@@ -2320,7 +2298,7 @@
 		});
 		
 		// Listener monthly buttons
-		$(":checkbox."+MONTHLY_TABLE_TD_ID_PREFIX).change(function() {
+		$(":checkbox."+MONTHLY_TABLE_NAME).change(function() {
 			var index = Number(this.id.slice(this.id.length-1, this.id.length));
 			var startingid = this.id.slice(0, -1-BUTTON_PREFIX.length);
 			$("#"+startingid+index).toggle();
@@ -2403,9 +2381,9 @@
 
 		$("#subnationalLevelSelector").on('selectmenuchange', function() {
 			var selected_level = $("#subnationalLevelSelector").val();
-			getNumberOfDivisions(parseInt(selected_level)+1, CGI_TABLE_TD_ID_PREFIX+6+" td:nth-child(2) span");
-			$("#"+CGI_TABLE_TD_ID_PREFIX+6+" td:nth-child(1) span").html(LEVEL_REPORT_LABELS[selected_level]);
-			//$("#"+CGI_TABLE_TD_ID_PREFIX+6+" td:nth-child(2) span").html(nbdiv);
+			getNumberOfDivisions(parseInt(selected_level)+1, CGI_TABLE_NAME+6+" td:nth-child(2) span");
+			$("#"+CGI_TABLE_NAME+6+" td:nth-child(1) span").html(LEVEL_REPORT_LABELS[selected_level]);
+			//$("#"+CGI_TABLE_NAME+6+" td:nth-child(2) span").html(nbdiv);
 
 
 		}).change();
@@ -2424,33 +2402,7 @@
 		}
 	 }
 
-	// Editor for footnotes
-	$("#newfootnote").click(function() {
- 		 dialog.dialog( "open" );	
-		editingElement = $("#newFootnoteText")[0];
-		editor.jqteVal(editingElement.innerHTML);
-	});
 
-	// New footnote arrives 
-	$( "#sortable2" ).on( "sortupdate", function( event, ui ) {
-		fillFootnotes();
-	} );	
-	// New footnote arrives 
-	$( "#sortable3" ).on( "sortupdate", function( event, ui ) {
-		fillFootnotes();
-	} );
-
-	//TODO: fix contextmenu
- 	$(document).on("contextmenu",function(e){
-        if(e.target.nodeName != "INPUT" && e.target.nodeName != "TEXTAREA")
-             e.preventDefault();
-			 return false;
-     });
-
-
-	/****************************************************************************************************
-	 **********                            ENTRY POINT                                         **********
-	 ****************************************************************************************************/
 
 	
     function fillOrgUnits(data, length, start){
@@ -2486,13 +2438,40 @@
     dhis2.settings.baseUrl = window.location.pathname.split('/')[1];
     $(document).ready(function(){
 
+		var editor = $("#editor");
 		editor.jqte();	
+
+		// TODO: DEV. ACTIVATE initializeDialogs
+		// initializeDialogs();
+		
+		// Editor for footnotes
+		$("#newfootnote").click(function() {
+			dialog.dialog( "open" );	
+			editingElement = $("#newFootnoteText")[0];
+			editor.jqteVal(editingElement.innerHTML);
+		});
+
+		// New footnote arrives 
+		$( "#sortable2" ).on( "sortupdate", function( event, ui ) {
+			fillFootnotes();
+		} );	
+		// New footnote arrives 
+		$( "#sortable3" ).on( "sortupdate", function( event, ui ) {
+			fillFootnotes();
+		} );
+
+		//TODO: fix contextmenu
+		$(document).on("contextmenu",function(e){
+			if(e.target.nodeName != "INPUT" && e.target.nodeName != "TEXTAREA")
+				e.preventDefault();
+				return false;
+		});
+
 
 
 		var thisYear = parseInt(getCurrentDate(true, false, false));
 		
-		// TODO: DEV. ACTIVATE initializeDialogs
-		// initializeDialogs();
+
 
 
 		$.when(getNumberOfDivisions(3, "id,displayName"), generateYears())
@@ -2542,7 +2521,7 @@
 
 
 		generateCheckboxes($("#leish_detail_checkboxes"), COLUMNS_LABELS, "Leishmaniasis types to show:", LEISH_COLUMN_DETAIL_PREFIX, -1);
-		generateCheckboxes($("#monthlyCheckboxes"), MONTHLY_LABELS, "Leishmaniasis types to show in monthly table:", MONTHLY_TABLE_TD_ID_PREFIX, -1);
+		generateCheckboxes($("#monthlyCheckboxes"), MONTHLY_LABELS, "Leishmaniasis types to show in monthly table:", MONTHLY_TABLE_NAME, -1);
 		generateCheckboxes($("#chartCheckboxes"), CHART_CHECKBOXES_LABELS, "Graphs to show", CHART_PREFIX, 2);
 		generateCheckboxes($("#mapCheckboxes"), MAP_CHECKBOXES_LABELS, "Maps to show", MAP_PREFIX, -1);
 
@@ -2693,11 +2672,12 @@
 		}
 		});
 		
+		
+		fillTableHead(EPI_TABLE_NAME, "Head", '', COLUMNS_LABELS);
+		fillTableHead(MONTH_DIST_TABLE_NAME, "Head", '', MONTHS_ABBREV);
+		fillTableHead(DIAG_TABLE_NAME, "Head", '', COLUMNS_LABELS);
+		fillTableHead(TOUTCOME_TABLE_NAME, "Head", TOUTCOME_TABLE_FIRST_COLUMNS, COLUMNS_LABELS.slice(0,2));
 
-		fillTableHead(epiTableHead, '', COLUMNS_LABELS);
-		fillTableHead(monthlyDistributionTableHead, '', MONTHS_ABBREV);
-		fillTableHead(diagTableHead, '', COLUMNS_LABELS);
-		fillTableHead(toutcomeTableHead, TOUTCOME_TABLE_FIRST_COLUMNS, COLUMNS_LABELS.slice(0,2));
 
 		// Dragable activation
 		$( ".draggable" ).draggable({ grid: [ 10, 10 ] });	
@@ -2734,20 +2714,20 @@
 			// the code here will be executed when all four ajax requests resolve.
 			// a1, a2, a3 and a4 are lists of length 3 containing the response text,
 			// status, and jqXHR object for each of the four ajax calls respectively.
-				writeTable(cgiTableBody, generalInformationArray, CGI_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_CGI);
-				writeTable(epiTableBody, array, EPI_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_EPI);
-				writeTable(monthlyDistributionTableBody, monthlyArray, MONTHLY_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_MONTHLY);
-				writeTable(casTableBody, controlArray, CAS_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_CAS);
-				writeTable(diagTableBody, diagnosisArray, DIAG_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_DIAG);
-				writeTable(toutcomeTableBody, toutcomeArray, "", LINES_BELOW_LABELS_TREAT);
-				writeTable(tamTableBody, tamArray, "", LINES_BELOW_LABELS_TAM);
+				writeTable(CGI_TABLE_NAME, "Body", generalInformationArray, LINES_BELOW_LABELS_CGI);
+				writeTable(EPI_TABLE_NAME, "Body", array, LINES_BELOW_LABELS_EPI);
+				writeTable(MONTH_DIST_TABLE_NAME, "Body", monthlyArray, LINES_BELOW_LABELS_MONTHLY);
+				writeTable(CAS_TABLE_NAME, "Body", controlArray, LINES_BELOW_LABELS_CAS);
+				writeTable(DIAG_TABLE_NAME, "Body", diagnosisArray, LINES_BELOW_LABELS_DIAG);
+				writeTable(TOUTCOME_TABLE_NAME, "Body", toutcomeArray, LINES_BELOW_LABELS_TREAT);
+				writeTable(TAM_TABLE_NAME, "Body", tamArray, LINES_BELOW_LABELS_TAM);
 
 				generate_cl_vl_new_monthly_charts();
 				generate_cl_vl_new_and_incidence_yearly_charts();
 
-				fillHTMLListWithArray(sortableListNotSelected, storedFootnotes, 'ui-state-default '+CLASS_EDITABLE_ELEMENT);
-				fillHTMLListWithArray(sortableListPage1, activeFootnotesPage1, 'ui-state-highlight '+CLASS_EDITABLE_ELEMENT);
-				fillHTMLListWithArray(sortableListPage2, activeFootnotesPage2, 'ui-state-highlight '+CLASS_EDITABLE_ELEMENT);
+				fillHTMLListWithArray(SORTABLE_LIST_1_NAME, storedFootnotes, 'ui-state-default '+CLASS_EDITABLE_ELEMENT);
+				fillHTMLListWithArray(SORTABLE_LIST_2_NAME, activeFootnotesPage1, 'ui-state-highlight '+CLASS_EDITABLE_ELEMENT);
+				fillHTMLListWithArray(SORTABLE_LIST_3_NAME, activeFootnotesPage2, 'ui-state-highlight '+CLASS_EDITABLE_ELEMENT);
 				fillFootnotes();
 
 				fillTreatmentAndMedicines();
@@ -3064,5 +3044,6 @@
 		</div>
 								
 	</div>
+
 </body>
 </html>
