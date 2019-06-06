@@ -686,7 +686,7 @@
 	var generatedYears = [], organisationUnits = [];
 
 
-	var dialog_cs, dialog;
+	var dialog_cs, dialog, editor;
 
 	var ds = {};
 
@@ -1565,10 +1565,11 @@
 			if (event.which === 3){
 				//event.preventDefault();
 
-				dialog.dialog( "open" );	
-				var test = this.innerHTML;
 				editingElement = this;
-				editor.jqteVal(editingElement.innerHTML);
+				editor.jqteVal(editingElement.outerHTML);
+				dialog.dialog( "option", "position", { my: "left top", at: "center bottom+10%", of: editingElement } );	
+				dialog.dialog( "open" );	
+
 
 			}
 		});
@@ -2224,6 +2225,7 @@
 			width: 650,
 			modal: true,
 			title: "Edit field",
+			position: { my: "center", at: "center", collision: "none" },
 			buttons: {
 				"Save changes": saveChanges,
 				"Save changes and close": saveChangesAndClose,
@@ -2265,11 +2267,11 @@
 	}
 
 	function saveChanges(){
-		editingElement.innerHTML = editor.jqteVal();
+		editingElement.outerHTML = editor.jqteVal();
 		addNewFootnote();
 	}
 	function saveChangesAndClose(){
-		editingElement.innerHTML = editor.jqteVal();
+		editingElement.outerHTML = editor.jqteVal();
 		addNewFootnote();
 		dialog.dialog( "close" );
 	}
@@ -2438,17 +2440,19 @@
     dhis2.settings.baseUrl = window.location.pathname.split('/')[1];
     $(document).ready(function(){
 
-		var editor = $("#editor");
+		editor = $("#editor");
 		editor.jqte();	
 
-		// TODO: DEV. ACTIVATE initializeDialogs
-		// initializeDialogs();
-		
+		initializeDialogs();
+
 		// Editor for footnotes
 		$("#newfootnote").click(function() {
-			dialog.dialog( "open" );	
 			editingElement = $("#newFootnoteText")[0];
 			editor.jqteVal(editingElement.innerHTML);
+
+			dialog.dialog( "option", "position", { my: "left top", at: "center bottom+10%", of: this } );	
+			dialog.dialog( "open" );	
+
 		});
 
 		// New footnote arrives 
@@ -2482,10 +2486,8 @@
 				autocompleteSearcher("yearField", generatedYears, doNothing, 1, 200);
 				autocompleteSearcher("targetCountry", organisationUnits, doNothing, 2, 200);
 
-				
-				// TODO: DEV. ACTIVATE dialog_cs and remove startPrepatingReport
-				// dialog_cs.dialog( "open" );
-				startPreparingReport(); // temp to win time
+				dialog_cs.dialog( "open" );
+				DEBUG_AutomaticallyfillInitialForm();
 
 			});
 			// generate dialog and wait
@@ -2503,17 +2505,26 @@
 				};
 				*/
 	});
+	function DEBUG_AutomaticallyfillInitialForm()
+	{
 
+		$( "#targetCountry" ).val("Algeria"); 
+		$( "#targetCountry" ).text("mNa42CHbkO7"); 
+		$( "#yearField" ).val(2017); 
+
+		buttons = dialog_cs.dialog('option', 'buttons');
+		buttons['Start preparing report'](); // Clicks the button
+		dialog_cs.dialog( "close" );
+
+
+	}
 
 	function startPreparingReport() {
 	
 		// retrieves values from form
-		// ds.countryName =  $( "#targetCountry" ).val(); 
-		// ds.countryID =  $( "#targetCountry" ).text(); 
-		// ds.year = $( "#yearField" ).val(); 
-		ds.countryName = "Algeria";
-		ds.countryID = "mNa42CHbkO7";
-		ds.year = 2017;
+		ds.countryName =  $( "#targetCountry" ).val(); 
+		ds.countryID =  $( "#targetCountry" ).text(); 
+		ds.year = $( "#yearField" ).val(); 
 
 		$( "#country_name" ).text(ds.countryName);
 		$( "#year" ).text(ds.year);
