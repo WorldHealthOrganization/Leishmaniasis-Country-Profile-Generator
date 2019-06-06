@@ -62,9 +62,7 @@
 <script type="text/javascript" src="../../../dhis-web-commons/javascripts/ext/ext-all.js"></script>
 <script type="text/javascript" src="../../../dhis-web-mapping/map.js"></script>
 <script type="text/javascript" src="commons/api.js"></script>
-<script type="text/javascript" src="commons/feedbacks.js"></script>
 <script type="text/javascript" src="commons/inputControl.js"></script>
-<script type="text/javascript" src="commons/progressBar.js"></script>
 <script type="text/javascript" src="commons/tools.js"></script>
 
 
@@ -76,18 +74,11 @@
 
 <script type="text/javascript">
 
-	
-	/****************************************************************************************************
-	 **********                               CSS imports    		                           **********
-	 ****************************************************************************************************/
 
 	/****************************************************************************************************
  	 **********                      	       CONSTANTS            	              	       **********
 	 ****************************************************************************************************/
-	var DATA_VALUE_SETS = "dataValueSets";
-
 	var ANALYTICS = "analytics";
-	var EVENTS = "events";
 	var WHEN_UNDEFINED = "No data";
 	var WHEN_NON_APPLICABLE = "N/A";
 	var WHEN_DIV_0 = "-";
@@ -195,6 +186,7 @@
 
 
 	/* Country General Information Texts */
+	// http://who-dev.essi.upc.edu:8083/issues/1498
 	
 	var CIG_ROW_POP = 0;
 	var CIG_ROW_SEX = 1;
@@ -643,7 +635,6 @@
 	var RG_footnote_page = "SrHddMhflZZ";
 	var RG_footnote_text = "rWAis0fAWw9";
 
-	var date, year, orgUnit, country_name, params;
 	var builtUrl;
 
 	var acl_and_zcl_activated = false;
@@ -717,9 +708,10 @@
 
 	var generatedYears = [], organisationUnits = [];
 
-    var FEEDBACK_FILL_ALL_FIELDS = "Please, fill all fields.";
 
+	var dialog_cs, dialog;
 
+	var ds = {};
 
 	/****************************************************************************************************
  	 **********                    	     STATIC CONTENT FUNCTIONS         	           	       **********
@@ -787,7 +779,7 @@
 		var params = {
 			skipPaging : true
 		} 
-		return $.when(getParents(orgUnit.id)).then(function(data){
+		return $.when(getParents(ds.countryID)).then(function(data){
 			var orgUnitArray = [];
 			if (typeof data.organisationUnits !== 'undefined' ) {
 				var orgUnitArray = data.organisationUnits[0].path.replace(/^\/|\/$/, "").split("/");
@@ -858,7 +850,7 @@
 
 		var params = {
 			period: theYear,
-			orgUnit: orgUnit.id,
+			orgUnit: ds.countryID,
 			program: PR_LEISHMANIASIS,
 			pageSize:1,
 			page: 1
@@ -930,10 +922,10 @@
 		var params = {
 			dataSet : DATASET.DAM,
 			period: theYear,
-			orgUnit: orgUnit.id
+			orgUnit: ds.countryID
 		}
 		
-		builtUrl = buildAPIUrl(DATA_VALUE_SETS, params);
+		builtUrl = buildAPIUrl(DATAVALUESETS, params);
 		
 		return $.ajax({
 			url: builtUrl
@@ -954,7 +946,7 @@
 			level : lvl,
 			fields: "id"
 		}
-		builtUrl = buildAPIUrl(ORG_UNITS+"/"+orgUnit.id, params);
+		builtUrl = buildAPIUrl(ORG_UNITS+"/"+ds.countryID, params);
 
 		
 		return $.ajax({
@@ -967,8 +959,7 @@
 		});;
 	}*/
 	function getLegendSet(legendSetId, mapId){
-		console.log("getLegendSet");
-		var legendUrl = "../api/legendSets/"+legendSetId;
+		var legendUrl = "../../legendSets/"+legendSetId;
 
 		return $.ajax({
 			url: legendUrl
@@ -1057,7 +1048,7 @@
 		var params = {
 			dataSet: dataset,
 			period: [],
-			orgUnit: orgUnit.id
+			orgUnit: ds.countryID
 		}
 
 		for (var i=1;i<=12;i++){
@@ -1065,7 +1056,7 @@
 			params.period[i] = year + monthNumber;
 		}
 
-		builtUrl = buildAPIUrl(DATA_VALUE_SETS, params);
+		builtUrl = buildAPIUrl(DATAVALUESETS, params);
 		return $.ajax({
 			url: builtUrl
 		}).then(function(data) {
@@ -1078,30 +1069,36 @@
 	}
 
 	function get_monthly_cases_for_cl_current_year() {
-			return get_monthly_cases_for(DATASET.CL_MONTHLY, CL_ROW, year);
+			return get_monthly_cases_for(DATASET.CL_MONTHLY, CL_ROW, ds.year);
 	}
 	function get_monthly_cases_for_cl_previous_year() {
-			return get_monthly_cases_for(DATASET.CL_MONTHLY, CL_PREVIOUS_YEAR_ROW, year-1);
+			return get_monthly_cases_for(DATASET.CL_MONTHLY, CL_PREVIOUS_YEAR_ROW, ds.year-1);
 	}
 	function get_monthly_cases_for_vl_current_year() {
-			return get_monthly_cases_for(DATASET.VL_MONTHLY, VL_ROW, year);
+			return get_monthly_cases_for(DATASET.VL_MONTHLY, VL_ROW, ds.year);
 	}
 	function get_monthly_cases_for_vl_previous_year() {
-			return get_monthly_cases_for(DATASET.VL_MONTHLY, VL_PREVIOUS_YEAR_ROW, year-1);
+			return get_monthly_cases_for(DATASET.VL_MONTHLY, VL_PREVIOUS_YEAR_ROW, ds.year-1);
 	}
 	function get_monthly_cases_for_azcl_current_year() {
-			return get_monthly_cases_for(DATASET.AZCL_MONTHLY, [ACL_ROW, ZCL_ROW], year);
+			return get_monthly_cases_for(DATASET.AZCL_MONTHLY, [ACL_ROW, ZCL_ROW], ds.year);
 	}
 	function get_monthly_cases_for_azcl_previous_year() {
-			return get_monthly_cases_for(DATASET.AZCL_MONTHLY, [ACL_PREVIOUS_YEAR_ROW, ZCL_PREVIOUS_YEAR_ROW], year-1);
+			return get_monthly_cases_for(DATASET.AZCL_MONTHLY, [ACL_PREVIOUS_YEAR_ROW, ZCL_PREVIOUS_YEAR_ROW], ds.year-1);
 	}
 	
 
 	/* getting cl cases from API */
 	function get_cl_cases() {
 
-		params.dataSet = DATASET.CL;
-		builtUrl = buildAPIUrl(DATA_VALUE_SETS, params);
+		var params = {
+			dataSet: DATASET.CL,
+			period: ds.year,
+			orgUnit: ds.countryID
+
+		}
+
+		builtUrl = buildAPIUrl(DATAVALUESETS, params);
 		return $.ajax({
 			url: builtUrl
 		}).then(function(data) {
@@ -1114,9 +1111,13 @@
 
 	/* getting cl cases from API */
 	function get_azcl_cases() {
+		var params = {
+			dataSet: DATASET.AZCL,
+			period: ds.year,
+			orgUnit: ds.countryID
+		}
 
-		params.dataSet = DATASET.AZCL;
-		builtUrl = buildAPIUrl(DATA_VALUE_SETS, params);
+		builtUrl = buildAPIUrl(DATAVALUESETS, params);
 		return $.ajax({
 			url: builtUrl
 		}).then(function(data) {
@@ -1129,8 +1130,14 @@
 
 	/* getting vl cases from API */
 	function get_vl_cases() {
-		params.dataSet = DATASET.VL;
-		builtUrl = buildAPIUrl(DATA_VALUE_SETS, params);
+
+		var params = {
+			dataSet: DATASET.VL,
+			period: ds.year,
+			orgUnit: ds.countryID
+		}
+
+		builtUrl = buildAPIUrl(DATAVALUESETS, params);
 		return $.ajax({
 			url: builtUrl
 		}).then(function(data) {
@@ -1142,13 +1149,13 @@
 
 	function getNewCases(dimension, column){
 		var params = {
-			dimension: ["dx:"+dimension,"pe:"+year, "B9bBfRcF6jb:aD1KD82UFB1"],
-			filter: ["ou:"+orgUnit.id],
+			dimension: ["dx:"+dimension,"pe:"+ds.year, "B9bBfRcF6jb:aD1KD82UFB1"],
+			filter: ["ou:"+ds.countryID],
 			displayProperty : "NAME",
 			skipMeta:"true"
 		}
 		for (var i=1; i<historicLength; i++){
-			params.dimension[1] +=";"+(year-i);
+			params.dimension[1] +=";"+(ds.year-i);
 		}
 		var builtUrl = buildAPIUrl(ANALYTICS, params);
 		return $.ajax({
@@ -1161,13 +1168,13 @@
 
 
 		var params = {
-			dimension: ["dx:"+indicator,"pe:"+year],
-			filter: ["ou:"+orgUnit.id],
+			dimension: ["dx:"+indicator,"pe:"+ds.year],
+			filter: ["ou:"+ds.countryID],
 			displayProperty : "NAME",
 			skipMeta:"true"
 		}
 		for (var i=1; i<historicLength; i++){
-			params.dimension[1] +=";"+(year-i);
+			params.dimension[1] +=";"+(ds.year-i);
 		}
 		var builtUrl = buildAPIUrl(ANALYTICS, params);
 		return $.ajax({
@@ -1464,7 +1471,7 @@
 		tamArray[TAM_ROW_FREEOFCHARGE][1] = getValueForKey(dataValues, DE_KEY, DE.UNS_FREE_TREATMENT, VALUE_KEY);
 		tamArray[TAM_ROW_ANTILEISHMANIAL][1] = getValueForKey(dataValues, DE_KEY, DE.UNS_ANTIL_LEM, VALUE_KEY);
 
-		if (yearInfo < year){
+		if (yearInfo < ds.year){
 			$("#tamTitle").append(" (" + yearInfo + ")");
 		}
 	}
@@ -1615,14 +1622,7 @@
 
 
 	}
-	/*	Returns a url for the API
 
-	*/
-	/*
-	function buildAPIUrl(page, params){
-		return API_URL+page+"?"+$.param(params, true);
-	}
-*/
 	function numberToTwoDigits( number){
 		return ("0" + number).slice(-2);
 	}
@@ -1643,7 +1643,7 @@
 		}
 		var returnValues = new Array(historicLength);
 		for (var i=0; i<array.rows.length; i++){
-			returnValues[year-array.rows[i][yearColumn]] = array.rows[i][valueColumn];
+			returnValues[ds.year-array.rows[i][yearColumn]] = array.rows[i][valueColumn];
 		}
 		return returnValues;
 	}
@@ -1894,9 +1894,9 @@
 	*/
 	function generate_cl_vl_new_monthly_charts (){
 	
-		var yearsText = (year-1) + " and " + year;
+		var yearsText = (ds.year-1) + " and " + ds.year;
 		var colors = [COLORS.blue, COLORS.blue, COLORS.green, COLORS.green];
-		var labels = [ACL_CHART_LEGEND +year, ACL_CHART_LEGEND +(year-1), ZCL_CHART_LEGEND + year, ZCL_CHART_LEGEND  + (year-1)];
+		var labels = [ACL_CHART_LEGEND +ds.year, ACL_CHART_LEGEND +(ds.year-1), ZCL_CHART_LEGEND + ds.year, ZCL_CHART_LEGEND  + (ds.year-1)];
 		
 		var acl_current_year = monthlyArray[ACL_ROW].slice(1,monthlyArray[ACL_ROW].length);
 		var zcl_current_year = monthlyArray[ZCL_ROW].slice(1,monthlyArray[ZCL_ROW].length);
@@ -1906,7 +1906,7 @@
 		lineChart(newAZCLCasesChartID, CL_CASES_CHART_TITLE + yearsText, MONTHS_ABBREV, CL_CASES_CHART_Y_TITLE, labels, dataarrays, colors, true);
 
 		colors = [COLORS.blue, COLORS.blue];
-		labels = [CL_CHART_LEGEND + year, CL_CHART_LEGEND + (year-1)];
+		labels = [CL_CHART_LEGEND + ds.year, CL_CHART_LEGEND + (ds.year-1)];
 		var cl_current_year = monthlyArray[CL_ROW].slice(1,monthlyArray[CL_ROW].length);
 		var cl_previous_year = monthlyArray[CL_PREVIOUS_YEAR_ROW].slice(1,monthlyArray[CL_PREVIOUS_YEAR_ROW].length);
 		var dataarrays = [cl_current_year, cl_previous_year];
@@ -1916,7 +1916,7 @@
 		var vl_previous_year = monthlyArray[VL_PREVIOUS_YEAR_ROW].slice(1,monthlyArray[VL_PREVIOUS_YEAR_ROW].length);
 		var vl_data_arrays = [vl_current_year, vl_previous_year];
 		var vl_colors = [COLORS.violet, COLORS.violet];
-		var vl_labels = [VL_CHART_LEGEND + year, VL_CHART_LEGEND + (year-1)];
+		var vl_labels = [VL_CHART_LEGEND + ds.year, VL_CHART_LEGEND + (ds.year-1)];
 
 		lineChart(newVLCasesChartID, VL_CASES_CHART_TITLE + yearsText, MONTHS_ABBREV, VL_CASES_CHART_Y_TITLE, vl_labels, vl_data_arrays, vl_colors, true);
 
@@ -2031,7 +2031,7 @@
 
 		var yearLabels = [];
 		for (var i=0; i<historicLength;i++){
-			yearLabels[historicLength-i-1] = year-i;
+			yearLabels[historicLength-i-1] = ds.year-i;
 		}
 
 
@@ -2113,8 +2113,8 @@
 		event.preventDefault();
 		var selected_map_index =  $('#mapSelector').val();
 		var mapStyle = MAP_STYLE[$('#mapStyleSelector').val()];
-
-		generateMap(selected_map_index, "INDICATOR", map_levels, orgUnit.id, year, "thematic1", mapStyle, map_opacity);
+		// TODO: adapt to Maps
+		generateMap(selected_map_index, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity);
 
 	} );
 
@@ -2129,10 +2129,10 @@
 		initalMapDiv[ZCL_INDEX] = $('#map3').html();
 
 		var mapStyle = MAP_STYLE[$('#mapStyleSelector').val()];
-		generateMap(VL_INDEX, "INDICATOR", levels, orgUnit.id, year, "thematic1", mapStyle, map_opacity);
-		generateMap(CL_INDEX, "INDICATOR", levels, orgUnit.id, year, "thematic1", mapStyle, map_opacity);
-		generateMap(ACL_INDEX, "INDICATOR", levels, orgUnit.id, year, "thematic1", mapStyle, map_opacity);
-		generateMap(ZCL_INDEX, "INDICATOR", levels, orgUnit.id, year, "thematic1", mapStyle, map_opacity);
+		generateMap(VL_INDEX, "INDICATOR", levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity);
+		generateMap(CL_INDEX, "INDICATOR", levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity);
+		generateMap(ACL_INDEX, "INDICATOR", levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity);
+		generateMap(ZCL_INDEX, "INDICATOR", levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity);
 		drawLegendSet("legendSet0", VL_INDEX);
 		drawLegendSet("legendSet1", CL_INDEX);
 		drawLegendSet("legendSet2", ACL_INDEX);
@@ -2141,8 +2141,8 @@
 
 	function fillNotaBene(){
 		var text = "Data source: Ministry of Health, "
-					+ country_name +
-					"<br>WHO " + year + ". All rights reserved.";
+					+ ds.countryName +
+					"<br>WHO " + ds.year + ". All rights reserved.";
 		$('#notaBene div').html(text);
 		
 	}
@@ -2161,7 +2161,7 @@
 	 **********                               FOOTNOTES functions                                 **********
 	 ****************************************************************************************************/
 
-
+// TODO: move those vars up
   	var storedFootnotes = [];
     var activeFootnotesPage1 = [];
 	var activeFootnotesPage2 = [];
@@ -2234,32 +2234,58 @@
 		}
 
 	}
+	
+	function initializeDialogs (){
 
-	/****************************************************************************************************
-	 **********                               EDITOR                                           **********
-	 ****************************************************************************************************/
-	editor.jqte();	
+		/****************************************************************************************************
+		 **********                               EDITOR                                           **********
+		****************************************************************************************************/
 
-	var dialog = $( "#dialog-editor" ).dialog({
-		autoOpen: false,
-		height: 350,
-		width: 650,
-		modal: true,
-		title: "Edit field",
-		buttons: {
-			"Save changes": saveChanges,
-			"Save changes and close": saveChangesAndClose,
-			Cancel: function() {
-				deleteNewFootnote();
-				dialog.dialog( "close" );
+		dialog = $( "#dialog-editor" ).dialog({
+			autoOpen: false,
+			height: 350,
+			width: 650,
+			modal: true,
+			title: "Edit field",
+			buttons: {
+				"Save changes": saveChanges,
+				"Save changes and close": saveChangesAndClose,
+				Cancel: function() {
+					deleteNewFootnote();
+					dialog.dialog( "close" );
+				}
+			},
+			close: function(event) {
+				event.preventDefault();
+				return false;
+				//allFields.removeClass( "ui-state-error" );
 			}
-		},
-		close: function(event) {
-			event.preventDefault();
-			return false;
-			//allFields.removeClass( "ui-state-error" );
-		}
-	});
+		});
+
+
+		/****************************************************************************************************
+		 **********                            COUNTRY-SELECTOR                                    **********
+		****************************************************************************************************/	
+		
+		// country_selector.jqte();
+
+		dialog_cs = $( "#dialog-country-selector" ).dialog({
+			autoOpen: false,
+			height: 350,
+			width: 650,
+			modal: true,
+			title: "title",
+			buttons: {
+				"Start preparing report": startPreparingReport
+			},
+			close: function(event) {
+				event.preventDefault();
+				return false;
+				//allFields.removeClass( "ui-state-error" );
+			}
+		});
+
+	}
 
 	function saveChanges(){
 		editingElement.innerHTML = editor.jqteVal();
@@ -2271,27 +2297,6 @@
 		dialog.dialog( "close" );
 	}
 
-	/****************************************************************************************************
-	 **********                            COUNTRY-SELECTOR                                    **********
-	 ****************************************************************************************************/	
-	
-	// country_selector.jqte();
-
-	var dialog_cs = $( "#dialog-country-selector" ).dialog({
-		autoOpen: false,
-		height: 350,
-		width: 650,
-		modal: true,
-		title: "title",
-		buttons: {
-			"Start preparing report": startPreparingReport
-		},
-		close: function(event) {
-			event.preventDefault();
-			return false;
-			//allFields.removeClass( "ui-state-error" );
-		}
-	});
 
 	/****************************************************************************************************
 	 **********                               LISTENERS                                        **********
@@ -2474,15 +2479,21 @@
 		}
 	}
 
-	
-	$(function() {
-		initializeProgressBar("progressbar", "dialog");
+	/****************************************************************************************************
+ 	 **********                    	                  START HERE         	           	       **********
+	 ****************************************************************************************************/
+	window.dhis2 = window.dhis2 || {};
+    dhis2.settings = dhis2.settings || {};
+    dhis2.settings.baseUrl = window.location.pathname.split('/')[1];
+    $(document).ready(function(){
 
-
-		openProgressBar(INDETERMINATE);
+		editor.jqte();	
 
 
 		var thisYear = parseInt(getCurrentDate(true, false, false));
+		
+		// TODO: DEV. ACTIVATE initializeDialogs
+		// initializeDialogs();
 
 
 		$.when(getNumberOfDivisions(3, "id,displayName"), generateYears())
@@ -2491,10 +2502,12 @@
 				fillOrgUnits(nbOfDivisions.organisationUnits, nbOfDivisions.organisationUnits.length);
 				
 				autocompleteSearcher("yearField", generatedYears, doNothing, 1, 200);
-				autocompleteSearcher("destinationCountry", organisationUnits, doNothing, 2, 200);
+				autocompleteSearcher("targetCountry", organisationUnits, doNothing, 2, 200);
 
-				closeProgressBar();
-				dialog_cs.dialog( "open" );
+				
+				// TODO: DEV. ACTIVATE dialog_cs and remove startPrepatingReport
+				// dialog_cs.dialog( "open" );
+				startPreparingReport(); // temp to win time
 
 			});
 			// generate dialog and wait
@@ -2503,11 +2516,11 @@
 				var date = dhis2.report.date;
 			var year = date.slice(0,4);
 			var orgUnit = dhis2.report.organisationUnit;
-			var country_name =orgUnit.name;
+			var ds.countryName =orgUnit.name;
 			var params = {
 				dataSet: "", //i.e. DATASET.CL,
 				period: year,
-				orgUnit: orgUnit.id
+				orgUnit: ds.countryID
 				
 				};
 				*/
@@ -2516,262 +2529,254 @@
 
 	function startPreparingReport() {
 	
-	
-		// check if fields are filled
-		if (!$( "#destinationCountry").val() || !$( "#yearField").val() ){
+		// retrieves values from form
+		// ds.countryName =  $( "#targetCountry" ).val(); 
+		// ds.countryID =  $( "#targetCountry" ).text(); 
+		// ds.year = $( "#yearField" ).val(); 
+		ds.countryName = "Algeria";
+		ds.countryID = "mNa42CHbkO7";
+		ds.year = 2017;
 
-			updateFeedback(FEEDBACK_INFO, "dialog-country-selector-check-message", FEEDBACK_FILL_ALL_FIELDS);
-		} else {
-			updateFeedback(FEEDBACK_HIDE, "dialog-country-selector-check-message", "");
-
-			var countryName =  $( "#destinationCountry" ).val(); 
-            var countryID =  $( "#destinationCountry" ).text(); 
-			var year = $( "#yearField" ).val(); 
-            var date = year + "-01-02";
-
-			$( "#country_name" ).text(countryName);
-			$( "#year" ).text(year);
-			$( "#published_date").text(getDatePublished());
+		$( "#country_name" ).text(ds.countryName);
+		$( "#year" ).text(ds.year);
+		$( "#published_date").text(getDatePublished());
 
 
+		generateCheckboxes($("#leish_detail_checkboxes"), COLUMNS_LABELS, "Leishmaniasis types to show:", LEISH_COLUMN_DETAIL_PREFIX, -1);
+		generateCheckboxes($("#monthlyCheckboxes"), MONTHLY_LABELS, "Leishmaniasis types to show in monthly table:", MONTHLY_TABLE_TD_ID_PREFIX, -1);
+		generateCheckboxes($("#chartCheckboxes"), CHART_CHECKBOXES_LABELS, "Graphs to show", CHART_PREFIX, 2);
+		generateCheckboxes($("#mapCheckboxes"), MAP_CHECKBOXES_LABELS, "Maps to show", MAP_PREFIX, -1);
 
-			generateCheckboxes($("#leish_detail_checkboxes"), COLUMNS_LABELS, "Leishmaniasis types to show:", LEISH_COLUMN_DETAIL_PREFIX, -1);
-			generateCheckboxes($("#monthlyCheckboxes"), MONTHLY_LABELS, "Leishmaniasis types to show in monthly table:", MONTHLY_TABLE_TD_ID_PREFIX, -1);
-			generateCheckboxes($("#chartCheckboxes"), CHART_CHECKBOXES_LABELS, "Graphs to show", CHART_PREFIX, 2);
-			generateCheckboxes($("#mapCheckboxes"), MAP_CHECKBOXES_LABELS, "Maps to show", MAP_PREFIX, -1);
+		addListenersToCheckboxes();
 
-			addListenersToCheckboxes();
-
-			$( "#sortable1, #sortable2, #sortable3" ).sortable({
-			connectWith: ".connectedSortable"
-			}).disableSelection();
-			$('input[type=checkbox]').checkboxradio();
-			$( "#tabs" ).tabs({heightStyle: "content"});
-			// corrects bug on checkboxes
-			$( ".ui-state-hover" ).removeClass( "ui-state-hover" );
+		$( "#sortable1, #sortable2, #sortable3" ).sortable({
+		connectWith: ".connectedSortable"
+		}).disableSelection();
+		$('input[type=checkbox]').checkboxradio();
+		$( "#tabs" ).tabs({heightStyle: "content"});
+		// corrects bug on checkboxes
+		$( ".ui-state-hover" ).removeClass( "ui-state-hover" );
 
 
-			// maps jqueryui    
-			$( "#mapSelector" ).selectmenu();
-			$( "#legendSelector" ).selectmenu();
-			$( "#positionLegendSelector" ).selectmenu();
-			$( "#subnationalLevelSelector" ).selectmenu();
-			$( "#mapStyleSelector" ).selectmenu();
-			$( "#updateMapButton").button();
-			$( "#updateLegendButton").button();
-			$( ".radioButton" ).checkboxradio();
+		// maps jqueryui    
+		$( "#mapSelector" ).selectmenu();
+		$( "#legendSelector" ).selectmenu();
+		$( "#positionLegendSelector" ).selectmenu();
+		$( "#subnationalLevelSelector" ).selectmenu();
+		$( "#mapStyleSelector" ).selectmenu();
+		$( "#updateMapButton").button();
+		$( "#updateLegendButton").button();
+		$( ".radioButton" ).checkboxradio();
 
 
 
-			setButtonDisabledTo("updateMapButton", true);
-			setButtonDisabledTo("updateLegendButton", true);
-			setOptionSelectMenu("positionLegendSelector", BOTTOM_RIGHT);
+		setButtonDisabledTo("updateMapButton", true);
+		setButtonDisabledTo("updateLegendButton", true);
+		setOptionSelectMenu("positionLegendSelector", BOTTOM_RIGHT);
 
-			generateMapConfigurationList($("#mapSelector"), MAP_CHECKBOXES_LABELS, MAP_PREFIX);
-			generateMapConfigurationList($("#legendSelector"), MAP_CHECKBOXES_LABELS, LEGENDSET_PREFIX);
-			generateMapConfigurationList($("#positionLegendSelector"), LEGEND_POSITION_LABELS, LEGEND_PREFIX);
-			generateMapConfigurationList($("#mapStyleSelector"), MAP_STYLE_LABELS, MAP_STYLE_PREFIX);
+		generateMapConfigurationList($("#mapSelector"), MAP_CHECKBOXES_LABELS, MAP_PREFIX);
+		generateMapConfigurationList($("#legendSelector"), MAP_CHECKBOXES_LABELS, LEGENDSET_PREFIX);
+		generateMapConfigurationList($("#positionLegendSelector"), LEGEND_POSITION_LABELS, LEGEND_PREFIX);
+		generateMapConfigurationList($("#mapStyleSelector"), MAP_STYLE_LABELS, MAP_STYLE_PREFIX);
 
-			// Disables Google options
-			$('#' + MAP_STYLE_PREFIX + OPTION_PREFIX + GOOGLE_STREETS).prop('disabled', function(_, attr){ return !attr});
-			$('#' + MAP_STYLE_PREFIX + OPTION_PREFIX + GOOGLE_HYBRID).prop('disabled', function(_, attr){ return !attr});
-			$( "#mapStyleSelector" ).selectmenu( 'refresh', true);
+		// Disables Google options
+		$('#' + MAP_STYLE_PREFIX + OPTION_PREFIX + GOOGLE_STREETS).prop('disabled', function(_, attr){ return !attr});
+		$('#' + MAP_STYLE_PREFIX + OPTION_PREFIX + GOOGLE_HYBRID).prop('disabled', function(_, attr){ return !attr});
+		$( "#mapStyleSelector" ).selectmenu( 'refresh', true);
 
-			setOptionSelectMenu("mapStyleSelector", OSM_LIGHT);
-			
-			generateMapConfigurationList($("#subnationalLevelSelector"), LEVEL_CONFIG_LABELS, LEVEL_PREFIX);
+		setOptionSelectMenu("mapStyleSelector", OSM_LIGHT);
+		
+		generateMapConfigurationList($("#subnationalLevelSelector"), LEVEL_CONFIG_LABELS, LEVEL_PREFIX);
 
-			fillNotaBene();
-			fillNotaBeneMaps();
+		fillNotaBene();
+		fillNotaBeneMaps();
 
-			/*
-			DIAG_LEGEND_LABELS_DESC_2
-				var DIAG_ASTERISK_RDT_COMMENT = "<sup>*</sup> These indicators apply only for primary VL cases";
-			var PUT_NA_TEXT = true;
-			*/
+		/*
+		DIAG_LEGEND_LABELS_DESC_2
+			var DIAG_ASTERISK_RDT_COMMENT = "<sup>*</sup> These indicators apply only for primary VL cases";
+		var PUT_NA_TEXT = true;
+		*/
 
 
-			setTextUnderTables("textUnderEpiTable", TEXT_UNDER_EPI, COLUMNS_LABELS, COLUMNS_LABELS_DESC, PUT_NA_TEXT);
-			setTextUnderTables("textUnderDiagTable1", TEXT_UNDER_DIAG1, 
-									DIAG_LEGEND_LABELS.slice(0, DIAG_LEGEND_LABELS.length-1), 
-									DIAG_LEGEND_LABELS_DESC.slice(0, DIAG_LEGEND_LABELS_DESC.length-1), 
-									DIAG_ASTERISK_RDT_COMMENT);
-			setTextUnderTables("textUnderDiagTable2", TEXT_UNDER_DIAG2, DIAG_LEGEND_LABELS_2, DIAG_LEGEND_LABELS_DESC_2, PUT_NA_TEXT);
-			
-			text_values = [
-				"WHO Global",
-				"WHO Regions",
-				"WHO Member States",
-				"Level 1",
-				"Level 2",
-				"Level 3",
-				"Level 4"		
-			];
+		setTextUnderTables("textUnderEpiTable", TEXT_UNDER_EPI, COLUMNS_LABELS, COLUMNS_LABELS_DESC, PUT_NA_TEXT);
+		setTextUnderTables("textUnderDiagTable1", TEXT_UNDER_DIAG1, 
+								DIAG_LEGEND_LABELS.slice(0, DIAG_LEGEND_LABELS.length-1), 
+								DIAG_LEGEND_LABELS_DESC.slice(0, DIAG_LEGEND_LABELS_DESC.length-1), 
+								DIAG_ASTERISK_RDT_COMMENT);
+		setTextUnderTables("textUnderDiagTable2", TEXT_UNDER_DIAG2, DIAG_LEGEND_LABELS_2, DIAG_LEGEND_LABELS_DESC_2, PUT_NA_TEXT);
+		
+		text_values = [
+			"WHO Global",
+			"WHO Regions",
+			"WHO Member States",
+			"Level 1",
+			"Level 2",
+			"Level 3",
+			"Level 4"		
+		];
 
-			// Org unit level slider
-			var sliderRange = $( "#slider_range" );
-			sliderRange.slider({
-				range: true,
-				min: 1,
-				max: 7,
-				values: [ map_levels[0], map_levels[map_levels.length-1]], // values = [firstValue, lastValue]
-				slide: function( event, ui ) {
-					$( "#ou_level_slider" ).val( text_values[ui.values[ 0 ]-1] + " - " + text_values[ui.values[ 1 ]-1] );
-					map_levels = [];
-					for(var i = ui.values[0]; i<=ui.values[1]; i++){
-						map_levels.push(i);
-					}
+		// Org unit level slider
+		var sliderRange = $( "#slider_range" );
+		sliderRange.slider({
+			range: true,
+			min: 1,
+			max: 7,
+			values: [ map_levels[0], map_levels[map_levels.length-1]], // values = [firstValue, lastValue]
+			slide: function( event, ui ) {
+				$( "#ou_level_slider" ).val( text_values[ui.values[ 0 ]-1] + " - " + text_values[ui.values[ 1 ]-1] );
+				map_levels = [];
+				for(var i = ui.values[0]; i<=ui.values[1]; i++){
+					map_levels.push(i);
 				}
-
-			});
-			$( "#ou_level_slider" ).val( text_values[sliderRange.slider( "values", 0 )-1] + " - " + text_values[sliderRange.slider( "values", 1 )-1] );
-
-			// Opacitity slider  
-			var opacity_slider_handle = $( "#opacity_slider_handle" );
-			$( "#opacity_slider" ).slider({
-			min: 0,
-			max: 100,
-			value: map_opacity,
-			create: function() {
-				opacity_slider_handle.text( $( this ).slider( "value" ) );
-			},
-			slide: function( event, ui ) {
-				opacity_slider_handle.text( ui.value );
-				map_opacity = ui.value;
 			}
-			});
-			
-			// height slider  
-			var height_slider_handle = $( "#height_slider_handle" );
-			$( "#height_slider" ).slider({
-			min: 100,
-			max: 900,
-			value: map_height,
-			create: function() {
-				height_slider_handle.text( $( this ).slider( "value" ) );
-			},
-			slide: function( event, ui ) {
-				height_slider_handle.text( ui.value );
-				map_height = ui.value;
-			}
-			});
-			
-			// width slider  
-			var width_slider_handle = $( "#width_slider_handle" );
-			$( "#width_slider" ).slider({
-			min: 100,
-			max: 900,
-			value: map_width,
-			create: function() {
-				width_slider_handle.text( $( this ).slider( "value" ) );
-			},
-			slide: function( event, ui ) {
-				width_slider_handle.text( ui.value );
-				map_width = ui.value;
-			}
-			});
 
-			// Font size slider  
-			
-			font_size_slider.slider({
-			min: 6,
-			max: 24,
-			value: 10,
-			create: function() {
-				font_size_slider_handle.text( $( this ).slider( "value" ) );
-			},
-			slide: function( event, ui ) {
-				font_size_slider_handle.text( ui.value );
-				editingLegend.find(".legentSetElementText").css({ 'font-size': $( this ).slider( "value" ) });
-				editingLegend.find(".legentSetTitle").css({ 'font-size': $( this ).slider( "value" )+2 });
-			}
-			});
-			
+		});
+		$( "#ou_level_slider" ).val( text_values[sliderRange.slider( "values", 0 )-1] + " - " + text_values[sliderRange.slider( "values", 1 )-1] );
 
-			fillTableHead(epiTableHead, '', COLUMNS_LABELS);
-			fillTableHead(monthlyDistributionTableHead, '', MONTHS_ABBREV);
-			fillTableHead(diagTableHead, '', COLUMNS_LABELS);
-			fillTableHead(toutcomeTableHead, TOUTCOME_TABLE_FIRST_COLUMNS, COLUMNS_LABELS.slice(0,2));
-
-			// Dragable activation
-			$( ".draggable" ).draggable({ grid: [ 10, 10 ] });	
-			$( ".resizable" ).resizable();
-
-
-			fillCountryGeneralInformation(LEVEL2); //TODO: Manage error when not level 2
-
-			// Code to execute after API calls have been done.
-			// $.when(ajax1(), ajax2(), ajax3(), ajax4()).done(function(a1, a2, a3, a4){
-			// http://stackoverflow.com/questions/3709597/wait-until-all-jquery-ajax-requests-are-done
-			$.when(get_cl_cases(), get_vl_cases(), get_azcl_cases(),
-				getIncidenceFor(INCIDENCE[VL_INDEX], VL_COLUMN),
-				getIncidenceFor(INCIDENCE[CL_INDEX], CL_COLUMN),
-				getIncidenceFor(INCIDENCE[ACL_INDEX], ACL_COLUMN),
-				getIncidenceFor(INCIDENCE[ZCL_INDEX], ZCL_COLUMN),
-				getNewCases(DE.VL_EPI_Type, VL_COLUMN),
-				getNewCases(DE.CL_EPI_Type, CL_COLUMN),
-				getNewCases(DE.ACL_EPI_Type, ACL_COLUMN),
-				getNewCases(DE.ZCL_EPI_Type, ZCL_COLUMN),
-				get_monthly_cases_for_cl_current_year(),
-				get_monthly_cases_for_cl_previous_year(),
-				get_monthly_cases_for_vl_current_year(),
-				get_monthly_cases_for_vl_previous_year(),
-				get_monthly_cases_for_azcl_current_year(),
-				get_monthly_cases_for_azcl_previous_year(),
-				getLegendSet(VL_LEGEND, VL_INDEX),
-				getLegendSet(CL_LEGEND, CL_INDEX),
-				getLegendSet(ACL_LEGEND, ACL_INDEX),
-				getLegendSet(ZCL_LEGEND, ZCL_INDEX),
-				getTreatmentAndMedicines(year),
-				getLastEvent(year),
-				getFootnotes()).done(function(i1,i2,i3,i4,nc1,nc2,nc3,nc4,m1,m2,m3,m4,m5,m6,ls1,ls2,ls3,ls4,f1,tm1,le1,ft1){
-				// the code here will be executed when all four ajax requests resolve.
-				// a1, a2, a3 and a4 are lists of length 3 containing the response text,
-				// status, and jqXHR object for each of the four ajax calls respectively.
-					writeTable(cgiTableBody, generalInformationArray, CGI_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_CGI);
-					writeTable(epiTableBody, array, EPI_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_EPI);
-					writeTable(monthlyDistributionTableBody, monthlyArray, MONTHLY_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_MONTHLY);
-					writeTable(casTableBody, controlArray, CAS_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_CAS);
-					writeTable(diagTableBody, diagnosisArray, DIAG_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_DIAG);
-					writeTable(toutcomeTableBody, toutcomeArray, "", LINES_BELOW_LABELS_TREAT);
-					writeTable(tamTableBody, tamArray, "", LINES_BELOW_LABELS_TAM);
-
-					generate_cl_vl_new_monthly_charts();
-					generate_cl_vl_new_and_incidence_yearly_charts();
-
-					fillHTMLListWithArray(sortableListNotSelected, storedFootnotes, 'ui-state-default '+CLASS_EDITABLE_ELEMENT);
-					fillHTMLListWithArray(sortableListPage1, activeFootnotesPage1, 'ui-state-highlight '+CLASS_EDITABLE_ELEMENT);
-					fillHTMLListWithArray(sortableListPage2, activeFootnotesPage2, 'ui-state-highlight '+CLASS_EDITABLE_ELEMENT);
-					fillFootnotes();
-
-					fillTreatmentAndMedicines();
-
-					setMonthlyCheckboxes();
-					generateMaps();
-					
-					makeElementsEditables();
-					makeElementsFootnotables();
-
-					$("#disableNBMaps").prop('checked', true);
-					$("#notaBeneMaps").resizable({ disabled: true });
-					$("#disableNB").prop('checked', true);
-					$("#notaBene").resizable({ disabled: true });
-					$( ".radioButton" ).checkboxradio("refresh");
-
-				//	$("#disableNBMaps").trigger('click');
-					//$(".radioButton").change();
-
-			}).fail(function(data) {
-				console.log ("ERROR. WHEN");
-				console.log (data);
-			});
-
+		// Opacitity slider  
+		var opacity_slider_handle = $( "#opacity_slider_handle" );
+		$( "#opacity_slider" ).slider({
+		min: 0,
+		max: 100,
+		value: map_opacity,
+		create: function() {
+			opacity_slider_handle.text( $( this ).slider( "value" ) );
+		},
+		slide: function( event, ui ) {
+			opacity_slider_handle.text( ui.value );
+			map_opacity = ui.value;
 		}
+		});
+		
+		// height slider  
+		var height_slider_handle = $( "#height_slider_handle" );
+		$( "#height_slider" ).slider({
+		min: 100,
+		max: 900,
+		value: map_height,
+		create: function() {
+			height_slider_handle.text( $( this ).slider( "value" ) );
+		},
+		slide: function( event, ui ) {
+			height_slider_handle.text( ui.value );
+			map_height = ui.value;
+		}
+		});
+		
+		// width slider  
+		var width_slider_handle = $( "#width_slider_handle" );
+		$( "#width_slider" ).slider({
+		min: 100,
+		max: 900,
+		value: map_width,
+		create: function() {
+			width_slider_handle.text( $( this ).slider( "value" ) );
+		},
+		slide: function( event, ui ) {
+			width_slider_handle.text( ui.value );
+			map_width = ui.value;
+		}
+		});
+
+		// Font size slider  
+		
+		font_size_slider.slider({
+		min: 6,
+		max: 24,
+		value: 10,
+		create: function() {
+			font_size_slider_handle.text( $( this ).slider( "value" ) );
+		},
+		slide: function( event, ui ) {
+			font_size_slider_handle.text( ui.value );
+			editingLegend.find(".legentSetElementText").css({ 'font-size': $( this ).slider( "value" ) });
+			editingLegend.find(".legentSetTitle").css({ 'font-size': $( this ).slider( "value" )+2 });
+		}
+		});
+		
+
+		fillTableHead(epiTableHead, '', COLUMNS_LABELS);
+		fillTableHead(monthlyDistributionTableHead, '', MONTHS_ABBREV);
+		fillTableHead(diagTableHead, '', COLUMNS_LABELS);
+		fillTableHead(toutcomeTableHead, TOUTCOME_TABLE_FIRST_COLUMNS, COLUMNS_LABELS.slice(0,2));
+
+		// Dragable activation
+		$( ".draggable" ).draggable({ grid: [ 10, 10 ] });	
+		$( ".resizable" ).resizable();
+
+
+		fillCountryGeneralInformation(LEVEL2); //TODO: Manage error when not level 2
+
+		// Code to execute after API calls have been done.
+		// $.when(ajax1(), ajax2(), ajax3(), ajax4()).done(function(a1, a2, a3, a4){
+		// http://stackoverflow.com/questions/3709597/wait-until-all-jquery-ajax-requests-are-done
+		$.when(get_cl_cases(), get_vl_cases(), get_azcl_cases(),
+			getIncidenceFor(INCIDENCE[VL_INDEX], VL_COLUMN),
+			getIncidenceFor(INCIDENCE[CL_INDEX], CL_COLUMN),
+			getIncidenceFor(INCIDENCE[ACL_INDEX], ACL_COLUMN),
+			getIncidenceFor(INCIDENCE[ZCL_INDEX], ZCL_COLUMN),
+			getNewCases(DE.VL_EPI_Type, VL_COLUMN),
+			getNewCases(DE.CL_EPI_Type, CL_COLUMN),
+			getNewCases(DE.ACL_EPI_Type, ACL_COLUMN),
+			getNewCases(DE.ZCL_EPI_Type, ZCL_COLUMN),
+			get_monthly_cases_for_cl_current_year(),
+			get_monthly_cases_for_cl_previous_year(),
+			get_monthly_cases_for_vl_current_year(),
+			get_monthly_cases_for_vl_previous_year(),
+			get_monthly_cases_for_azcl_current_year(),
+			get_monthly_cases_for_azcl_previous_year(),
+			getLegendSet(VL_LEGEND, VL_INDEX),
+			getLegendSet(CL_LEGEND, CL_INDEX),
+			getLegendSet(ACL_LEGEND, ACL_INDEX),
+			getLegendSet(ZCL_LEGEND, ZCL_INDEX),
+			getTreatmentAndMedicines(ds.year),
+			getLastEvent(ds.year),
+			getFootnotes()).done(function(i1,i2,i3,i4,nc1,nc2,nc3,nc4,m1,m2,m3,m4,m5,m6,ls1,ls2,ls3,ls4,f1,tm1,le1,ft1){
+			// the code here will be executed when all four ajax requests resolve.
+			// a1, a2, a3 and a4 are lists of length 3 containing the response text,
+			// status, and jqXHR object for each of the four ajax calls respectively.
+				writeTable(cgiTableBody, generalInformationArray, CGI_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_CGI);
+				writeTable(epiTableBody, array, EPI_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_EPI);
+				writeTable(monthlyDistributionTableBody, monthlyArray, MONTHLY_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_MONTHLY);
+				writeTable(casTableBody, controlArray, CAS_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_CAS);
+				writeTable(diagTableBody, diagnosisArray, DIAG_TABLE_TD_ID_PREFIX, LINES_BELOW_LABELS_DIAG);
+				writeTable(toutcomeTableBody, toutcomeArray, "", LINES_BELOW_LABELS_TREAT);
+				writeTable(tamTableBody, tamArray, "", LINES_BELOW_LABELS_TAM);
+
+				generate_cl_vl_new_monthly_charts();
+				generate_cl_vl_new_and_incidence_yearly_charts();
+
+				fillHTMLListWithArray(sortableListNotSelected, storedFootnotes, 'ui-state-default '+CLASS_EDITABLE_ELEMENT);
+				fillHTMLListWithArray(sortableListPage1, activeFootnotesPage1, 'ui-state-highlight '+CLASS_EDITABLE_ELEMENT);
+				fillHTMLListWithArray(sortableListPage2, activeFootnotesPage2, 'ui-state-highlight '+CLASS_EDITABLE_ELEMENT);
+				fillFootnotes();
+
+				fillTreatmentAndMedicines();
+
+				setMonthlyCheckboxes();
+				// generateMaps();
+				
+				makeElementsEditables();
+				makeElementsFootnotables();
+
+				$("#disableNBMaps").prop('checked', true);
+				$("#notaBeneMaps").resizable({ disabled: true });
+				$("#disableNB").prop('checked', true);
+				$("#notaBene").resizable({ disabled: true });
+				$( ".radioButton" ).checkboxradio("refresh");
+
+			//	$("#disableNBMaps").trigger('click');
+				//$(".radioButton").change();
+
+		}).fail(function(data) {
+			console.log ("ERROR. WHEN");
+			console.log (data);
+		});
+
 	}
 		/****  **********  ******  ********  ******  ******   *****  *//***** ********  *****  *** *//****
 	 ****  **                                TEST ZONE                                          **********
 	 ** ********    ******** **** ********* ******* ************   *********** *********** ******* *******/
-
 
 
 </script>
@@ -2784,26 +2789,23 @@
 	 ****************************************************************************************************/
 	-->
 
-
+	
 <!DOCTYPE html>
-<html lang="en">
-	<head>
-		<title>Leishmaniasis Report Generator</title>
-		<meta charset="utf-8">	
-		
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Leishmaniasis Report Generator</title>
 
-		<link rel="stylesheet" href="css/style.css" type="text/css" />
-		<link rel="stylesheet" href="css/jquery-te-1.4.0.css" type="text/css" />
-		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" type="text/css" />
-		<link rel="stylesheet" href="https://jqueryui.com/resources/demos/style.css" type="text/css" />
+   <link rel="stylesheet" href="css/style.css" type="text/css" />
+   <link rel="stylesheet" href="css/jquery-te-1.4.0.css" type="text/css" />
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" type="text/css" />
+	<link rel="stylesheet" href="https://jqueryui.com/resources/demos/style.css" type="text/css" />
+   <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400" />
+   <link rel="stylesheet" href="../../../dhis-web-commons/javascripts/ext/resources/css/ext-plugin-gray.css" type="text/css" />
 
-		<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400" />
-		<link rel="stylesheet" href="../../../dhis-web-commons/javascripts/ext/resources/css/ext-plugin-gray.css" type="text/css" />
+</head>
 
-		<link rel="stylesheet" href="commons/feedbacks.css">
-			
-	</head>
-	<body>
+<body>
 
 	<div class="non-printable configuration-section section"><hr>
 
@@ -2920,7 +2922,7 @@
 	</div>
 
 	<div class="section">
-		<img class="head_logo center" src="http://www.who.int/about/Logo-WHO.jpg" />
+		<img class="head_logo center" src="https://www.who.int/about/Logo-WHO.jpg" />
 
 		<div class="head_container">	
 			<div class="editableElement">Leishmaniasis</div>
@@ -3058,25 +3060,10 @@
 		<input id="yearField">
 										
 		<div class="ui-widget">
-			<label for="destinationCountry">Country: </label>
-			<input id="destinationCountry">
-		</div>
-		<div id="dialog-country-selector-check-message" class="">
-			<i class="fa "></i>
-			<div></div>
+			<label for="targetCountry">Country: </label>
+			<input id="targetCountry">
 		</div>
 								
 	</div>
-
-	<div id="dialog" title="Please wait">
-		<div class="progress-label">Loading countries...</div>
-		<div id="progressbar"></div>
-	</div>
-
-
-	<div class="non-printable">
-		<div id="footer"> Leishmaniasis Report Generator 0.1</div>
-	</div>
-
-	</body>
+</body>
 </html>
