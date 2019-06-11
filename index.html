@@ -925,24 +925,7 @@
 			}
 		});
 	}
-/*
-	function getNumberOfDivisions(lvl, object){
-		var params = {
-			level : lvl,
-			fields: "id"
-		}
-		builtUrl = buildAPIUrl(ORG_UNITS+"/"+ds.countryID, params);
 
-		
-		return $.ajax({
-			url: builtUrl//,
-
-		}).then(function(data) {
-			setNumberOfDivisions(object, data.organisationUnits.length);
-		}).fail(function(data) {
-			setNumberOfDivisions(object, WHEN_UNDEFINED);
-		});;
-	}*/
 	function getLegendSet(legendSetId, mapId){
 		var legendUrl = "../../legendSets/"+legendSetId;
 
