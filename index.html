@@ -292,6 +292,8 @@
 	var LINES_BELOW_LABELS_MONTHLY = [true,true,true,true,true,true,true,true];
 
 	var monthlyArray = create_2_dim_array(MONTHLY_LABELS.length, MONTHLY_LABELS, LABELS_ON_COLUMNS);
+	var YEARLY_MODE = 0;
+	var MONTHLY_MODE = 1;
 
 	/* Maps */
 	var VL_INDEX = 0;
@@ -478,13 +480,16 @@
 	var DATASET = {
 		CL : "tnek2LjfuIm",
 		VL : "fdBM4sWSuPR",
-		AZCL : "Uc3j0vpsfSB", 
-		CL_MONTHLY : "pWGPGaE6knJ",
-		VL_MONTHLY : "GW4lVTTLWfW",
-		AZCL_MONTHLY : "YfnF9NPpP4c",
+		AZCL : "Uc3j0vpsfSB",
 		DAM : "qzlf5flidcm"
 
 	};
+
+	var PROGRAM = {
+		CL_MONTHLY : "w9hSFsNr3Vh",
+		VL_MONTHLY : "i5JSf4ffFl2",
+	}
+	
 	// DATA_ELEMENTS
 	var DE = {
 		CL_EPI_Type :   "EPw6gR9fDqt",
@@ -520,6 +525,12 @@
 	DE_SCREEN_PASSIVE[ACL_COLUMN] = "gZuua8o0gNS";
 	DE_SCREEN_PASSIVE[ZCL_COLUMN] = "yEmHARyqLIk";
 
+	var DE_MONTHLY = {
+		CL_CASES : "kyMxUQqI2ed",
+		ACL_CASES : "lhxeWB8OiAG",
+		ZCL_CASES : "PwHVQUj3WHw",
+		VL_CASES : "n06IItYE45N"
+	};
 
 	var CC_DEFAULT = "Xr12mI7VPn3";
 	var TYPE_NEW_CASES = "psVSPLclyFj";
@@ -1012,49 +1023,16 @@
 		});
 	}
 
-	function get_monthly_cases_for(dataset, row, year) {
-		var params = {
-			dataSet: dataset,
-			period: [],
-			orgUnit: ds.countryID
-		}
+	function get_monthly_cases_for(program, year, de, row) {
 
-		for (var i=1;i<=12;i++){
-			var monthNumber = numberToTwoDigits(i);
-			params.period[i] = year + monthNumber;
-		}
-
-		builtUrl = buildAPIUrl(DATAVALUESETS, params);
-		return $.ajax({
-			url: builtUrl
-		}).then(function(data) {
-			if(typeof row === 'number'){
-				fillMonthlyArray(row, data.dataValues);
-			} else if (row.length>1){
-				fillMonthlyArrayACLZCL(row[0], row[1], data.dataValues);
-			}
-		});
+			var periods = generateMonthlyPeriodsForYear(year, ";");
+			return $.when(getAggregateEvents(program, ds.countryID, periods, de, AGGR_TYPE.SUM, true, true, OUTPUT_TYPE.EVENT))
+				.done(function(result){
+					var data = getAnalyticValueForKey(result, MONTHLY_MODE);
+					fillMonthlyArray(row, data);
+				});
 	}
 
-	function get_monthly_cases_for_cl_current_year() {
-			return get_monthly_cases_for(DATASET.CL_MONTHLY, CL_ROW, ds.year);
-	}
-	function get_monthly_cases_for_cl_previous_year() {
-			return get_monthly_cases_for(DATASET.CL_MONTHLY, CL_PREVIOUS_YEAR_ROW, ds.year-1);
-	}
-	function get_monthly_cases_for_vl_current_year() {
-			return get_monthly_cases_for(DATASET.VL_MONTHLY, VL_ROW, ds.year);
-	}
-	function get_monthly_cases_for_vl_previous_year() {
-			return get_monthly_cases_for(DATASET.VL_MONTHLY, VL_PREVIOUS_YEAR_ROW, ds.year-1);
-	}
-	function get_monthly_cases_for_azcl_current_year() {
-			return get_monthly_cases_for(DATASET.AZCL_MONTHLY, [ACL_ROW, ZCL_ROW], ds.year);
-	}
-	function get_monthly_cases_for_azcl_previous_year() {
-			return get_monthly_cases_for(DATASET.AZCL_MONTHLY, [ACL_PREVIOUS_YEAR_ROW, ZCL_PREVIOUS_YEAR_ROW], ds.year-1);
-	}
-	
 
 	/* getting cl cases from API */
 	function get_cl_cases() {
@@ -1160,57 +1138,19 @@
 	 /***
 
 	 */
-	function fillMonthlyArray(row, dataValues) {
-		var new_cases_by_month = getValuesForKeyByMonth(dataValues,CC_KEY,TYPE_NEW_CASES, VALUE_KEY);
-		var relapses_by_month = getValuesForKeyByMonth(dataValues,CC_KEY,TYPE_RELAPSE, VALUE_KEY);
-		var unspecified_by_month = getValuesForKeyByMonth(dataValues,CC_KEY,TYPE_UNSPECIFIED, VALUE_KEY);
+	function fillMonthlyArray(row, data) {
 
-		var total_cases_by_month;
-		var starting_column = monthlyArray[row].length;
-
-		for (var i=starting_column; i<new_cases_by_month.length+starting_column; i++){
-			total_cases_by_month = add([	new_cases_by_month[i-starting_column],
-										relapses_by_month[i-starting_column],
-										unspecified_by_month[i-starting_column] ]);
-			monthlyArray[row][i] = total_cases_by_month;
-		}
+		Object.keys(data).forEach(function (key) {
+			monthlyArray[row][key] = parseInt(data[key]);
+		});
 		
 	}	 
-	/***
-
-	 */
-	function fillMonthlyArrayACLZCL(aclRow, zclRow, dataValues) {
-		var new_cases_by_month_acl = getValuesForKeyByMonth(dataValues,[CC_KEY, DE_KEY],[TYPE_NEW_CASES, DE.ACL_EPI_Type], VALUE_KEY);
-		var relapses_by_month_acl = getValuesForKeyByMonth(dataValues,[CC_KEY, DE_KEY],[TYPE_RELAPSE, DE.ACL_EPI_Type], VALUE_KEY);
-		var unspecified_by_month_acl = getValuesForKeyByMonth(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED, DE.ACL_EPI_Type], VALUE_KEY);
-
-		var new_cases_by_month_zcl = getValuesForKeyByMonth(dataValues,[CC_KEY, DE_KEY],[TYPE_NEW_CASES, DE.ZCL_EPI_Type], VALUE_KEY);
-		var relapses_by_month_zcl = getValuesForKeyByMonth(dataValues,[CC_KEY, DE_KEY],[TYPE_RELAPSE, DE.ZCL_EPI_Type], VALUE_KEY);
-		var unspecified_by_month_zcl = getValuesForKeyByMonth(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED, DE.ZCL_EPI_Type], VALUE_KEY);
-
-		var total_cases_by_month;
-		var starting_column = monthlyArray[aclRow].length;
-
-		for (var i=starting_column; i < new_cases_by_month_acl.length + starting_column; i++){
-			total_cases_by_month = add([	new_cases_by_month_acl[i - starting_column],
-										relapses_by_month_acl[i - starting_column],
-										unspecified_by_month_acl[i - starting_column] ]);
-			monthlyArray[aclRow][i] = total_cases_by_month;
-		}
-		for (var i=starting_column; i < new_cases_by_month_zcl.length + starting_column; i++){
-			total_cases_by_month = add([	new_cases_by_month_zcl[i - starting_column],
-										relapses_by_month_zcl[i - starting_column],
-										unspecified_by_month_zcl[i - starting_column] ]);
-			monthlyArray[zclRow][i] = total_cases_by_month;
-		}
-		
-	}
 
 	function fillNewCasesArray(data, column){
-		historicNewCases[column] = getAnalyticValueForKey(data);
+		historicNewCases[column] = getAnalyticValueForKey(data, YEARLY_MODE);
 	}
 	function fillIncidenceArray(data, column){
-		historicIncidence[column] = getAnalyticValueForKey(data);
+		historicIncidence[column] = getAnalyticValueForKey(data, YEARLY_MODE);
 		array[INCD_ROW][column] = historicIncidence[column][0]; // 0 = this year
 	}
 
@@ -1596,26 +1536,39 @@
 		return ("0" + number).slice(-2);
 	}
 
-	
-	
-	function getAnalyticValueForKey(array){
-		yearColumn = 0;
+	 /**
+     * dataObject is an object with arrays headers and rows.
+	 * 	headers containing at least two objects with a "name" property having values "pe" and "value"
+	 */
+	function getAnalyticValueForKey(dataObject, mode){
+		periodColumn = 0;
 		valueColumn = 0;
 
-		for (var j=0;j<array.headers.length;j++){
-			if(array.headers[j].name==="pe"){
-				yearColumn = j;
+		for (var j=0;j<dataObject.headers.length;j++){
+			if(dataObject.headers[j].name==="pe"){
+				periodColumn = j;
 			}
-			if(array.headers[j].name==="value"){
+			if(dataObject.headers[j].name==="value"){
 				valueColumn = j;
 			}
 		}
-		var returnValues = new Array(historicLength);
-		for (var i=0; i<array.rows.length; i++){
-			returnValues[ds.year-array.rows[i][yearColumn]] = array.rows[i][valueColumn];
+		var returnValues = new Array(dataObject.rows.length);
+
+		switch(mode){
+			case YEARLY_MODE:
+				for (var i=0; i<dataObject.rows.length; i++){
+					returnValues[ds.year-dataObject.rows[i][periodColumn]] = dataObject.rows[i][valueColumn];
+				}
+				break;
+			case MONTHLY_MODE:
+				for (var i=0; i<dataObject.rows.length; i++){
+					returnValues[parseInt(dataObject.rows[i][periodColumn].slice(-2))] = dataObject.rows[i][valueColumn];
+				}
+				break;
 		}
 		return returnValues;
 	}
+
 
 	/* 	Searchs for a custom value for a customKey with a custom value through an array
 			array : the array
@@ -2686,12 +2639,14 @@
 			getNewCases(DE.CL_EPI_Type, CL_COLUMN),
 			getNewCases(DE.ACL_EPI_Type, ACL_COLUMN),
 			getNewCases(DE.ZCL_EPI_Type, ZCL_COLUMN),
-			get_monthly_cases_for_cl_current_year(),
-			get_monthly_cases_for_cl_previous_year(),
-			get_monthly_cases_for_vl_current_year(),
-			get_monthly_cases_for_vl_previous_year(),
-			get_monthly_cases_for_azcl_current_year(),
-			get_monthly_cases_for_azcl_previous_year(),
+			get_monthly_cases_for(PROGRAM.CL_MONTHLY, ds.year, DE_MONTHLY.CL_CASES, CL_ROW),
+			get_monthly_cases_for(PROGRAM.CL_MONTHLY, ds.year-1, DE_MONTHLY.CL_CASES, CL_PREVIOUS_YEAR_ROW),
+			get_monthly_cases_for(PROGRAM.VL_MONTHLY, ds.year, DE_MONTHLY.VL_CASES, VL_ROW),
+			get_monthly_cases_for(PROGRAM.VL_MONTHLY, ds.year-1, DE_MONTHLY.VL_CASES, VL_PREVIOUS_YEAR_ROW),
+			get_monthly_cases_for(PROGRAM.CL_MONTHLY, ds.year, DE_MONTHLY.ACL_CASES, ACL_ROW),
+			get_monthly_cases_for(PROGRAM.CL_MONTHLY, ds.year-1, DE_MONTHLY.ACL_CASES, ACL_PREVIOUS_YEAR_ROW),
+			get_monthly_cases_for(PROGRAM.CL_MONTHLY, ds.year, DE_MONTHLY.ZCL_CASES, ZCL_ROW),
+			get_monthly_cases_for(PROGRAM.CL_MONTHLY, ds.year-1, DE_MONTHLY.ZCL_CASES, ZCL_PREVIOUS_YEAR_ROW),
 			getLegendSet(VL_LEGEND, VL_INDEX),
 			getLegendSet(CL_LEGEND, CL_INDEX),
 			getLegendSet(ACL_LEGEND, ACL_INDEX),
