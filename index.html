@@ -99,6 +99,8 @@
 	var VALUE_KEY = "value";
 	var CC_KEY = "categoryOptionCombo";
 	var DE_KEY = "dataElement";
+	var CODE_KEY = "code";
+	var NAME_KEY = "name";
 	var PERIOD_KEY = "period";
 
 	var LABELS_ON_ROWS = 0;
@@ -114,9 +116,9 @@
 	LEVEL_CONFIG_LABELS[LEVEL1] = "1st sub-national administrative level";
 	LEVEL_CONFIG_LABELS[LEVEL2] = "2nd sub-national administrative level";
 	LEVEL_CONFIG_LABELS[LEVEL3] = "3rd sub-national administrative level";
-	LEVEL_REPORT_LABELS[LEVEL1] = "Number of 1st sub-national administrative level<br>divisions, name:";
-	LEVEL_REPORT_LABELS[LEVEL2] = "Number of 2nd sub-national administrative level<br>divisions, name:";
-	LEVEL_REPORT_LABELS[LEVEL3] = "Number of 3rd sub-national administrative level<br>divisions, name:";
+	LEVEL_REPORT_LABELS[LEVEL1] = "Number of 1st sub-national administrative level divisions, name:";
+	LEVEL_REPORT_LABELS[LEVEL2] = "Number of 2nd sub-national administrative level divisions, name:";
+	LEVEL_REPORT_LABELS[LEVEL3] = "Number of 3rd sub-national administrative level divisions, name:";
 
 	/* Texts on report */
 	var PUBLISHED_TEXT = "Published in ";
@@ -481,7 +483,8 @@
 		CL : "tnek2LjfuIm",
 		VL : "fdBM4sWSuPR",
 		AZCL : "Uc3j0vpsfSB",
-		DAM : "qzlf5flidcm"
+		DAM : "qzlf5flidcm",
+		GI: "NKWbkXyfO5F"
 
 	};
 
@@ -531,6 +534,107 @@
 		ZCL_CASES : "PwHVQUj3WHw",
 		VL_CASES : "n06IItYE45N"
 	};
+
+	var DE_CGI = {
+		GEN_UN_WPP_LifeExpBirth : "xy0cDgvrg5W",
+		GEN_WB_GDP_PPP_current : "w3XqypgTDEE",
+		GEN_UN_WPP_Pop_Tot_AgeSex_1000 : "uLpIADOetw7",
+		GEN_UN_WPP_LifeExpBirth_Female : "tvvwAxsuRme",
+		GEN_UN_WPP_Pop_Tot_1000 : "WKJu1WytXzH",
+		GEN_UN_WPP_LifeExpBirth_Male : "PVTbouvgSzJ",
+		GEN_WB_IncomeGroup : "Oov1cYM9y6o"
+	}
+
+	var CGI_MALE = 0;
+	var CGI_FEMALE = 1;
+	var CGI_GENDER_UNKNOWN = 2;
+
+	var Y_UNDER_5 = 0;
+	var Y05_09 = 1;
+	var Y10_14 = 2;
+	var Y15_19 = 3;
+	var Y20_24 = 4;
+	var Y25_29 = 5;
+	var Y30_34 = 6;
+	var Y35_39 = 7;
+	var Y40_44 = 8;
+	var Y45_49 = 9;
+	var Y50_54 = 10;
+	var Y55_59 = 11;
+	var Y60_64 = 12;
+	var Y65_69 = 13;
+	var Y70_74 = 14;
+	var Y75_79 = 15;
+	var Y80_84 = 16;
+	var Y85_89 = 17;
+	var Y90_94 = 18;
+	var Y95_99 = 19;
+	var Y100_AND_OVER = 20;
+
+	var CC_CGI = create_2_dim_array(21, "", LABELS_ON_ROWS);
+	CC_CGI[Y20_24][CGI_FEMALE] = "SobJ4FGuBRA";
+	CC_CGI[Y10_14][CGI_FEMALE] = "oic7kU2uVtJ";
+	CC_CGI[Y65_69][CGI_GENDER_UNKNOWN] = "K3xHNQJ7dfA";
+	CC_CGI[Y90_94][CGI_FEMALE] = "kH3O17Sezfp";
+	CC_CGI[Y100_AND_OVER][CGI_FEMALE] = "gkeN62eQlSA";
+	CC_CGI[Y_UNDER_5][CGI_MALE] = "gWsMlGpOSzY";
+	CC_CGI[Y45_49][CGI_FEMALE] = "irBgvZTT9zq";
+	CC_CGI[Y80_84][CGI_FEMALE] = "BO8BiFA6WZo";
+	CC_CGI[Y85_89][CGI_MALE] = "avCYQARWeei";
+	CC_CGI[Y35_39][CGI_GENDER_UNKNOWN] = "JhZibEej5Ip";
+	CC_CGI[Y30_34][CGI_GENDER_UNKNOWN] = "r9jCuRLjAyg";
+	CC_CGI[Y15_19][CGI_GENDER_UNKNOWN] = "i0GLBPlRTrP";
+	CC_CGI[Y65_69][CGI_MALE] = "a2dH289sMou";
+	CC_CGI[Y70_74][CGI_GENDER_UNKNOWN] = "vq2MeIzidDv";
+	CC_CGI[Y80_84][CGI_MALE] = "BpI46BM32FB";
+	CC_CGI[Y85_89][CGI_FEMALE] = "hI8wdaiRHaS";
+	CC_CGI[Y15_19][CGI_FEMALE] = "adEelGXyPIn";
+	CC_CGI[Y05_09][CGI_GENDER_UNKNOWN] = "zsA0z1yxCyw";
+	CC_CGI[Y40_44][CGI_MALE] = "XucrdYEMOE7";
+	CC_CGI[Y60_64][CGI_MALE] = "Ss3gp5wAYOQ";
+	CC_CGI[Y70_74][CGI_FEMALE] = "Gh29gSpSYPp";
+	CC_CGI[Y_UNDER_5][CGI_FEMALE] = "o7NkWl5xFuS";
+	CC_CGI[Y45_49][CGI_GENDER_UNKNOWN] = "mx2Vqi1H3Hb";
+	CC_CGI[Y40_44][CGI_FEMALE] = "i6rBoDsk4LE";
+	CC_CGI[Y85_89][CGI_GENDER_UNKNOWN] = "ZMMTWSNKy8h";
+	CC_CGI[Y25_29][CGI_FEMALE] = "qdWOgC6bbBi";
+	CC_CGI[Y25_29][CGI_MALE] = "AJkBK9XBytM";
+	CC_CGI[Y45_49][CGI_MALE] = "BvCWyIwIqa8";
+	CC_CGI[Y100_AND_OVER][CGI_MALE] = "ttAEJltz1yh";
+	CC_CGI[Y15_19][CGI_MALE] = "xdAhLef7xG4";
+	CC_CGI[Y70_74][CGI_MALE] = "C0VIpje6ADR";
+	CC_CGI[Y60_64][CGI_GENDER_UNKNOWN] = "C9VfB7rurrS";
+	CC_CGI[Y90_94][CGI_MALE] = "PKDfpYDkyoy";
+	CC_CGI[Y05_09][CGI_MALE] = "lptUC1gVg8o";
+	CC_CGI[Y60_64][CGI_FEMALE] = "RJDdLqVGxu8";
+	CC_CGI[Y30_34][CGI_FEMALE] = "IVFKF7NzjJa";
+	CC_CGI[Y20_24][CGI_GENDER_UNKNOWN] = "zUaD2dW8jgR";
+	CC_CGI[Y35_39][CGI_FEMALE] = "Jkrg1KI25AV";
+	CC_CGI[Y50_54][CGI_MALE] = "RwwDYedBcDl";
+	CC_CGI[Y40_44][CGI_GENDER_UNKNOWN] = "qIa4UJxA58c";
+	CC_CGI[Y55_59][CGI_MALE] = "xaMRyDOevEu";
+	CC_CGI[Y95_99][CGI_GENDER_UNKNOWN] = "lRj2b3lwwiu";
+	CC_CGI[Y75_79][CGI_FEMALE] = "zvECz1sg3sj";
+	CC_CGI[Y65_69][CGI_FEMALE] = "ECle1XHoHZ2";
+	CC_CGI[Y100_AND_OVER][CGI_GENDER_UNKNOWN] = "URAmCjBqRHW";
+	CC_CGI[Y90_94][CGI_GENDER_UNKNOWN] = "eC3COFF4SAx";
+	CC_CGI[Y25_29][CGI_GENDER_UNKNOWN] = "BPDXuG96jbx";
+	CC_CGI[Y50_54][CGI_GENDER_UNKNOWN] = "VtRt5eBh10B";
+	CC_CGI[Y55_59][CGI_FEMALE] = "nJEkgZS74Tt";
+	CC_CGI[Y75_79][CGI_MALE] = "MKDYDGdryXB";
+	CC_CGI[Y50_54][CGI_FEMALE] = "B2cV93OdJpI";
+	CC_CGI[Y95_99][CGI_FEMALE] = "nHBTtdVMe7l";
+	CC_CGI[Y05_09][CGI_FEMALE] = "xodN5e1QCp6";
+	CC_CGI[Y10_14][CGI_MALE] = "o8dMMqNDCtr";
+	CC_CGI[Y_UNDER_5][CGI_GENDER_UNKNOWN] = "Bmz5QDlUZbl";
+	CC_CGI[Y80_84][CGI_GENDER_UNKNOWN] = "zx6ELNiPAq3";
+	CC_CGI[Y30_34][CGI_MALE] = "xsUkVS0PK0u";
+	CC_CGI[Y10_14][CGI_GENDER_UNKNOWN] = "YF8UKbqPrBb";
+	CC_CGI[Y35_39][CGI_MALE] = "VwZsMBUBdR1";
+	CC_CGI[Y75_79][CGI_GENDER_UNKNOWN] = "COVvK2lp01u";
+	CC_CGI[Y55_59][CGI_GENDER_UNKNOWN] = "kmnHzx1ulIk";
+	CC_CGI[Y95_99][CGI_MALE] = "kXo51Sydk1t";
+	CC_CGI[Y20_24][CGI_MALE] = "ZYAx6PjJ2ZM";
 
 	var CC_DEFAULT = "Xr12mI7VPn3";
 	var TYPE_NEW_CASES = "psVSPLclyFj";
@@ -687,7 +791,6 @@
 	var CAS_TABLE_NAME = "casTable";
 	var TAM_TABLE_NAME = "tamTable";
 	var DIAG_TABLE_NAME = "diagTable";
-	var MONTH_DIST_TABLE_NAME = "monthlyDistributionTable";
 	var TOUTCOME_TABLE_NAME = "toutcomeTable";
 
 	var BUTTON_PREFIX = '_BUTTON_';
@@ -1022,6 +1125,24 @@
 			});
 		});
 	}
+
+	/* getting country General Information from API */
+	function get_cgi() {
+
+		var params = {
+			dataSet: DATASET.GI,
+			period: ds.year,
+			orgUnit: ds.countryID
+		}
+
+		builtUrl = buildAPIUrl(DATAVALUESETS, params);
+		return $.ajax({
+			url: builtUrl
+		}).then(function(data) {
+				fillCountryGeneralInformation(data);
+		});
+	}
+
 
 	function get_monthly_cases_for(program, year, de, row) {
 
@@ -1384,25 +1505,77 @@
 		}
 	}
 
-	function fillCountryGeneralInformation(level){
-		generalInformationArray[CIG_ROW_POP][1] = "96,101,000";
-		generalInformationArray[CIG_ROW_SEX][1] = "49.95% / 50.1%";
-		generalInformationArray[CIG_ROW_GDP][1] = "1350";
-		generalInformationArray[CIG_ROW_INCOME][1] = "Low";
-		generalInformationArray[CIG_ROW_AGEG][1] = "43% / 57%";
-		generalInformationArray[CIG_ROW_LIFE][1] = "65 / 62";
+	function fillCountryGeneralInformation(data){
 
-		generalInformationArray[CIG_ROW_DIVIS][0] = LEVEL_REPORT_LABELS[level];
-		setOptionSelectMenu("subnationalLevelSelector", level);
-		return getNumberOfDivisions((level+1), generalInformationArray);
+		var dataValues = data.dataValues;
+
+		// gets population in miles, transforms it in units and adds local separators
+		var popIn1000 = getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_Pop_Tot_1000, CC_DEFAULT], VALUE_KEY);
+		generalInformationArray[CIG_ROW_POP][1] = (parseInt(popIn1000) * 1000 ).toLocaleString();
+
+		// gets all population age slices and adds its by sex 
+		var popm = 0, popf = 0;
+		for (var i = Y_UNDER_5; i<= Y100_AND_OVER; i++ ) {
+			popf = add([popf, getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_Pop_Tot_AgeSex_1000, CC_CGI[i][CGI_FEMALE]], VALUE_KEY)]);
+			popm = add([popm, getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_Pop_Tot_AgeSex_1000, CC_CGI[i][CGI_MALE]], VALUE_KEY)]);
+		}
+		console.log( "popf " + popf);
+		console.log( "popm " + popm);
+		generalInformationArray[CIG_ROW_SEX][1] = (100 * popf / popIn1000) + "% / " + ( 100 * popm / popIn1000) + "%";
+
+		// gets GDP
+		generalInformationArray[CIG_ROW_GDP][1] = getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_WB_GDP_PPP_current, CC_DEFAULT], VALUE_KEY);
+		
+		// gets income group codes to show code rather than a number
+		var ressource = "dataElements/"+DE_CGI.GEN_WB_IncomeGroup;
+		var fields = "optionSet[options[name,code]]";
+		$.when(get(ressource,fields)).done(function(result){
+			console.log(result);
+			var incomeCode = getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_WB_IncomeGroup, CC_DEFAULT], VALUE_KEY);
+			var incomeName = getValueForKey(result.optionSet.options, CODE_KEY, incomeCode, NAME_KEY);
+			generalInformationArray[CIG_ROW_INCOME][1] = incomeName;
+		});
+		
+		// calculates 
+		var pop_under15 = 0, pop_over15 = 0;
+		for (var i = Y_UNDER_5; i<= Y10_14; i++ ) {
+			pop_under15 = add([pop_under15, 
+					getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_Pop_Tot_AgeSex_1000, CC_CGI[i][CGI_FEMALE]], VALUE_KEY),
+					getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_Pop_Tot_AgeSex_1000, CC_CGI[i][CGI_MALE]], VALUE_KEY),
+					getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_Pop_Tot_AgeSex_1000, CC_CGI[i][CGI_GENDER_UNKNOWN]], VALUE_KEY),
+							]);
+		}
+		for (var i = Y15_19; i<= Y100_AND_OVER; i++ ) {
+			pop_over15 = add([pop_over15, 
+					getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_Pop_Tot_AgeSex_1000, CC_CGI[i][CGI_FEMALE]], VALUE_KEY),
+					getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_Pop_Tot_AgeSex_1000, CC_CGI[i][CGI_MALE]], VALUE_KEY),
+					getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_Pop_Tot_AgeSex_1000, CC_CGI[i][CGI_GENDER_UNKNOWN]], VALUE_KEY),
+							]);
+		}
+		console.log( "pop_under15 " + pop_under15);
+		console.log( "pop_over15 " + pop_over15);
+		generalInformationArray[CIG_ROW_AGEG][1] = (100 * pop_under15 / popIn1000) + "% / "  + (100 * pop_over15 / popIn1000) + "%";
+
+
+		generalInformationArray[CIG_ROW_LIFE][1] = getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_LifeExpBirth_Female, CC_DEFAULT], VALUE_KEY) +  
+													" / " +
+													getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_LifeExpBirth_Male, CC_DEFAULT], VALUE_KEY)	;
+
+		setOptionSelectMenu("subnationalLevelSelector", LEVEL2);
+		return updateNumberOfDivisions(LEVEL2); // so it waits to have the information
 	}
 
-	function setNumberOfDivisions(object, value){
-		if (typeof object === 'string'){
-			$("#"+object).html(value);
-		} else {
-			object[CIG_ROW_DIVIS][1] = value;
-		}
+	// updates 
+	function updateNumberOfDivisions(country_level){
+
+		return $.when(getNumberOfDivisionsFor(ds.countryID, (country_level+1), "name")).done(function(result){
+			var numberOfDivisions = result.organisationUnits.length;
+			var aDivisionName = result.organisationUnits[0].name;
+			generalInformationArray[CIG_ROW_DIVIS][0] = LEVEL_REPORT_LABELS[country_level];
+			generalInformationArray[CIG_ROW_DIVIS][1] = numberOfDivisions + ", " + aDivisionName;
+
+		});
+
 	}
 
 		
@@ -2327,9 +2500,15 @@
 		}).change();
 
 		$("#subnationalLevelSelector").on('selectmenuchange', function() {
-			var selected_level = $("#subnationalLevelSelector").val();
-			getNumberOfDivisions(parseInt(selected_level)+1, CGI_TABLE_NAME+6+" td:nth-child(2) span");
-			$("#"+CGI_TABLE_NAME+6+" td:nth-child(1) span").html(LEVEL_REPORT_LABELS[selected_level]);
+			var selected_level = parseInt($("#subnationalLevelSelector").val());
+
+			$.when(updateNumberOfDivisions(selected_level)).done(function(result){
+				writeTable(CGI_TABLE_NAME, "Body", generalInformationArray, LINES_BELOW_LABELS_CGI);
+			});
+
+
+			//getNumberOfDivisions(parseInt(selected_level)+1, CGI_TABLE_NAME+6+" td:nth-child(2) span");
+			//$("#"+CGI_TABLE_NAME+6+" td:nth-child(1) span").html(LEVEL_REPORT_LABELS[selected_level]);
 			//$("#"+CGI_TABLE_NAME+6+" td:nth-child(2) span").html(nbdiv);
 
 
@@ -2615,7 +2794,7 @@
 		
 		
 		fillTableHead(EPI_TABLE_NAME, "Head", '', COLUMNS_LABELS);
-		fillTableHead(MONTH_DIST_TABLE_NAME, "Head", '', MONTHS_ABBREV);
+		fillTableHead(MONTHLY_TABLE_NAME, "Head", '', MONTHS_ABBREV);
 		fillTableHead(DIAG_TABLE_NAME, "Head", '', COLUMNS_LABELS);
 		fillTableHead(TOUTCOME_TABLE_NAME, "Head", TOUTCOME_TABLE_FIRST_COLUMNS, COLUMNS_LABELS.slice(0,2));
 
@@ -2625,12 +2804,14 @@
 		$( ".resizable" ).resizable();
 
 
-		fillCountryGeneralInformation(LEVEL2); //TODO: Manage error when not level 2
+		// fillCountryGeneralInformation(LEVEL2); //TODO: Manage error when not level 2
 
 		// Code to execute after API calls have been done.
 		// $.when(ajax1(), ajax2(), ajax3(), ajax4()).done(function(a1, a2, a3, a4){
 		// http://stackoverflow.com/questions/3709597/wait-until-all-jquery-ajax-requests-are-done
-		$.when(get_cl_cases(), get_vl_cases(), get_azcl_cases(),
+		$.when(
+			get_cgi(),
+			get_cl_cases(), get_vl_cases(), get_azcl_cases(),
 			getIncidenceFor(INCIDENCE[VL_INDEX], VL_COLUMN),
 			getIncidenceFor(INCIDENCE[CL_INDEX], CL_COLUMN),
 			getIncidenceFor(INCIDENCE[ACL_INDEX], ACL_COLUMN),
@@ -2653,13 +2834,13 @@
 			getLegendSet(ZCL_LEGEND, ZCL_INDEX),
 			getTreatmentAndMedicines(ds.year),
 			getLastEvent(ds.year),
-			getFootnotes()).done(function(i1,i2,i3,i4,nc1,nc2,nc3,nc4,m1,m2,m3,m4,m5,m6,ls1,ls2,ls3,ls4,f1,tm1,le1,ft1){
+			getFootnotes()).done(function(cgi,i1,i2,i3,i4,nc1,nc2,nc3,nc4,m1,m2,m3,m4,m5,m6,ls1,ls2,ls3,ls4,f1,tm1,le1,ft1){
 			// the code here will be executed when all four ajax requests resolve.
 			// a1, a2, a3 and a4 are lists of length 3 containing the response text,
 			// status, and jqXHR object for each of the four ajax calls respectively.
 				writeTable(CGI_TABLE_NAME, "Body", generalInformationArray, LINES_BELOW_LABELS_CGI);
 				writeTable(EPI_TABLE_NAME, "Body", array, LINES_BELOW_LABELS_EPI);
-				writeTable(MONTH_DIST_TABLE_NAME, "Body", monthlyArray, LINES_BELOW_LABELS_MONTHLY);
+				writeTable(MONTHLY_TABLE_NAME, "Body", monthlyArray, LINES_BELOW_LABELS_MONTHLY);
 				writeTable(CAS_TABLE_NAME, "Body", controlArray, LINES_BELOW_LABELS_CAS);
 				writeTable(DIAG_TABLE_NAME, "Body", diagnosisArray, LINES_BELOW_LABELS_DIAG);
 				writeTable(TOUTCOME_TABLE_NAME, "Body", toutcomeArray, LINES_BELOW_LABELS_TREAT);
@@ -2883,11 +3064,11 @@
 	<div class="section">
 		<h4 class="editableElement footnotable" >Monthly distribution of new cases January-December</h4>
 
-		<table id="monthlyDistributionTable" class="display" cellspacing="0" width="100%">
+		<table id="monthlyTable" class="display" cellspacing="0" width="100%">
 				<thead>
-					<tr id ="monthlyDistributionTableHead"></tr>
+					<tr id ="monthlyTableHead"></tr>
 				</thead>
-				<tbody id="monthlyDistributionTableBody"></tbody>
+				<tbody id="monthlyTableBody"></tbody>
 		</table>
 
 	</div>
