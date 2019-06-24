@@ -2188,9 +2188,7 @@
 		destination.append(legendObject);
 	 }
 
-
-
-	$( "#updateLegendButton" ).click( function( event ) {
+	function updateLegend(event) {
 		event.preventDefault();
 		var legend_index =  $('#legendSelector').val();
 		var position_index =  $('#positionLegendSelector').val();
@@ -2201,20 +2199,15 @@
 		setOptionSelectMenu("positionLegendSelector", BOTTOM_RIGHT);
 		font_size_slider.slider("value", 10 );
 		font_size_slider_handle.text( 10 );
+	}
 
-	} );
-
-	$( "#updateMapButton" ).click( function( event ) {
+	function updateMap(event) {
 		event.preventDefault();
 		var selected_map_index =  $('#mapSelector').val();
 		var mapStyle = MAP_STYLE[$('#mapStyleSelector').val()];
 		// TODO: adapt to Maps
 		generateMap(selected_map_index, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity);
-
-	} );
-
-	
-
+	}
 	
 	function generateMaps(){
 		var levels = [3,4,5];
@@ -2567,6 +2560,7 @@
 
 		initializeDialogs();
 
+		/* Listeners */
 		// Editor for footnotes
 		$("#newfootnote").click(function() {
 			editingElement = $("#newFootnoteText")[0];
@@ -2576,6 +2570,9 @@
 			dialog.dialog( "open" );	
 
 		});
+		
+		$( "#updateLegendButton" ).on( 'click', event, updateLegend);
+		$( "#updateMapButton" ).on( 'click', event, updateMap);
 
 		// New footnote arrives 
 		$( "#sortable2" ).on( "sortupdate", function( event, ui ) {
