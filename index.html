@@ -516,6 +516,13 @@
 		UNS_USE_PREVIOUS_DATA : "ZjIDKHFwMUw"
 	};
 
+	var ENDEMICITY = {
+		CL : "saLNr832Et0",
+		ACL : "K827esuSG6T",
+		ZCL: "XUr4C3Sw4Yx",
+		VL : "S7sZbgQx4dM"
+	};
+
 	var DE_SCREEN_ACTIVE = {};
 	DE_SCREEN_ACTIVE[VL_COLUMN] = "g6yIwTl0sHx";
 	DE_SCREEN_ACTIVE[CL_COLUMN] = "c5Zvvh9AWB4";
@@ -712,6 +719,7 @@
 
 	var PR_LEISHMANIASIS = "Cp9FLBrMK3z";
 	var FOOTNOTE_PROGRAM = "NVUlJzIakuO";
+	var SUBNATIONAL_ENDEMICITY = "Jd8gnEIt8uT";
 
 
 	var Leish_PROG_outbreak_VL = "LAoaCOjm1Hh";
@@ -1143,11 +1151,28 @@
 		});
 	}
 
+	function get_subnational_endemicity_for(program, year, ind, column) {
 
+		var dimensions = [];
+		dimensions.push(["pe",year]);
+		dimensions.push(["ou",ds.countryID]);
+		dimensions.push([ind,"IN","1"]);
+
+		return $.when(getAggregateEvents(program, dimensions, null, null, true, true, OUTPUT_TYPE.EVENT))
+			.done(function(result){
+				var data = getAnalyticValueForKey(result, YEARLY_MODE);
+				array[THIRD_LEVEL_ROW][column] =  data[0] | WHEN_UNDEFINED;
+			});
+	}
+	
 	function get_monthly_cases_for(program, year, de, row) {
-
+			var dimensions = [];
 			var periods = generateMonthlyPeriodsForYear(year, ";");
-			return $.when(getAggregateEvents(program, ds.countryID, periods, de, AGGR_TYPE.SUM, true, true, OUTPUT_TYPE.EVENT))
+
+			dimensions.push(["pe",periods]);
+			dimensions.push(["ou",ds.countryID]);
+
+			return $.when(getAggregateEvents(program, dimensions, de, AGGR_TYPE.SUM, true, true, OUTPUT_TYPE.EVENT))
 				.done(function(result){
 					var data = getAnalyticValueForKey(result, MONTHLY_MODE);
 					fillMonthlyArray(row, data);
@@ -1568,7 +1593,12 @@
 	// updates 
 	function updateNumberOfDivisions(country_level){
 
-		return $.when(getNumberOfDivisionsFor(ds.countryID, (country_level+1), "name")).done(function(result){
+		return $.when(getNumberOfDivisionsFor(ds.countryID, (country_level+1), "name"),
+					get_subnational_endemicity_for(SUBNATIONAL_ENDEMICITY, ds.year, ENDEMICITY.ACL, ACL_COLUMN),
+					get_subnational_endemicity_for(SUBNATIONAL_ENDEMICITY, ds.year, ENDEMICITY.ZCL, ZCL_COLUMN),
+					get_subnational_endemicity_for(SUBNATIONAL_ENDEMICITY, ds.year, ENDEMICITY.CL, CL_COLUMN),
+					get_subnational_endemicity_for(SUBNATIONAL_ENDEMICITY, ds.year, ENDEMICITY.VL, VL_COLUMN)
+				).done(function(result){
 			var numberOfDivisions = result.organisationUnits.length;
 			var aDivisionName = result.organisationUnits[0].name;
 			generalInformationArray[CIG_ROW_DIVIS][0] = LEVEL_REPORT_LABELS[country_level];
