@@ -72,6 +72,7 @@
 <script type="text/javascript" src="commons/api.js"></script>
 <script type="text/javascript" src="commons/inputControl.js"></script>
 <script type="text/javascript" src="commons/tools.js"></script>
+<script type="text/javascript" src="commons/analytics_tools.js"></script>
 
 
 
@@ -88,6 +89,7 @@
 	 ****************************************************************************************************/
 	var ANALYTICS = "analytics";
 	var WHEN_UNDEFINED = "No data";
+	var WHEN_NO_DATA = "No data";
 	var WHEN_NON_APPLICABLE = "N/A";
 	var WHEN_DIV_0 = "-";
 	var ERROR = "Error!";
@@ -108,17 +110,21 @@
 
 	/* config subnational level */
 
-	var LEVEL1 = 0;
-	var LEVEL2 = 1;
-	var LEVEL3 = 2;
+	var SUBLEVEL1 = 1;
+	var SUBLEVEL2 = 2;
+	var SUBLEVEL3 = 3;
 	var LEVEL_CONFIG_LABELS = new Array(3);
 	var LEVEL_REPORT_LABELS = new Array(3);
-	LEVEL_CONFIG_LABELS[LEVEL1] = "1st sub-national administrative level";
-	LEVEL_CONFIG_LABELS[LEVEL2] = "2nd sub-national administrative level";
-	LEVEL_CONFIG_LABELS[LEVEL3] = "3rd sub-national administrative level";
-	LEVEL_REPORT_LABELS[LEVEL1] = "Number of 1st sub-national administrative level divisions, name:";
-	LEVEL_REPORT_LABELS[LEVEL2] = "Number of 2nd sub-national administrative level divisions, name:";
-	LEVEL_REPORT_LABELS[LEVEL3] = "Number of 3rd sub-national administrative level divisions, name:";
+	var ENDEMIC_SUBN_LEVEL_LABELS = new Array(3);
+	LEVEL_CONFIG_LABELS[SUBLEVEL1-1] = "1st sub-national administrative level";
+	LEVEL_CONFIG_LABELS[SUBLEVEL2-1] = "2nd sub-national administrative level";
+	LEVEL_CONFIG_LABELS[SUBLEVEL3-1] = "3rd sub-national administrative level";
+	LEVEL_REPORT_LABELS[SUBLEVEL1-1] = "Number of 1st sub-national administrative level divisions, name:";
+	LEVEL_REPORT_LABELS[SUBLEVEL2-1] = "Number of 2nd sub-national administrative level divisions, name:";
+	LEVEL_REPORT_LABELS[SUBLEVEL3-1] = "Number of 3rd sub-national administrative level divisions, name:";
+	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL1-1] = "Number of endemic 1st sub-national administrative level divisions (n):";
+	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL2-1] = "Number of endemic 2nd sub-national administrative level divisions (n):";
+	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL3-1] = "Number of endemic 3rd sub-national administrative level divisions (n):";
 
 	/* Texts on report */
 	var PUBLISHED_TEXT = "Published in ";
@@ -264,11 +270,13 @@
 						"Gender distribution (%F):",
 						"Age group distribution (%, <5/5-14/>14):",
 						"Incidence rate (cases/10 000 population in endemic areas):",
-						"Number of endemic 3rd sub-national administrative level divisions (n):",
+						ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL2-1],
 						"Population at risk (%, n/total):",
 						"Was there any outbreak?",
 						"Number of new foci:"
 						];
+
+
 	var LINES_BELOW_LABELS_EPI = [true,false,false,true,true,false,true,false,false,true,false,true];
 	var array = create_2_dim_array(rowTitles.length, rowTitles, LABELS_ON_COLUMNS);
 
@@ -520,7 +528,8 @@
 		CL : "saLNr832Et0",
 		ACL : "K827esuSG6T",
 		ZCL: "XUr4C3Sw4Yx",
-		VL : "S7sZbgQx4dM"
+		VL : "S7sZbgQx4dM",
+		ENDEMIC_OPTION_CODE : "1"
 	};
 
 	var DE_SCREEN_ACTIVE = {};
@@ -773,6 +782,10 @@
 	var editingElement;
 
 	var footNoteCounter = 0;
+
+	var NULL_AGGR_TYPE = null;
+	var NULL_FILTER = null;
+	var NULL_VALUE = null;
 	
 	/* Classes */
 
@@ -1151,28 +1164,32 @@
 		});
 	}
 
-	function get_subnational_endemicity_for(program, year, ind, column) {
+	function get_subnational_endemicity_for(program, year, level, ind, column) {
 
 		var dimensions = [];
 		dimensions.push(["pe",year]);
-		dimensions.push(["ou",ds.countryID]);
-		dimensions.push([ind,"IN","1"]);
 
-		return $.when(getAggregateEvents(program, dimensions, null, null, true, true, OUTPUT_TYPE.EVENT))
+		var filters = [];
+		filters.push(["ou",ds.countryID+";"+LEVEL+subNationalLevelToAbs(level)]);
+		filters.push([ind,"IN",ENDEMICITY.ENDEMIC_OPTION_CODE]);
+
+		return $.when(getAggregateEvents(program, dimensions, NULL_VALUE, filters, NULL_AGGR_TYPE, SKIP_PAGING, SKIP_META, OUTPUT_TYPE.EVENT))
 			.done(function(result){
 				var data = getAnalyticValueForKey(result, YEARLY_MODE);
-				array[THIRD_LEVEL_ROW][column] =  data[0] | WHEN_UNDEFINED;
+				array[THIRD_LEVEL_ROW][column] =  data[0] || WHEN_NO_DATA ;
 			});
 	}
 	
 	function get_monthly_cases_for(program, year, de, row) {
 			var dimensions = [];
+		//	var filters = [];
+
 			var periods = generateMonthlyPeriodsForYear(year, ";");
 
 			dimensions.push(["pe",periods]);
 			dimensions.push(["ou",ds.countryID]);
 
-			return $.when(getAggregateEvents(program, dimensions, de, AGGR_TYPE.SUM, true, true, OUTPUT_TYPE.EVENT))
+			return $.when(getAggregateEvents(program, dimensions, de, NULL_FILTER, AGGR_TYPE.SUM, SKIP_PAGING, SKIP_META, OUTPUT_TYPE.EVENT))
 				.done(function(result){
 					var data = getAnalyticValueForKey(result, MONTHLY_MODE);
 					fillMonthlyArray(row, data);
@@ -1586,23 +1603,26 @@
 													" / " +
 													getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_LifeExpBirth_Male, CC_DEFAULT], VALUE_KEY)	;
 
-		setOptionSelectMenu("subnationalLevelSelector", LEVEL2);
-		return updateNumberOfDivisions(LEVEL2); // so it waits to have the information
+		setOptionSelectMenu("subnationalLevelSelector", SUBLEVEL2-1);
+		return updateNumberOfDivisions(SUBLEVEL2); // so it waits to have the information
 	}
 
 	// updates 
-	function updateNumberOfDivisions(country_level){
+	function updateNumberOfDivisions(subNationalLevel){
 
-		return $.when(getNumberOfDivisionsFor(ds.countryID, (country_level+1), "name"),
-					get_subnational_endemicity_for(SUBNATIONAL_ENDEMICITY, ds.year, ENDEMICITY.ACL, ACL_COLUMN),
-					get_subnational_endemicity_for(SUBNATIONAL_ENDEMICITY, ds.year, ENDEMICITY.ZCL, ZCL_COLUMN),
-					get_subnational_endemicity_for(SUBNATIONAL_ENDEMICITY, ds.year, ENDEMICITY.CL, CL_COLUMN),
-					get_subnational_endemicity_for(SUBNATIONAL_ENDEMICITY, ds.year, ENDEMICITY.VL, VL_COLUMN)
+		return $.when(getNumberOfDivisionsFor(ds.countryID, (subNationalLevel), "name"),
+					get_subnational_endemicity_for(SUBNATIONAL_ENDEMICITY, ds.year, subNationalLevel, ENDEMICITY.ACL, ACL_COLUMN),
+					get_subnational_endemicity_for(SUBNATIONAL_ENDEMICITY, ds.year, subNationalLevel, ENDEMICITY.ZCL, ZCL_COLUMN),
+					get_subnational_endemicity_for(SUBNATIONAL_ENDEMICITY, ds.year, subNationalLevel, ENDEMICITY.CL, CL_COLUMN),
+					get_subnational_endemicity_for(SUBNATIONAL_ENDEMICITY, ds.year, subNationalLevel, ENDEMICITY.VL, VL_COLUMN)
 				).done(function(result){
 			var numberOfDivisions = result.organisationUnits.length;
 			var aDivisionName = result.organisationUnits[0].name;
-			generalInformationArray[CIG_ROW_DIVIS][0] = LEVEL_REPORT_LABELS[country_level];
+			generalInformationArray[CIG_ROW_DIVIS][0] = LEVEL_REPORT_LABELS[subNationalLevel-1];
 			generalInformationArray[CIG_ROW_DIVIS][1] = numberOfDivisions + ", " + aDivisionName;
+
+			// updates endemicity text at epi table
+			array[THIRD_LEVEL_ROW][0] = ENDEMIC_SUBN_LEVEL_LABELS[subNationalLevel-1];
 
 		});
 
@@ -2422,23 +2442,33 @@
 	 **********                               LISTENERS                                        **********
 	 ****************************************************************************************************/
 
+	 function refreshEpiTableToggleStatus(){
+
+		$(":checkbox."+LEISH_COLUMN_DETAIL_PREFIX).each(function(){
+			if( !this.checked ) {
+				$( this ).trigger('change');
+			}
+		});
+		
+	 }
+
 	 function addListenersToCheckboxes(){
 		// Listener ACL/ZCL PKDL buttons
 		$(":checkbox."+LEISH_COLUMN_DETAIL_PREFIX).change(function() {
-			var index = Number(this.id.slice(this.id.length-1, this.id.length));
-			$('#epiTable tr, #diagTable tr').each(function() {
-				$(this).find("td,th").eq(index+1).toggle();
-			});
+				var index = Number(this.id.slice(this.id.length-1, this.id.length));
+				$('#epiTable tr, #diagTable tr').each(function() {
+					$(this).find("td,th").eq(index+1).toggle();
+				});
 
-			// text descriptions under tables
-			$('#textUnderEpiTable').each(function() {
-				$(this).find("span").eq(index+1).toggle();
-			});
-			$('#textUnderDiagTable1').each(function() {
-				$(this).find("span").eq(index).toggle();
-			});
-
-		});
+				// text descriptions under tables
+				$('#textUnderEpiTable').each(function() {
+					$(this).find("span").eq(index+1).toggle();
+				});
+				$('#textUnderDiagTable1').each(function() {
+					$(this).find("span").eq(index).toggle();
+				});
+			}
+		);
 		
 		// Listener monthly buttons
 		$(":checkbox."+MONTHLY_TABLE_NAME).change(function() {
@@ -2523,10 +2553,14 @@
 		}).change();
 
 		$("#subnationalLevelSelector").on('selectmenuchange', function() {
-			var selected_level = parseInt($("#subnationalLevelSelector").val());
+			var subNationaSelectedLevel = parseInt($("#subnationalLevelSelector").val()) + 1;
 
-			$.when(updateNumberOfDivisions(selected_level)).done(function(result){
+			$.when(updateNumberOfDivisions(subNationaSelectedLevel)).done(function(result){
 				writeTable(CGI_TABLE_NAME, "Body", generalInformationArray, LINES_BELOW_LABELS_CGI);
+				writeTable(EPI_TABLE_NAME, "Body", array, LINES_BELOW_LABELS_EPI);
+				// It writes the entire table data, so put also the headers
+				fillTableHead(EPI_TABLE_NAME, "Head", '', COLUMNS_LABELS);
+				refreshEpiTableToggleStatus();
 			});
 
 
