@@ -521,7 +521,11 @@
 		VL_TREATMENT_OUTCOME: "eh7Lbb7Rslc",
 		UNS_ANTIL_LEM : "aPl9zoV5ZIV",
 		UNS_FREE_TREATMENT : "Ycax41CQNec",
-		UNS_USE_PREVIOUS_DATA : "ZjIDKHFwMUw"
+		UNS_USE_PREVIOUS_DATA : "ZjIDKHFwMUw",
+		ACL_GEN_EPID_NEW_FOCUS : "TF0LMI2yPPZ",
+		CL_GEN_EPID_NEW_FOCUS : "Euaxw5lULOI",
+		VL_GEN_EPID_NEW_FOCUS : "ciPmHP0ghAZ",
+		ZCL_GEN_EPID_NEW_FOCUS : "LRyb5NStabj"
 	};
 
 	var ENDEMICITY = {
@@ -733,8 +737,6 @@
 
 	var Leish_PROG_outbreak_VL = "LAoaCOjm1Hh";
 	var Leish_PROG_outbreak_CL = "CaIjvfbG8IX";
-	var Leish_PROG_newfoci_VL = "IdqQo9DBLek";
-	var Leish_PROG_newfoci_CL = "X5cOiCBAVwe";
 	var Leish_PROG_notifiable = "hjKuzePrJxM";
 	var Leish_PROG_surveillance = "fsrINvFJez6";
 	var Leish_PROG_surveillance_private = "DuqsDgyQM1L";
@@ -994,11 +996,9 @@
 
 				array[OUTBK_ROW][VL_COLUMN] = toBoolText(getValueForKey(dataValues, DE_KEY, Leish_PROG_outbreak_VL, VALUE_KEY));
 				array[OUTBK_ROW][CL_COLUMN] = toBoolText(getValueForKey(dataValues, DE_KEY, Leish_PROG_outbreak_CL, VALUE_KEY)); 
-				array[FOCI_ROW][VL_COLUMN] = getValueForKey(dataValues, DE_KEY, Leish_PROG_newfoci_VL, VALUE_KEY); 
-				array[FOCI_ROW][CL_COLUMN] = getValueForKey(dataValues, DE_KEY, Leish_PROG_newfoci_CL, VALUE_KEY); 
 				
 				array[OUTBK_ROW][FIRST_COLUMN] = array[OUTBK_ROW][FIRST_COLUMN] + "<sup>"+yearText+"</sup>";
-				array[FOCI_ROW][FIRST_COLUMN] = array[FOCI_ROW][FIRST_COLUMN] + "<sup>"+yearText+"</sup>";
+				//array[FOCI_ROW][FIRST_COLUMN] = array[FOCI_ROW][FIRST_COLUMN] + "<sup>"+yearText+"</sup>";
 
 				controlArray[CAS_ROW_NOTIF][1] = toBoolText(getValueForKey(dataValues, DE_KEY, Leish_PROG_notifiable, VALUE_KEY)); 
 				controlArray[CAS_ROW_TYPE][1] = toBoolText(getValueForKey(dataValues, DE_KEY, Leish_PROG_surveillance, VALUE_KEY)); 
@@ -1401,6 +1401,23 @@
 									+ ", "
 									+	percentageText(origin_imported, total_origin_cases);
 
+		// Data to retrive depending on Leish type
+		switch(epiDE){
+			case DE.CL_EPI_Type:
+				array[FOCI_ROW][column] = getValueForKey(dataValues, DE_KEY, DE.CL_GEN_EPID_NEW_FOCUS, VALUE_KEY);
+				break;
+			case DE.ACL_EPI_Type:
+				array[FOCI_ROW][column] = getValueForKey(dataValues, DE_KEY, DE.ACL_GEN_EPID_NEW_FOCUS, VALUE_KEY);
+				break;
+			case DE.ZCL_EPI_Type:
+				array[FOCI_ROW][column] = getValueForKey(dataValues, DE_KEY, DE.ZCL_GEN_EPID_NEW_FOCUS, VALUE_KEY);
+				break;
+			case DE.VL_EPI_Type:
+				array[FOCI_ROW][column] = getValueForKey(dataValues, DE_KEY, DE.VL_GEN_EPID_NEW_FOCUS, VALUE_KEY);
+				break;
+		}
+
+		
 		/* only PKDL and MCL TODO: place that if that's true */
 
 		if (column === PKDL_COLUMN || column === MCL_COLUMN){
