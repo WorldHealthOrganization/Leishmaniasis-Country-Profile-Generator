@@ -54,7 +54,8 @@
  src="https://code.jquery.com/jquery-2.2.4.js"
  integrity="sha256-iT6Q9iMJYuQiMWNd9lDyBUStIq/8PuOW33aOqmvFpqI="
  crossorigin="anonymous"></script>
-<script type="text/javascript" src ="js/jquery-te-1.4.0-oms.js"></script>
+ <script type="text/javascript" src ="js/jquery-te-1.4.0-oms.js"></script>
+ <script type="text/javascript" src ="js/tools.js"></script>
 <script type="text/javascript" src ="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js">//TODO:use the cdn officiel</script>
 <script type="text/javascript" src="../../../dhis-web-visualizer/chart.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.js"></script>
@@ -525,7 +526,11 @@
 		ACL_GEN_EPID_NEW_FOCUS : "TF0LMI2yPPZ",
 		CL_GEN_EPID_NEW_FOCUS : "Euaxw5lULOI",
 		VL_GEN_EPID_NEW_FOCUS : "ciPmHP0ghAZ",
-		ZCL_GEN_EPID_NEW_FOCUS : "LRyb5NStabj"
+		ZCL_GEN_EPID_NEW_FOCUS : "LRyb5NStabj",
+		ACL_GEN_EPID_outbreak :  "fW73iTXOe8r",
+		CL_GEN_EPID_outbreak :  "l0cmjII8aSl",
+		VL_GEN_EPID_outbreak :  "kH8ZxF9Biwv",
+		ZCL_GEN_EPID_outbreak :  "nfnq7idjj3Q"
 	};
 
 	var ENDEMICITY = {
@@ -733,10 +738,6 @@
 	var PR_LEISHMANIASIS = "Cp9FLBrMK3z";
 	var FOOTNOTE_PROGRAM = "NVUlJzIakuO";
 	var SUBNATIONAL_ENDEMICITY = "Jd8gnEIt8uT";
-
-
-	var Leish_PROG_outbreak_VL = "LAoaCOjm1Hh";
-	var Leish_PROG_outbreak_CL = "CaIjvfbG8IX";
 	var Leish_PROG_notifiable = "hjKuzePrJxM";
 	var Leish_PROG_surveillance = "fsrINvFJez6";
 	var Leish_PROG_surveillance_private = "DuqsDgyQM1L";
@@ -993,12 +994,9 @@
 				if(eventYear >= year){
 					yearText = "";
 				}
-
-				array[OUTBK_ROW][VL_COLUMN] = toBoolText(getValueForKey(dataValues, DE_KEY, Leish_PROG_outbreak_VL, VALUE_KEY));
-				array[OUTBK_ROW][CL_COLUMN] = toBoolText(getValueForKey(dataValues, DE_KEY, Leish_PROG_outbreak_CL, VALUE_KEY)); 
 				
-				array[OUTBK_ROW][FIRST_COLUMN] = array[OUTBK_ROW][FIRST_COLUMN] + "<sup>"+yearText+"</sup>";
-				//array[FOCI_ROW][FIRST_COLUMN] = array[FOCI_ROW][FIRST_COLUMN] + "<sup>"+yearText+"</sup>";
+				// array[OUTBK_ROW][FIRST_COLUMN] = array[OUTBK_ROW][FIRST_COLUMN] + "<sup>"+yearText+"</sup>";
+				// array[FOCI_ROW][FIRST_COLUMN] = array[FOCI_ROW][FIRST_COLUMN] + "<sup>"+yearText+"</sup>";
 
 				controlArray[CAS_ROW_NOTIF][1] = toBoolText(getValueForKey(dataValues, DE_KEY, Leish_PROG_notifiable, VALUE_KEY)); 
 				controlArray[CAS_ROW_TYPE][1] = toBoolText(getValueForKey(dataValues, DE_KEY, Leish_PROG_surveillance, VALUE_KEY)); 
@@ -1019,24 +1017,6 @@
 
 	}
 
-	function toBoolText(text){
-		switch(text){
-			case "0": 
-				return "No";
-				break;
-			case "1":
-				return "Yes";
-				break;
-			case "9":
-				return "Unknown";
-				break;
-			case "8":
-				return WHEN_NON_APPLICABLE;
-				break;
-			default:
-				return text;
-		}
-	}
 
 	function getTreatmentAndMedicines(theYear){
 		var params = {
@@ -1405,15 +1385,19 @@
 		switch(epiDE){
 			case DE.CL_EPI_Type:
 				array[FOCI_ROW][column] = getValueForKey(dataValues, DE_KEY, DE.CL_GEN_EPID_NEW_FOCUS, VALUE_KEY);
+				array[OUTBK_ROW][column] = toBoolText(getValueForKey(dataValues, DE_KEY, DE.CL_GEN_EPID_outbreak, VALUE_KEY));				
 				break;
 			case DE.ACL_EPI_Type:
 				array[FOCI_ROW][column] = getValueForKey(dataValues, DE_KEY, DE.ACL_GEN_EPID_NEW_FOCUS, VALUE_KEY);
+				array[OUTBK_ROW][column] = toBoolText(getValueForKey(dataValues, DE_KEY, DE.ACL_GEN_EPID_outbreak, VALUE_KEY));				
 				break;
 			case DE.ZCL_EPI_Type:
 				array[FOCI_ROW][column] = getValueForKey(dataValues, DE_KEY, DE.ZCL_GEN_EPID_NEW_FOCUS, VALUE_KEY);
+				array[OUTBK_ROW][column] = toBoolText(getValueForKey(dataValues, DE_KEY, DE.ZCL_GEN_EPID_outbreak, VALUE_KEY));				
 				break;
 			case DE.VL_EPI_Type:
 				array[FOCI_ROW][column] = getValueForKey(dataValues, DE_KEY, DE.VL_GEN_EPID_NEW_FOCUS, VALUE_KEY);
+				array[OUTBK_ROW][column] = toBoolText(getValueForKey(dataValues, DE_KEY, DE.VL_GEN_EPID_outbreak, VALUE_KEY));				
 				break;
 		}
 
