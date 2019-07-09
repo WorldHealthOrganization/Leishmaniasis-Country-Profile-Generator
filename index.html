@@ -385,9 +385,7 @@
 	var CAS_ROW_GUIDELINES = 4;
 	var CAS_ROW_NOTIF = 5;
 	var CAS_ROW_RESER = 6;
-	var CAS_ROW_FACIL_D = 7;
-	var CAS_ROW_FACIL_T = 8;
-	var CAS_ROW_FREE = 9;
+	var CAS_ROW_FACIL = 7;
 	
 	var CAS_LABELS = [	"Year Leishmaniasis National Control<br>Programme (LNCP) was established:",
 						"Type of surveillance:",
@@ -396,9 +394,7 @@
 						"Year latest national guidelines were published:",
 						"Is leishmaniasis notifiable (mandatory reporting)?",
 						"Is there a reservoir host control programme?",
-						"Number of leishmaniasis health facilities (diagnosis):",
-						"Number of leishmaniasis health facilities (treatment):",
-						"Is treatment provided for free in the public sector?"
+						"Number of leishmaniasis health facilities"
 						];
 	var LINES_BELOW_LABELS_CAS = [true,true,true,true,false,true,true,false,true,true];
 	var controlArray = create_2_dim_array(CAS_LABELS.length, CAS_LABELS, LABELS_ON_COLUMNS);
@@ -461,7 +457,7 @@
 
 	/* Treatment and medicines table*/
 	var TAM_ROW_FREEOFCHARGE = 0;
-	var TAM_ROW_ANTILEISHMANIAL = 1;
+	var TAM_ROW_EML = 1;
 	var TAM_LABELS = [	"Is treatment provided free of charge in the public sector?",
 						"Antileishmanial medicines included in the national List of Essential Medicines:"
 						];
@@ -492,7 +488,6 @@
 		CL : "tnek2LjfuIm",
 		VL : "fdBM4sWSuPR",
 		AZCL : "Uc3j0vpsfSB",
-		DAM : "qzlf5flidcm",
 		GI: "NKWbkXyfO5F"
 
 	};
@@ -520,8 +515,6 @@
 		PKDL_EPID_age : "rw4tu6PNGKO",
 		PKDL_LAB_HIV: "sxjZutF1AMx",
 		VL_TREATMENT_OUTCOME: "eh7Lbb7Rslc",
-		UNS_ANTIL_LEM : "aPl9zoV5ZIV",
-		UNS_FREE_TREATMENT : "Ycax41CQNec",
 		UNS_USE_PREVIOUS_DATA : "ZjIDKHFwMUw",
 		ACL_GEN_EPID_NEW_FOCUS : "TF0LMI2yPPZ",
 		CL_GEN_EPID_NEW_FOCUS : "Euaxw5lULOI",
@@ -735,43 +728,80 @@
 
 	/* Events Programs*/
 
-	var PR_LEISHMANIASIS = "Cp9FLBrMK3z";
+	var PR_LEISHMANIASIS = "Cp9FLBrMK3z"; // TODO: remove
 	var FOOTNOTE_PROGRAM = "NVUlJzIakuO";
 	var SUBNATIONAL_ENDEMICITY = "Jd8gnEIt8uT";
-	var Leish_PROG_notifiable = "hjKuzePrJxM";
+	
+	// Control & Surveillance
+
+	var Leish_GEN_LNCP_year = "X628bzppb3C";
+
+	// CL Surv Type applies also to ACL and ZCL
 	var Leish_PROG_surveillance = "fsrINvFJez6";
-	var Leish_PROG_surveillance_private = "DuqsDgyQM1L";
-	var Leish_PROG_vectorControl = "pZezLr9qAs6";
-	var Leish_PROG_vectorControl_ITN = "xVElTlorOHs";
-	var Leish_PROG_vectorControl_IRS = "b4RbLFKhbLG";
-	var Leish_PROG_IRS_insecticide = "zw2eJWO7Jj7";
-	var Leish_PROG_IRS_integrated = "mZ9qCbGp0fQ";
-	var Leish_PROG_vectorControl_EnvM = "kTarSQJ3s78";
-	var Leish_PROG_vectorControl_Other = "xbHi2a9Kozj";
-	var Leish_PROG_reservoirControl = "fED4Gk3zMLd";
-	var Leish_PROG_NbLeishHF_Dx = "DhDfyUo3Zc7";
-	var Leish_PROG_NbLeishHF_Tx = "M4kwSPihMPd";
-	var Leish_PROG_Tx_free = "HyuWmbIIhve";
-	var Leish_PROG_MedList_AmphotB = "PY8IWZKCkVv";
-	var Leish_PROG_MedAvail_AmphotB = "eNYVU0xHAVA";
-	var Leish_PROG_MedList_LiposoB = "ivpC92bcEks";
-	var Leish_PROG_MedAvail_LiposoB = "QabUgQwlLFA";
-	var Leish_PROG_MedList_MegAntimo = "ZfvQnbMjt05";
-	var Leish_PROG_MedAvail_MegAntimo = "uXSw8gECtG4";
-	var Leish_PROG_MedList_Miltefo = "TLaxUgOnjB5";
-	var Leish_PROG_MedAvail_Miltefo = "JRJqXJIrDJv";
-	var Leish_PROG_MedList_SSG = "OsifTHIUDwH";
-	var Leish_PROG_MedAvail_SSG = "nez8QCLHo47";
-	var Leish_PROG_LNCP_Year = "POg6OTIF5cT";
-	var Leish_PROG_guidelines_year = "LzpzN2lDa2J";
-	var Leish_PROG_failure_VL = "QLua1huBl2j";
-	var Leish_PROG_relapse_VL = "raOths7lqh1";
-	var Leish_PROG_relapse_CL = "yOMQ6PsnoU4";
-	var Leish_PROG_MedAvail_Paramo = "xGChEADcavt";
-	var Leish_PROG_MedAvail_Penta = "tmkNB5FZdWx";
-	var Leish_PROG_MedList_Paramo = "EQ2Vi7oIFSC";
-	var Leish_PROG_MedList_Penta = "Wu6U3ASLTUl";
+	var CL_GEN_Surv_Type = "MLBu7WOihjq";
+ 	var VL_GEN_Surv_Type = "dwTbQkNmLeN";
+
+	var Leish_GEN_VectorControl = "Bwow2Lb2bG2";
+
+	var Leish_GEN_VectorControl_Insecticide = "kGGckm5yhkI";
+	
 	var Leish_PROG_guidelines = "je5s4nR4uSM";
+	var CL_GEN_Guidelines_year = "oNCY7n0S94E";
+	var VL_GEN_Guidelines_year = "M8lRhrml0VN";
+
+	var Leish_PROG_notifiable = "hjKuzePrJxM";
+	var CL_GEN_Surv_Notif = "GQ7hSCfnCt9";
+	var VL_GEN_Surv_Notif = "uuF031QMFkW";
+
+	var Leish_GEN_ReservoirControl = "Kir30itliay";
+
+	var Leish_PROG_NbLeishHF_Dx = "DhDfyUo3Zc7";
+	var CL_GEN_Surv_HF = "yTIKdvsDjHe";
+	var VL_GEN_Surv_HF = "p7IL1FciQ7v";
+
+
+	// Treatment & medicines
+
+	var Leish_PROG_Tx_free = "HyuWmbIIhve";
+	var CL_GEN_TxFree = "TUt8fEPjgPB";
+	var VL_GEN_TxFree = "CyR30L4QvB6";
+
+	var EML = [];
+	var EML_MIN = 0, EML_MAX = 6;
+	var EML_LIST_SEPARATOR = ', ';
+	var EML_NONE = '-';
+
+	var AMPHOTERICINB = EML_MIN;
+	var LIPOSOMALAMP = 1;
+	var MEGLUMINE = 2;
+	var MILTEFOSINE = 3;
+	var PAROMOMYCIN = 4;
+	var PENTAMIDINE = 5;
+	var SSG = EML_MAX;
+
+	EML[AMPHOTERICINB] = [];
+	EML[LIPOSOMALAMP] = [];
+	EML[MEGLUMINE] = [];
+	EML[MILTEFOSINE] = [];
+	EML[PAROMOMYCIN] = [];
+	EML[PENTAMIDINE] = [];
+	EML[SSG] = [];
+
+	EML[AMPHOTERICINB].ID = "v9HkT2GJGZc";
+	EML[LIPOSOMALAMP].ID = "hsOZ4rKMBlE";
+	EML[MEGLUMINE].ID = "FZ0d8oYBDFD";
+	EML[MILTEFOSINE].ID = "k7EuWr0KUPM";
+	EML[PAROMOMYCIN].ID = "jQccvr2Adlb";
+	EML[PENTAMIDINE].ID = "z8PUIRxPGB9";
+	EML[SSG].ID = "ZzOK74NB4wN";
+
+	EML[AMPHOTERICINB].NAME = "Amphotericin B deoxycholate";
+	EML[LIPOSOMALAMP].NAME = "Liposomal amphotericin B";
+	EML[MEGLUMINE].NAME = "Meglumine antimoniate";
+	EML[MILTEFOSINE].NAME = "Miltefosine";
+	EML[PAROMOMYCIN].NAME = "Paromomycin";
+	EML[PENTAMIDINE].NAME = "Pentamidine";
+	EML[SSG].NAME = "Sodium stibogluconate (SSG)";
 
 
 	var RG_footnote_active = "GBOpGIZ0QDU";
@@ -968,79 +998,6 @@
 		});
 	}
 
-
-	function getLastEvent(theYear){
-
-		var params = {
-			period: theYear,
-			orgUnit: ds.countryID,
-			program: PR_LEISHMANIASIS,
-			pageSize:1,
-			page: 1
-		}
-
-		builtUrl = buildAPIUrl(EVENTS, params);
-		builtUrl += "&order=eventDate:desc";
-		return $.ajax({
-			url: builtUrl
-		}).then(function(data) {
-			console.log(data);
-			if(data.events.length) {
-				var dataValues = data.events[0].dataValues;
-				var eventDate = data.events[0].eventDate;
-				var eventYear = eventDate.slice(0,4);
-				var yearText = "("+eventYear+")";
-
-				if(eventYear >= year){
-					yearText = "";
-				}
-				
-				// array[OUTBK_ROW][FIRST_COLUMN] = array[OUTBK_ROW][FIRST_COLUMN] + "<sup>"+yearText+"</sup>";
-				// array[FOCI_ROW][FIRST_COLUMN] = array[FOCI_ROW][FIRST_COLUMN] + "<sup>"+yearText+"</sup>";
-
-				controlArray[CAS_ROW_NOTIF][1] = toBoolText(getValueForKey(dataValues, DE_KEY, Leish_PROG_notifiable, VALUE_KEY)); 
-				controlArray[CAS_ROW_TYPE][1] = toBoolText(getValueForKey(dataValues, DE_KEY, Leish_PROG_surveillance, VALUE_KEY)); 
-				controlArray[CAS_ROW_PROGRAMME][1] = toBoolText(getValueForKey(dataValues, DE_KEY, Leish_PROG_vectorControl, VALUE_KEY)); 
-				controlArray[CAS_ROW_RESER][1] = toBoolText(getValueForKey(dataValues, DE_KEY, Leish_PROG_reservoirControl, VALUE_KEY)); 
-				controlArray[CAS_ROW_FACIL_D][1] = getValueForKey(dataValues, DE_KEY, Leish_PROG_NbLeishHF_Dx, VALUE_KEY); 
-				controlArray[CAS_ROW_FACIL_T][1] = getValueForKey(dataValues, DE_KEY, Leish_PROG_NbLeishHF_Dx, VALUE_KEY); 
-				controlArray[CAS_ROW_GUIDELINES][1] = toBoolText(getValueForKey(dataValues, DE_KEY, Leish_PROG_guidelines, VALUE_KEY)); 
-				controlArray[CAS_ROW_FREE][1] = toBoolText(getValueForKey(dataValues, DE_KEY, Leish_PROG_Tx_free, VALUE_KEY)); 
-				controlArray[CAS_ROW_LNCP][1] = getValueForKey(dataValues, DE_KEY, Leish_PROG_LNCP_Year, VALUE_KEY); 
-				controlArray[CAS_ROW_IRS][1] = getValueForKey(dataValues, DE_KEY, Leish_PROG_IRS_insecticide, VALUE_KEY); 
-
-				$( "#casTitle" ).append("<sup>"+yearText+"</sup>");
-
-			}
-		});
-
-
-	}
-
-
-	function getTreatmentAndMedicines(theYear){
-		var params = {
-			dataSet : DATASET.DAM,
-			period: theYear,
-			orgUnit: ds.countryID
-		}
-		
-		builtUrl = buildAPIUrl(DATAVALUESETS, params);
-		
-		return $.ajax({
-			url: builtUrl
-		}).then(function(data) {
-			if(data.dataValues) {
-				var usePreviousData = getValueForKey(data.dataValues, DE_KEY, DE.UNS_USE_PREVIOUS_DATA, VALUE_KEY);
-				if (usePreviousData){
-					return getTreatmentAndMedicines(theYear-1);
-				} else {
-					fillTreatmentAndMedicines(data.dataValues, theYear);
-				}
-			}
-		});
-	}
-
 	function getLegendSet(legendSetId, mapId){
 		var legendUrl = "../../legendSets/"+legendSetId;
 
@@ -1233,6 +1190,9 @@
 				fillArray(data.dataValues, VL_COLUMN, DE.VL_EPI_Type, DE.VL_LAB_RDT_tested_type, "");
 				fillArray(data.dataValues, PKDL_COLUMN, DE.VL_EPI_Type, DE.VL_LAB_RDT_tested_type, DE.PKDL_GEN_EPID_cases);
 
+				//TODO: move to a proper place
+				fillControlAndSurveillance(data.dataValues);
+				fillTreatmentAndMedicines(data.dataValues);
 		});
 	}
 
@@ -1539,13 +1499,34 @@
  	 **********                     		 AUXILIARY FUNCTIONS          	    		       **********
 	 ****************************************************************************************************/
 
-	function fillTreatmentAndMedicines(dataValues, yearInfo){
-		tamArray[TAM_ROW_FREEOFCHARGE][1] = getValueForKey(dataValues, DE_KEY, DE.UNS_FREE_TREATMENT, VALUE_KEY);
-		tamArray[TAM_ROW_ANTILEISHMANIAL][1] = getValueForKey(dataValues, DE_KEY, DE.UNS_ANTIL_LEM, VALUE_KEY);
-
-		if (yearInfo < ds.year){
-			$("#tamTitle").append(" (" + yearInfo + ")");
+	function fillControlAndSurveillance(dataValues){
+		controlArray[CAS_ROW_LNCP][1] = getValueForKey(dataValues, DE_KEY, Leish_GEN_LNCP_year, VALUE_KEY); 
+		controlArray[CAS_ROW_TYPE][1] = "TBD"; //toBoolText(getValueForKey(dataValues, DE_KEY, Leish_PROG_surveillance, VALUE_KEY)); 
+		controlArray[CAS_ROW_PROGRAMME][1] = toBoolText(getValueForKey(dataValues, DE_KEY, Leish_GEN_VectorControl, VALUE_KEY)); 
+		controlArray[CAS_ROW_IRS][1] = getValueForKey(dataValues, DE_KEY, Leish_GEN_VectorControl_Insecticide, VALUE_KEY); 
+		controlArray[CAS_ROW_NOTIF][1] = "TBD"; //toBoolText(getValueForKey(dataValues, DE_KEY, Leish_PROG_notifiable, VALUE_KEY)); 
+		controlArray[CAS_ROW_GUIDELINES][1] = "TBD"; //toBoolText(getValueForKey(dataValues, DE_KEY, Leish_PROG_guidelines, VALUE_KEY)); 
+		controlArray[CAS_ROW_RESER][1] = toBoolText(getValueForKey(dataValues, DE_KEY, Leish_GEN_ReservoirControl, VALUE_KEY)); 
+		controlArray[CAS_ROW_FACIL][1] = "TBD"; //getValueForKey(dataValues, DE_KEY, Leish_PROG_NbLeishHF_Dx, VALUE_KEY); 
+	}
+	
+	function fillTreatmentAndMedicines(dataValues){
+		tamArray[TAM_ROW_FREEOFCHARGE][1] = "TBD"; //getValueForKey(dataValues, DE_KEY, DE.UNS_FREE_TREATMENT, VALUE_KEY);
+		
+		var eml_string = "";
+		for (var i = EML_MIN; i<=EML_MAX; i++) {
+			if ( booleanToTrueFalse(getValueForKey(dataValues, DE_KEY, EML[i].ID, VALUE_KEY), DEFAULT_FALSE)) {
+				eml_string += EML[i].NAME + EML_LIST_SEPARATOR;
+			}
 		}
+		if (eml_string.length > 0 ){
+			eml_string = eml_string.slice(0, -2);
+		} else {
+			eml_string = EML_NONE;
+		}
+
+		tamArray[TAM_ROW_EML][1] = eml_string;
+
 	}
 
 	function fillCountryGeneralInformation(data){
@@ -2894,12 +2875,12 @@
 			getLegendSet(CL_LEGEND, CL_INDEX),
 			getLegendSet(ACL_LEGEND, ACL_INDEX),
 			getLegendSet(ZCL_LEGEND, ZCL_INDEX),
-			getTreatmentAndMedicines(ds.year),
-			getLastEvent(ds.year),
 			getFootnotes()).done(function(cgi,i1,i2,i3,i4,nc1,nc2,nc3,nc4,m1,m2,m3,m4,m5,m6,ls1,ls2,ls3,ls4,f1,tm1,le1,ft1){
 			// the code here will be executed when all four ajax requests resolve.
 			// a1, a2, a3 and a4 are lists of length 3 containing the response text,
 			// status, and jqXHR object for each of the four ajax calls respectively.
+
+
 				writeTable(CGI_TABLE_NAME, "Body", generalInformationArray, LINES_BELOW_LABELS_CGI);
 				writeTable(EPI_TABLE_NAME, "Body", array, LINES_BELOW_LABELS_EPI);
 				writeTable(MONTHLY_TABLE_NAME, "Body", monthlyArray, LINES_BELOW_LABELS_MONTHLY);
@@ -2916,7 +2897,6 @@
 				fillHTMLListWithArray(SORTABLE_LIST_3_NAME, activeFootnotesPage2, 'ui-state-highlight '+CLASS_EDITABLE_ELEMENT);
 				fillFootnotes();
 
-				fillTreatmentAndMedicines();
 
 				setMonthlyCheckboxes();
 				generateMaps();
