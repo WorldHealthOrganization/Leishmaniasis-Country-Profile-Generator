@@ -171,16 +171,12 @@ tr.bottom_line td,th {
 .FixedHeightContainer
 {
   width:fit-content;
-  
   padding:0px; 
 }
 .Content
 {
-  height:280px;
   display:inline-block;
 
-	width: 33%;
-	overflow:auto;
 }
 
 /* maps slider */
