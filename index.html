@@ -137,6 +137,7 @@
 
 	var CHART_CHECKBOXES_LABELS = ["CL monthly", "AZCL monthly", "VL monthly", "CL yearly", "AZCL yearly", "VL yearly" ];
 
+	var TWO_VALUES_SEPARATOR = " / ";
 
 	var VL_CHART_CASES_LEGEND = "VL cases";
 	var CL_CHART_CASES_LEGEND = "CL cases";
@@ -388,13 +389,13 @@
 	var CAS_ROW_FACIL = 7;
 	
 	var CAS_LABELS = [	"Year Leishmaniasis National Control<br>Programme (LNCP) was established:",
-						"Type of surveillance:",
+						"Type of surveillance (CL / VL):",
 						"Is there a vector control programme?",
-						"Type of insecticide used for IRS:",
-						"Year latest national guidelines were published:",
-						"Is leishmaniasis notifiable (mandatory reporting)?",
+						"Type of insecticide used for Indoor residual Spraying (IRS):",
+						"Year latest national guidelines (CL / VL):",
+						"Is leishmaniasis notifiable (mandatory report)? (CL / VL):",
 						"Is there a reservoir host control programme?",
-						"Number of leishmaniasis health facilities"
+						"Number of leishmaniasis health facilities (CL / VL):"
 						];
 	var LINES_BELOW_LABELS_CAS = [true,true,true,true,false,true,true,false,true,true];
 	var controlArray = create_2_dim_array(CAS_LABELS.length, CAS_LABELS, LABELS_ON_COLUMNS);
@@ -458,8 +459,8 @@
 	/* Treatment and medicines table*/
 	var TAM_ROW_FREEOFCHARGE = 0;
 	var TAM_ROW_EML = 1;
-	var TAM_LABELS = [	"Is treatment provided free of charge in the public sector?",
-						"Antileishmanial medicines included in the national List of Essential Medicines:"
+	var TAM_LABELS = [	"Is treatment provided for free in the public sector? (CL / VL):",
+						"Antileishmanial medicines included in the National Medicine List:"
 						];
 	var LINES_BELOW_LABELS_TAM = [true,true];
 	var tamArray = create_2_dim_array(TAM_LABELS.length, TAM_LABELS, LABELS_ON_COLUMNS);
@@ -728,7 +729,6 @@
 
 	/* Events Programs*/
 
-	var PR_LEISHMANIASIS = "Cp9FLBrMK3z"; // TODO: remove
 	var FOOTNOTE_PROGRAM = "NVUlJzIakuO";
 	var SUBNATIONAL_ENDEMICITY = "Jd8gnEIt8uT";
 	
@@ -737,7 +737,6 @@
 	var Leish_GEN_LNCP_year = "X628bzppb3C";
 
 	// CL Surv Type applies also to ACL and ZCL
-	var Leish_PROG_surveillance = "fsrINvFJez6";
 	var CL_GEN_Surv_Type = "MLBu7WOihjq";
  	var VL_GEN_Surv_Type = "dwTbQkNmLeN";
 
@@ -745,24 +744,20 @@
 
 	var Leish_GEN_VectorControl_Insecticide = "kGGckm5yhkI";
 	
-	var Leish_PROG_guidelines = "je5s4nR4uSM";
 	var CL_GEN_Guidelines_year = "oNCY7n0S94E";
 	var VL_GEN_Guidelines_year = "M8lRhrml0VN";
 
-	var Leish_PROG_notifiable = "hjKuzePrJxM";
 	var CL_GEN_Surv_Notif = "GQ7hSCfnCt9";
 	var VL_GEN_Surv_Notif = "uuF031QMFkW";
 
 	var Leish_GEN_ReservoirControl = "Kir30itliay";
 
-	var Leish_PROG_NbLeishHF_Dx = "DhDfyUo3Zc7";
 	var CL_GEN_Surv_HF = "yTIKdvsDjHe";
 	var VL_GEN_Surv_HF = "p7IL1FciQ7v";
 
 
 	// Treatment & medicines
 
-	var Leish_PROG_Tx_free = "HyuWmbIIhve";
 	var CL_GEN_TxFree = "TUt8fEPjgPB";
 	var VL_GEN_TxFree = "CyR30L4QvB6";
 
@@ -1501,17 +1496,29 @@
 
 	function fillControlAndSurveillance(dataValues){
 		controlArray[CAS_ROW_LNCP][1] = getValueForKey(dataValues, DE_KEY, Leish_GEN_LNCP_year, VALUE_KEY); 
-		controlArray[CAS_ROW_TYPE][1] = "TBD"; //toBoolText(getValueForKey(dataValues, DE_KEY, Leish_PROG_surveillance, VALUE_KEY)); 
+		controlArray[CAS_ROW_TYPE][1] =  getValueForKey(dataValues, DE_KEY, CL_GEN_Surv_Type, VALUE_KEY) +
+											TWO_VALUES_SEPARATOR +
+											getValueForKey(dataValues, DE_KEY, VL_GEN_Surv_Type, VALUE_KEY); 
 		controlArray[CAS_ROW_PROGRAMME][1] = toBoolText(getValueForKey(dataValues, DE_KEY, Leish_GEN_VectorControl, VALUE_KEY)); 
 		controlArray[CAS_ROW_IRS][1] = getValueForKey(dataValues, DE_KEY, Leish_GEN_VectorControl_Insecticide, VALUE_KEY); 
-		controlArray[CAS_ROW_NOTIF][1] = "TBD"; //toBoolText(getValueForKey(dataValues, DE_KEY, Leish_PROG_notifiable, VALUE_KEY)); 
-		controlArray[CAS_ROW_GUIDELINES][1] = "TBD"; //toBoolText(getValueForKey(dataValues, DE_KEY, Leish_PROG_guidelines, VALUE_KEY)); 
+		controlArray[CAS_ROW_NOTIF][1] = toBoolText(getValueForKey(dataValues, DE_KEY, CL_GEN_Surv_Notif, VALUE_KEY)) +
+											TWO_VALUES_SEPARATOR +
+											toBoolText(getValueForKey(dataValues, DE_KEY, VL_GEN_Surv_Notif, VALUE_KEY)); 
+		controlArray[CAS_ROW_GUIDELINES][1] = getValueForKey(dataValues, DE_KEY, CL_GEN_Guidelines_year, VALUE_KEY) +
+											TWO_VALUES_SEPARATOR +
+											getValueForKey(dataValues, DE_KEY, VL_GEN_Guidelines_year, VALUE_KEY); 
 		controlArray[CAS_ROW_RESER][1] = toBoolText(getValueForKey(dataValues, DE_KEY, Leish_GEN_ReservoirControl, VALUE_KEY)); 
-		controlArray[CAS_ROW_FACIL][1] = "TBD"; //getValueForKey(dataValues, DE_KEY, Leish_PROG_NbLeishHF_Dx, VALUE_KEY); 
+		controlArray[CAS_ROW_FACIL][1] = getValueForKey(dataValues, DE_KEY, CL_GEN_Surv_HF, VALUE_KEY) +
+											TWO_VALUES_SEPARATOR +
+											getValueForKey(dataValues, DE_KEY, VL_GEN_Surv_HF, VALUE_KEY);
 	}
 	
 	function fillTreatmentAndMedicines(dataValues){
-		tamArray[TAM_ROW_FREEOFCHARGE][1] = "TBD"; //getValueForKey(dataValues, DE_KEY, DE.UNS_FREE_TREATMENT, VALUE_KEY);
+		tamArray[TAM_ROW_FREEOFCHARGE][1] =  toBoolText(getValueForKey(dataValues, DE_KEY, CL_GEN_TxFree, VALUE_KEY)) +
+											TWO_VALUES_SEPARATOR +
+											toBoolText(getValueForKey(dataValues, DE_KEY, VL_GEN_TxFree, VALUE_KEY));
+
+		
 		
 		var eml_string = "";
 		for (var i = EML_MIN; i<=EML_MAX; i++) {
