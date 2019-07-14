@@ -50,6 +50,7 @@
  **********                             JavaScript imports                                 **********
  ****************************************************************************************************/
  -->
+ <script type="text/javascript" src ="js/pace.min.js"></script>
  <script
  src="https://code.jquery.com/jquery-2.2.4.js"
  integrity="sha256-iT6Q9iMJYuQiMWNd9lDyBUStIq/8PuOW33aOqmvFpqI="
@@ -83,7 +84,6 @@
 -->
 
 <script type="text/javascript">
-
 
 	/****************************************************************************************************
  	 **********                      	       CONSTANTS            	              	       **********
@@ -340,10 +340,11 @@
 	MAP_STYLE_LABELS [OSM_LIGHT] = "OSM Light";
 	MAP_STYLE_LABELS [FACILITY] = "Facility";
 
-	var VL_LEGEND = "gUOjExXros1";
-	var CL_LEGEND = "TnU2O8YxH51";
-	var ACL_LEGEND = "clwSlrqvmMx";
-	var ZCL_LEGEND = "TbrqpLWzLS8";
+	var LEGENDS = []; 
+	LEGENDS[VL_INDEX] =  "gUOjExXros1";
+	LEGENDS[CL_INDEX] =  "TnU2O8YxH51";
+	LEGENDS[ACL_INDEX] =  "clwSlrqvmMx";
+	LEGENDS[ZCL_INDEX] =  "TbrqpLWzLS8";
 
 	var initalMapDiv = new Array(4);
 	var mapLegends = new Array(4);
@@ -993,27 +994,27 @@
 		});
 	}
 
-	function getLegendSet(legendSetId, mapId){
-		var legendUrl = "../../legendSets/"+legendSetId;
+	function getLegendSet(index){
+		var legendUrl = "../../legendSets/"+LEGENDS[index];
 
 		return $.ajax({
 			url: legendUrl
 		}).then(function(data) {
-			mapLegends[mapId] = [];
+			mapLegends[index] = [];
 			var legendSetName = data.name;
 			return $.ajax({
 				url: legendUrl+"/legends/"
 			}).then(function(data) {
 				for (var i =0; i<data.legends.length; i++){
 
-					mapLegends[mapId][i] = {};
-					mapLegends[mapId][i].legendSetName = legendSetName;
-					mapLegends[mapId][i].legendNames = data.legends[i].name;
-					mapLegends[mapId][i].legendColors = data.legends[i].color;
-					mapLegends[mapId][i].startValue = data.legends[i].startValue;
-					mapLegends[mapId][i].endValue = data.legends[i].endValue;
+					mapLegends[index][i] = {};
+					mapLegends[index][i].legendSetName = legendSetName;
+					mapLegends[index][i].legendNames = data.legends[i].name;
+					mapLegends[index][i].legendColors = data.legends[i].color;
+					mapLegends[index][i].startValue = data.legends[i].startValue;
+					mapLegends[index][i].endValue = data.legends[i].endValue;
 				}
-				mapLegends[mapId] =  reOrderLegendSet(mapLegends[mapId]);
+				mapLegends[index] =  reOrderLegendSet(mapLegends[index]);
 			});
 			
 		});
@@ -2248,22 +2249,17 @@
 		generateMap(selected_map_index, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity);
 	}
 	
-	function generateMaps(){
+	function generateMapAndLegend(index){
 		var levels = [3,4,5];
-		initalMapDiv[VL_INDEX] = $('#map0').html();
-		initalMapDiv[CL_INDEX] = $('#map1').html();
-		initalMapDiv[ACL_INDEX] = $('#map2').html();
-		initalMapDiv[ZCL_INDEX] = $('#map3').html();
 
-		var mapStyle = MAP_STYLE[$('#mapStyleSelector').val()];
-		generateMap(VL_INDEX, "INDICATOR", levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity);
-		generateMap(CL_INDEX, "INDICATOR", levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity);
-		generateMap(ACL_INDEX, "INDICATOR", levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity);
-		generateMap(ZCL_INDEX, "INDICATOR", levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity);
-		drawLegendSet("legendSet0", VL_INDEX);
-		drawLegendSet("legendSet1", CL_INDEX);
-		drawLegendSet("legendSet2", ACL_INDEX);
-		drawLegendSet("legendSet3", ZCL_INDEX);
+		return $.when(getLegendSet(index)).done(function(result){
+			initalMapDiv[index] = $('#map'+index).html();
+			var mapStyle = MAP_STYLE[$('#mapStyleSelector').val()];
+			drawLegendSet("legendSet"+index, index);
+			generateMap(index, "INDICATOR", levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity);
+
+		});
+
 	}
 
 	function fillNotaBene(){
@@ -2409,6 +2405,7 @@
 			},
 			close: function(event) {
 				event.preventDefault();
+				Pace.restart();
 				return false;
 				//allFields.removeClass( "ui-state-error" );
 			}
@@ -2417,11 +2414,11 @@
 	}
 
 	function saveChanges(){
-		editingElement.outerHTML = editor.jqteVal();
+		editingElement.innerHTML = editor.jqteVal();
 		addNewFootnote();
 	}
 	function saveChangesAndClose(){
-		editingElement.outerHTML = editor.jqteVal();
+		editingElement.innerHTML = editor.jqteVal();
 		addNewFootnote();
 		dialog.dialog( "close" );
 	}
@@ -2608,6 +2605,9 @@
 
     $(document).ready(function(){
 
+		document.getElementById("country_profile_and_panel").style.display = "none";
+
+
 		editor = $("#editor");
 		editor.jqte();	
 
@@ -2659,7 +2659,7 @@
 				autocompleteSearcher("targetCountry", organisationUnits, doNothing, 2, 200);
 
 				dialog_cs.dialog( "open" );
-				DEBUG_AutomaticallyfillInitialForm();
+				DEBUG_AutomaticallyfillInitialForm(); //if commented, dialog_cs.dialog( "close" ); on startPreparingReport
 
 			});
 		
@@ -2680,6 +2680,8 @@
 
 	function startPreparingReport() {
 	
+		// dialog_cs.dialog( "close" );
+
 		// retrieves values from form
 		ds.countryName =  $( "#targetCountry" ).val(); 
 		ds.countryID =  $( "#targetCountry" ).text(); 
@@ -2860,6 +2862,10 @@
 		// $.when(ajax1(), ajax2(), ajax3(), ajax4()).done(function(a1, a2, a3, a4){
 		// http://stackoverflow.com/questions/3709597/wait-until-all-jquery-ajax-requests-are-done
 		$.when(
+			generateMapAndLegend(VL_INDEX),
+			generateMapAndLegend(CL_INDEX),
+			generateMapAndLegend(ACL_INDEX),
+			generateMapAndLegend(ZCL_INDEX),
 			get_cgi(),
 			get_cl_cases(), get_vl_cases(), get_azcl_cases(),
 			getIncidenceFor(INCIDENCE[VL_INDEX], VL_COLUMN),
@@ -2878,10 +2884,6 @@
 			get_monthly_cases_for(PROGRAM.CL_MONTHLY, ds.year-1, DE_MONTHLY.ACL_CASES, ACL_PREVIOUS_YEAR_ROW),
 			get_monthly_cases_for(PROGRAM.CL_MONTHLY, ds.year, DE_MONTHLY.ZCL_CASES, ZCL_ROW),
 			get_monthly_cases_for(PROGRAM.CL_MONTHLY, ds.year-1, DE_MONTHLY.ZCL_CASES, ZCL_PREVIOUS_YEAR_ROW),
-			getLegendSet(VL_LEGEND, VL_INDEX),
-			getLegendSet(CL_LEGEND, CL_INDEX),
-			getLegendSet(ACL_LEGEND, ACL_INDEX),
-			getLegendSet(ZCL_LEGEND, ZCL_INDEX),
 			getFootnotes()).done(function(cgi,i1,i2,i3,i4,nc1,nc2,nc3,nc4,m1,m2,m3,m4,m5,m6,ls1,ls2,ls3,ls4,f1,tm1,le1,ft1){
 			// the code here will be executed when all four ajax requests resolve.
 			// a1, a2, a3 and a4 are lists of length 3 containing the response text,
@@ -2904,9 +2906,7 @@
 				fillHTMLListWithArray(SORTABLE_LIST_3_NAME, activeFootnotesPage2, 'ui-state-highlight '+CLASS_EDITABLE_ELEMENT);
 				fillFootnotes();
 
-
 				setMonthlyCheckboxes();
-				generateMaps();
 				
 				makeElementsEditables();
 				makeElementsFootnotables();
@@ -2919,6 +2919,7 @@
 
 			//	$("#disableNBMaps").trigger('click');
 				//$(".radioButton").change();
+				document.getElementById("country_profile_and_panel").style.display = "block";
 
 		}).fail(function(data) {
 			console.log ("ERROR. WHEN");
@@ -2945,9 +2946,9 @@
 <!DOCTYPE html>
 <html>
 <head>
+	<link rel="stylesheet" href="css/pace_loading_bar.css" type="text/css" />
 	<meta charset="UTF-8">
 	<title>Leishmaniasis Country Profile Generator</title>
-
    <link rel="stylesheet" href="css/style.css" type="text/css" />
    <link rel="stylesheet" href="css/jquery-te-1.4.0.css" type="text/css" />
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" type="text/css" />
@@ -2959,248 +2960,250 @@
 </head>
 
 <body>
+	<div id="country_profile_and_panel">
 
-	<div class="non-printable configuration-section section"><hr>
+		<div class="non-printable configuration-section section"><hr>
 
-		<div class="comment">
-			Configuration Area - Wont be printed<br>
-			Instructions : Left click to add a footnote number.<br>
-							Right click to edit an element.
-		</div>
-		<div id="tabs">
-			<ul>
-				<li><a href="#tabs-1">General</a></li>
-				<li><a href="#tabs-2">Maps</a></li>
-				<li><a href="#tabs-3">Footnotes</a></li>
-			</ul>
-			<div id="tabs-1">		
-				<fieldset id="leish_detail_checkboxes"></fieldset>
-				<fieldset id="monthlyCheckboxes"></fieldset>
-				<fieldset id="chartCheckboxes"></fieldset>
-				<p><select name="subnationalLevelSelector" id="subnationalLevelSelector"></select></p>
+			<div class="comment">
+				Configuration Area - Wont be printed<br>
+				Instructions : Left click to add a footnote number.<br>
+								Right click to edit an element.
 			</div>
-			<div id="tabs-2">		
-				<fieldset id="mapCheckboxes"></fieldset>
-				<fieldset id="mapConfiguration"><legend>Configure map</legend>
-					<div>
-						<div class="col">
-							<select name="mapSelector" id="mapSelector">
-								<option disabled selected value>Select a Map</option>
-							</select>
-							<p>
-								<label for="ou_level_slider">OrgUnit levels:</label>
-								<input type="text" id="ou_level_slider" readonly style="border:0; color:#f6931f; font-weight:bold;  width:260px ">
-								<div id="slider_range"></div>
-							</p>
-							<select name="mapStyleSelector" id="mapStyleSelector"></select>
-							<p> Opacity:
-								<div id="opacity_slider"><div id="opacity_slider_handle" class="ui-slider-handle"></div></div>
-							</p>
-							<p> Height:
-								<div id="height_slider"><div id="height_slider_handle" class="ui-slider-handle"></div></div>
-							</p>
-							<p>	Width:
-								<div id="width_slider"><div id="width_slider_handle" class="ui-slider-handle"></div></div>
-							</p>
-							<button id="updateMapButton" class="ui-button ui-widget ui-corner-all">Update Map</button>
-						</div>
-						<div class="col">
-							<p>
-								<select name="legendSelector" id="legendSelector">
-								<option disabled selected value>Select a Legend</option>
-								</select>
-							</p>
-							<p><select name="positionLegendSelector" id="positionLegendSelector"></select></p>
-							<p> Font size :
-								<div id="font_size_slider"><div id="font_size_slider_handle" class="ui-slider-handle"></div></div>
-							</p>
-							<p><button id="updateLegendButton" class="ui-button ui-widget ui-corner-all">Update Legend</button></p>
-							<p>
-								<fieldset>
-									<legend>Resize Nota Bene for Maps: </legend>
-									<label for="disableNBMaps">Disabled</label>
-									<input type="radio" name="NBMaps" class="radioButton" id="disableNBMaps">
-									<label for="enableNBMaps">Enabled</label>
-									<input type="radio" name="NBMaps" class="radioButton" id="enableNBMaps">
-								</fieldset>
-							</p>
-							<p>
-								<fieldset>
-									<legend>Resize Nota Bene: </legend>
-									<label for="disableNB">Disabled</label>
-									<input type="radio" name="NB" class="radioButton" id="disableNB">
-									<label for="enableNB">Enabled</label>
-									<input type="radio" name="NB" class="radioButton" id="enableNB">
-								</fieldset>
-							</p>
-											
-						</div>
-						<div id="legendPool" class="col">
-							<div id="legendSet0" class="legendSet" ></div>
-							<div id="legendSet1" class="legendSet" ></div>
-							<div id="legendSet2" class="legendSet" ></div>
-							<div id="legendSet3" class="legendSet" ></div>	
-						</div>
-
-					</div>
-
-				</fieldset>
-			</div>
-			<div id="tabs-3">
-				<div class="FixedHeightContainer">
-					<div class="Content">
-						<h6 class="subHeader">Stored footnotes</h6>
-						<ul id="sortable1" class="connectedSortable">
-						</ul>
-					</div>
-					<div class="Content"> 
-						<h6 class="subHeader">Footnotes page 1</h6>
-						<ul id="sortable2" class="connectedSortable">
-						</ul>
-					</div>
-					<div class="Content">
-						<h6 class="subHeader">Footnotes page 2</h6>
-						<ul id="sortable3" class="connectedSortable">
-						</ul>
-					</div>
+			<div id="tabs">
+				<ul>
+					<li><a href="#tabs-1">General</a></li>
+					<li><a href="#tabs-2">Maps</a></li>
+					<li><a href="#tabs-3">Footnotes</a></li>
+				</ul>
+				<div id="tabs-1">		
+					<fieldset id="leish_detail_checkboxes"></fieldset>
+					<fieldset id="monthlyCheckboxes"></fieldset>
+					<fieldset id="chartCheckboxes"></fieldset>
+					<p><select name="subnationalLevelSelector" id="subnationalLevelSelector"></select></p>
 				</div>
-				<button id="newfootnote" class="ui-button ui-widget ui-corner-all">
-					<span class="ui-icon ui-icon-document"></span> Add new footnote
-				</button>
-				<div id="newFootnoteText" style="display:none"></div>
+				<div id="tabs-2">		
+					<fieldset id="mapCheckboxes"></fieldset>
+					<fieldset id="mapConfiguration"><legend>Configure map</legend>
+						<div>
+							<div class="col">
+								<select name="mapSelector" id="mapSelector">
+									<option disabled selected value>Select a Map</option>
+								</select>
+								<p>
+									<label for="ou_level_slider">OrgUnit levels:</label>
+									<input type="text" id="ou_level_slider" readonly style="border:0; color:#f6931f; font-weight:bold;  width:260px ">
+									<div id="slider_range"></div>
+								</p>
+								<select name="mapStyleSelector" id="mapStyleSelector"></select>
+								<p> Opacity:
+									<div id="opacity_slider"><div id="opacity_slider_handle" class="ui-slider-handle"></div></div>
+								</p>
+								<p> Height:
+									<div id="height_slider"><div id="height_slider_handle" class="ui-slider-handle"></div></div>
+								</p>
+								<p>	Width:
+									<div id="width_slider"><div id="width_slider_handle" class="ui-slider-handle"></div></div>
+								</p>
+								<button id="updateMapButton" class="ui-button ui-widget ui-corner-all">Update Map</button>
+							</div>
+							<div class="col">
+								<p>
+									<select name="legendSelector" id="legendSelector">
+									<option disabled selected value>Select a Legend</option>
+									</select>
+								</p>
+								<p><select name="positionLegendSelector" id="positionLegendSelector"></select></p>
+								<p> Font size :
+									<div id="font_size_slider"><div id="font_size_slider_handle" class="ui-slider-handle"></div></div>
+								</p>
+								<p><button id="updateLegendButton" class="ui-button ui-widget ui-corner-all">Update Legend</button></p>
+								<p>
+									<fieldset>
+										<legend>Resize Nota Bene for Maps: </legend>
+										<label for="disableNBMaps">Disabled</label>
+										<input type="radio" name="NBMaps" class="radioButton" id="disableNBMaps">
+										<label for="enableNBMaps">Enabled</label>
+										<input type="radio" name="NBMaps" class="radioButton" id="enableNBMaps">
+									</fieldset>
+								</p>
+								<p>
+									<fieldset>
+										<legend>Resize Nota Bene: </legend>
+										<label for="disableNB">Disabled</label>
+										<input type="radio" name="NB" class="radioButton" id="disableNB">
+										<label for="enableNB">Enabled</label>
+										<input type="radio" name="NB" class="radioButton" id="enableNB">
+									</fieldset>
+								</p>
+												
+							</div>
+							<div id="legendPool" class="col">
+								<div id="legendSet0" class="legendSet" ></div>
+								<div id="legendSet1" class="legendSet" ></div>
+								<div id="legendSet2" class="legendSet" ></div>
+								<div id="legendSet3" class="legendSet" ></div>	
+							</div>
 
+						</div>
+
+					</fieldset>
+				</div>
+				<div id="tabs-3">
+					<div class="FixedHeightContainer">
+						<div class="Content">
+							<h6 class="subHeader">Stored footnotes</h6>
+							<ul id="sortable1" class="connectedSortable">
+							</ul>
+						</div>
+						<div class="Content"> 
+							<h6 class="subHeader">Footnotes page 1</h6>
+							<ul id="sortable2" class="connectedSortable">
+							</ul>
+						</div>
+						<div class="Content">
+							<h6 class="subHeader">Footnotes page 2</h6>
+							<ul id="sortable3" class="connectedSortable">
+							</ul>
+						</div>
+					</div>
+					<button id="newfootnote" class="ui-button ui-widget ui-corner-all">
+						<span class="ui-icon ui-icon-document"></span> Add new footnote
+					</button>
+					<div id="newFootnoteText" style="display:none"></div>
+
+				</div>
+			</div>
+			<hr>
+		</div>
+
+
+		<div class="section">
+			<img class="head_logo center" src="https://www.who.int/about/Logo-WHO.jpg" />
+
+			<div class="head_container">	
+				<div class="editableElement">Leishmaniasis</div>
+				<div class="center_text editableElement" id="country_name"></div>
+				<div class="align_to_right">
+					<div class="editableElement" id="year"></div>
+					<div class="editableElement comment" id="published_date"></div>
+				</div>
 			</div>
 		</div>
-		<hr>
-	</div>
 
-	<div class="section">
-		<img class="head_logo center" src="https://www.who.int/about/Logo-WHO.jpg" />
+		<div class="section">
+			<h4 class="editableElement footnotable">Country General Information</h4>
+			<div class="twoColumns"><table id="cgiTable" class="display" cellspacing="0" width="100%">
+					<thead>
+						<tr id ="cgiTableHead"></tr>
+					</thead>
+					<tbody id="cgiTableBody"></tbody>
+			</table></div>
+		</div>
 
-		<div class="head_container">	
-			<div class="editableElement">Leishmaniasis</div>
-			<div class="center_text editableElement" id="country_name"></div>
-			<div class="align_to_right">
-				<div class="editableElement" id="year"></div>
-				<div class="editableElement comment" id="published_date"></div>
-			</div>
+		<div class="section">
+			<h4 class="editableElement footnotable">Epidemiology</h4>
+
+			<table id="epiTable" class="display" cellspacing="0" width="100%">
+					<thead>
+						<tr id ="epiTableHead"></tr>
+					</thead>
+					<tbody id="epiTableBody"></tbody>
+			</table>
+			<div id="textUnderEpiTable" class="textUnderTable"></div>
+		</div>
+
+
+		<div class="section">
+			<h4 class="editableElement footnotable" >Monthly distribution of new cases January-December</h4>
+
+			<table id="monthlyTable" class="display" cellspacing="0" width="100%">
+					<thead>
+						<tr id ="monthlyTableHead"></tr>
+					</thead>
+					<tbody id="monthlyTableBody"></tbody>
+			</table>
+
+		</div>
+
+		<div>
+			<canvas class="sameLine draggable chart" id="chart0" width="425" height="260" ></canvas>
+			<canvas class="sameLine draggable chart" id="chart1" width="425" height="260" ></canvas>
+			<canvas class="sameLine draggable chart" id="chart2" width="425" height="260" ></canvas>
+		</div>
+		<div>
+			<canvas class="sameLine draggable chart" id="chart3" width="425" height="260" ></canvas>
+			<canvas class="sameLine draggable chart" id="chart4" width="425" height="260" ></canvas>
+			<canvas class="sameLine draggable chart" id="chart5" width="425" height="260" ></canvas>
+		</div>
+
+		<div class="section">
+			<hr>
+			<div id="footnotes1"></div>
+		</div>
+
+		<div class="section">
+			<h4 class="editableElement footnotable" >Distribution of new CL (left) and new (primary) VL (right) cases per 10 000 population</h4>
+			<div class="sameLine map"> <div id="map0" class="sameLine draggable"></div></div>
+			<div class="sameLine map"><div id="map1" class="sameLine draggable"></div></div>
+			<div class="sameLine map"><div id="map2" class="sameLine draggable"></div></div>
+			<div class="sameLine map"><div id="map3" class="sameLine draggable"></div></div>
+			<div id="notaBeneMaps"  class="notasBene draggable"><div class="editableElement"></div></div>
+		</div>
+
+
+		<div class="section">
+			<h4 id="casTitle" class="editableElement footnotable" >Control and Surveillance</h4>
+			<div class="twoColumns"><table id="casTable" class="display" cellspacing="0" width="100%">
+					<thead>
+						<tr id ="casTableHead"></tr>
+					</thead>
+					<tbody id="casTableBody"></tbody>
+			</table></div>
+
+		</div>
+
+		<div class="section">
+			<h4 class="editableElement footnotable" >Diagnosis</h4>
+
+			<table id="diagTable" class="display" cellspacing="0" width="100%">
+					<thead>
+						<tr id ="diagTableHead"></tr>
+					</thead>
+					<tbody id="diagTableBody"></tbody>
+			</table>
+			<div id="textUnderDiagTable1" class="textUnderTable"></div>
+			<div id="textUnderDiagTable2" class="textUnderTable"></div>
+
+
+		</div>
+
+
+		<div class="section">
+			<h4 id="tamTitle" class="editableElement footnotable" >Treatment and medicines</h4>
+
+			<table id="tamTable" class="display" cellspacing="0" width="100%">
+					<thead>
+						<tr id ="tamTableHead"></tr>
+					</thead>
+					<tbody id="tamTableBody"></tbody>
+			</table>
+			<br>
+			<table id="toutcomeTable" class="display" cellspacing="0" width="100%">
+					<thead>
+						<tr id ="toutcomeTableHead"></tr>
+					</thead>
+					<tbody id="toutcomeTableBody"></tbody>
+			</table>
+		</div>
+
+		<div class="section">
+			<hr>
+			<div id="footnotes2"></div>
+			<div id="notaBene"  class="notasBene draggable"><div class="editableElement"></div></div>
+
 		</div>
 	</div>
 
-	<div class="section">
-		<h4 class="editableElement footnotable">Country General Information</h4>
-		<div class="twoColumns"><table id="cgiTable" class="display" cellspacing="0" width="100%">
-				<thead>
-					<tr id ="cgiTableHead"></tr>
-				</thead>
-				<tbody id="cgiTableBody"></tbody>
-		</table></div>
-	</div>
-
-	<div class="section">
-		<h4 class="editableElement footnotable">Epidemiology</h4>
-
-		<table id="epiTable" class="display" cellspacing="0" width="100%">
-				<thead>
-					<tr id ="epiTableHead"></tr>
-				</thead>
-				<tbody id="epiTableBody"></tbody>
-		</table>
-		<div id="textUnderEpiTable" class="textUnderTable"></div>
-	</div>
-
-
-	<div class="section">
-		<h4 class="editableElement footnotable" >Monthly distribution of new cases January-December</h4>
-
-		<table id="monthlyTable" class="display" cellspacing="0" width="100%">
-				<thead>
-					<tr id ="monthlyTableHead"></tr>
-				</thead>
-				<tbody id="monthlyTableBody"></tbody>
-		</table>
-
-	</div>
-
-	<div>
-		<canvas class="sameLine draggable chart" id="chart0" width="425" height="260" ></canvas>
-		<canvas class="sameLine draggable chart" id="chart1" width="425" height="260" ></canvas>
-		<canvas class="sameLine draggable chart" id="chart2" width="425" height="260" ></canvas>
-	</div>
-	<div>
-		<canvas class="sameLine draggable chart" id="chart3" width="425" height="260" ></canvas>
-		<canvas class="sameLine draggable chart" id="chart4" width="425" height="260" ></canvas>
-		<canvas class="sameLine draggable chart" id="chart5" width="425" height="260" ></canvas>
-	</div>
-
-	<div class="section">
-		<hr>
-		<div id="footnotes1"></div>
-	</div>
-
-	<div class="section">
-		<h4 class="editableElement footnotable" >Distribution of new CL (left) and new (primary) VL (right) cases per 10 000 population</h4>
-		<div class="sameLine map"> <div id="map0" class="sameLine draggable"></div></div>
-		<div class="sameLine map"><div id="map1" class="sameLine draggable"></div></div>
-		<div class="sameLine map"><div id="map2" class="sameLine draggable"></div></div>
-		<div class="sameLine map"><div id="map3" class="sameLine draggable"></div></div>
-		<div id="notaBeneMaps"  class="notasBene draggable"><div class="editableElement"></div></div>
-	</div>
-
-
-	<div class="section">
-		<h4 id="casTitle" class="editableElement footnotable" >Control and Surveillance</h4>
-		<div class="twoColumns"><table id="casTable" class="display" cellspacing="0" width="100%">
-				<thead>
-					<tr id ="casTableHead"></tr>
-				</thead>
-				<tbody id="casTableBody"></tbody>
-		</table></div>
-
-	</div>
-
-	<div class="section">
-		<h4 class="editableElement footnotable" >Diagnosis</h4>
-
-		<table id="diagTable" class="display" cellspacing="0" width="100%">
-				<thead>
-					<tr id ="diagTableHead"></tr>
-				</thead>
-				<tbody id="diagTableBody"></tbody>
-		</table>
-		<div id="textUnderDiagTable1" class="textUnderTable"></div>
-		<div id="textUnderDiagTable2" class="textUnderTable"></div>
-
-
-	</div>
-
-
-	<div class="section">
-		<h4 id="tamTitle" class="editableElement footnotable" >Treatment and medicines</h4>
-
-		<table id="tamTable" class="display" cellspacing="0" width="100%">
-				<thead>
-					<tr id ="tamTableHead"></tr>
-				</thead>
-				<tbody id="tamTableBody"></tbody>
-		</table>
-		<br>
-		<table id="toutcomeTable" class="display" cellspacing="0" width="100%">
-				<thead>
-					<tr id ="toutcomeTableHead"></tr>
-				</thead>
-				<tbody id="toutcomeTableBody"></tbody>
-		</table>
-	</div>
-
-
-
-	<div class="section">
-		<hr>
-		<div id="footnotes2"></div>
-		<div id="notaBene"  class="notasBene draggable"><div class="editableElement"></div></div>
-
-	</div>
 
 
 	<div id="dialog-editor">
