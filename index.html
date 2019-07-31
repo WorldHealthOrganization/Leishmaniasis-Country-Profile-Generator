@@ -2358,6 +2358,19 @@
 		}
 
 	}
+
+	/****************************************************************************************************
+	 **********                            COUNTRY-SELECTOR                                    **********
+	****************************************************************************************************/	
+	
+	function country_selector_open(){
+		document.getElementById("country-selector").style.display = "block";
+	}
+
+	function country_selector_close(){
+		Pace.restart();
+		document.getElementById("country-selector").style.display = "none";
+	}
 	
 	function initializeDialogs (){
 
@@ -2388,18 +2401,14 @@
 		});
 
 
-		/****************************************************************************************************
-		 **********                            COUNTRY-SELECTOR                                    **********
-		****************************************************************************************************/	
-		
-		// country_selector.jqte();
-
+/*
 		dialog_cs = $( "#dialog-country-selector" ).dialog({
+			dialogClass: "no-title-bar",
 			autoOpen: false,
-			height: 350,
-			width: 650,
+			//height: 350,
+			//width: 650,
 			modal: true,
-			title: "title",
+			//title: "Select a year and a country",
 			buttons: {
 				"Start preparing report": startPreparingReport
 			},
@@ -2410,7 +2419,7 @@
 				//allFields.removeClass( "ui-state-error" );
 			}
 		});
-
+*/
 	}
 
 	function saveChanges(){
@@ -2658,8 +2667,9 @@
 				autocompleteSearcher("yearField", generatedYears, doNothing, 1, 200);
 				autocompleteSearcher("targetCountry", organisationUnits, doNothing, 2, 200);
 
-				dialog_cs.dialog( "open" );
-				DEBUG_AutomaticallyfillInitialForm(); //if commented, dialog_cs.dialog( "close" ); on startPreparingReport
+				//dialog_cs.dialog( "open" );
+				country_selector_open();
+				//DEBUG_AutomaticallyfillInitialForm(); //if commented, country_selector_close(); on startPreparingReport
 
 			});
 		
@@ -2673,14 +2683,15 @@
 
 		buttons = dialog_cs.dialog('option', 'buttons');
 		buttons['Start preparing report'](); // Clicks the button
-		dialog_cs.dialog( "close" );
-
+		//dialog_cs.dialog( "close" );
+		country_selector_close();
 
 	}
 
 	function startPreparingReport() {
 	
-		// dialog_cs.dialog( "close" );
+		//dialog_cs.dialog( "close" );
+		country_selector_close();
 
 		// retrieves values from form
 		ds.countryName =  $( "#targetCountry" ).val(); 
@@ -2955,7 +2966,7 @@
 	<link rel="stylesheet" href="https://jqueryui.com/resources/demos/style.css" type="text/css" />
    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400" />
    <!-- <link rel="stylesheet" href="../../../dhis-web-commons/javascripts/ext/resources/css/ext-plugin-gray.css" type="text/css" />-->
-   <link rel="stylesheet" href="../../../dhis-web-mapping/extjs/resources/css/ext-all-gray.css" type="text/css" />
+   <!---<link rel="stylesheet" href="../../../dhis-web-mapping/extjs/resources/css/ext-all-gray.css" type="text/css" />-->
 
 </head>
 
@@ -3210,6 +3221,27 @@
 		<textarea id="editor"></textarea>
 	</div>
 
+
+
+	<div class="form-popup" id="country-selector">
+		<form action="javascript:startPreparingReport()" class="form-container">
+	  
+		  <h2><div class="formTitle">Generate <br> Country Profile </div></h2>
+	  
+	  
+		  <label for="yearField"><b>Year</b></label>
+		  <input id="yearField" type="text" placeholder="Enter and select country name" name="yearField" required>
+	  
+	  
+		  <label for="targetCountry"><b>Country</b></label>
+		  <input  id="targetCountry" type="text" placeholder="Enter and select country name" name="targetCountry" required>
+							
+		  <button type="submit" class="btn">Start preparing CP</button>
+
+		</form>
+	</div>
+
+	<!--
 	<div id="dialog-country-selector" title="Select country and year">
 		<div id="country-selector" ></div>
 			Year: 
@@ -3221,6 +3253,6 @@
 		</div>
 								
 	</div>
-
+-->
 </body>
 </html>
