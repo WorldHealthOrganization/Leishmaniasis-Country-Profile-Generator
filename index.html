@@ -348,7 +348,7 @@
 
 	var initalMapDiv = new Array(4);
 	var mapLegends = new Array(4);
-	var map_levels = [3, 4, 5];
+	var map_levels = [3, 4];
 	var map_opacity = 80;
 	var map_height = 315;
 	var map_width = 420;
@@ -2250,13 +2250,12 @@
 	}
 	
 	function generateMapAndLegend(index){
-		var levels = [3,4,5];
 
 		return $.when(getLegendSet(index)).done(function(result){
 			initalMapDiv[index] = $('#map'+index).html();
 			var mapStyle = MAP_STYLE[$('#mapStyleSelector').val()];
 			drawLegendSet("legendSet"+index, index);
-			generateMap(index, "INDICATOR", levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity);
+			generateMap(index, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity);
 
 		});
 
