@@ -252,7 +252,7 @@
 									];
 
 
-	var ENDEMICITY_ROW = 0;
+	var COUNTRY_ENDEMICITY_ROW = 0;
 	var NEW_ROW = 1;
 	var RELAPSE_ROW = 2;
 	var TOTAL_ROW = 3;
@@ -312,7 +312,9 @@
 	var VL_INDEX = 0;
 	var CL_INDEX = 1;
 	var ACL_INDEX = 2;
-	var ZCL_INDEX = 3;
+	var ZCL_INDEX = 3; 
+	var PKDL_INDEX = 4;
+	var MCL_INDEX = 5;
 	
 	var MAP_CHECKBOXES_LABELS = new Array(4);
 	MAP_CHECKBOXES_LABELS[VL_INDEX] = "VL incidence";
@@ -492,8 +494,8 @@
 		CL : "tnek2LjfuIm",
 		VL : "fdBM4sWSuPR",
 		AZCL : "Uc3j0vpsfSB",
-		GI: "NKWbkXyfO5F"
-
+		GI: "NKWbkXyfO5F",
+		GHO_NTDs : "p0NhuIUoeST"
 	};
 
 	var PROGRAM = {
@@ -530,12 +532,30 @@
 		ZCL_GEN_EPID_outbreak :  "nfnq7idjj3Q"
 	};
 
-	var ENDEMICITY = {
+	var SUB_ENDEMICITY = {
 		CL : "saLNr832Et0",
 		ACL : "K827esuSG6T",
 		ZCL: "XUr4C3Sw4Yx",
 		VL : "S7sZbgQx4dM",
 		ENDEMIC_OPTION_CODE : "1"
+	};
+
+		
+	var COUNTRY_ENDEMICITY = new Array(6);
+	COUNTRY_ENDEMICITY[VL_INDEX] = "LrpYf0oQmW0";
+	COUNTRY_ENDEMICITY[CL_INDEX] = "KTXYAwYLdqB";
+	COUNTRY_ENDEMICITY[ACL_INDEX] = "u4wrb4tx0vF";
+	COUNTRY_ENDEMICITY[ZCL_INDEX] = "BBdfRkCsz7K";
+	COUNTRY_ENDEMICITY[MCL_INDEX] = "UqwziKaKvqT";
+	COUNTRY_ENDEMICITY[PKDL_INDEX] = "IZfAfkwNeAl";
+
+	var ENDEMICITY_OS = {
+		ENDEMIC_OPTION_CODE : "1",
+		ENDEMIC_OPTION_NAME : "Endemic",
+		PREVIOUSLY_REPORTED_OPTION_CODE : "3",
+		PREVIOUSLY_REPORTED_OPTION_NAME : "Previously endemic",
+		NO_ENDEMIC_OPTION_CODE : "5",
+		NO_ENDEMIC_OPTION_NAME : "Non endemic"
 	};
 
 	var DE_SCREEN_ACTIVE = {};
@@ -1107,6 +1127,22 @@
 		});
 	}
 
+	function get_gho_ntds() {
+
+		var params = {
+			dataSet: DATASET.GHO_NTDs,
+			period: ds.year,
+			orgUnit: ds.countryID
+		}
+
+		builtUrl = buildAPIUrl(DATAVALUESETS, params);
+		return $.ajax({
+			url: builtUrl
+		}).then(function(data) {
+				fillGHO(data);
+		});
+	}
+
 	function get_subnational_endemicity_for(program, year, level, ind, column) {
 
 		var dimensions = [];
@@ -1114,7 +1150,7 @@
 
 		var filters = [];
 		filters.push(["ou",ds.countryID+";"+LEVEL+subNationalLevelToAbs(level)]);
-		filters.push([ind,"IN",ENDEMICITY.ENDEMIC_OPTION_CODE]);
+		filters.push([ind,"IN",SUB_ENDEMICITY.ENDEMIC_OPTION_CODE]);
 
 		return $.when(getAggregateEvents(program, dimensions, NULL_VALUE, filters, NULL_AGGR_TYPE, SKIP_PAGING, SKIP_META, OUTPUT_TYPE.EVENT))
 			.done(function(result){
@@ -1290,7 +1326,32 @@
 		array[RISK_ROW][column] = percentage + " " + pop_at_risk + " / " + totalPopulation;
 	}
 
+	/**
+	 * fills country endemicity row
+	 * */
+	function fillGHO(data){
 
+		var dataValues = data.dataValues;
+		var endemicty_code, endemicity_name;
+
+		for (var i = 0; i<COUNTRY_ENDEMICITY.length; i++){
+			endemicty_code = getValueForKey(dataValues, DE_KEY, COUNTRY_ENDEMICITY[i], VALUE_KEY);
+			switch (endemicty_code){
+				case ENDEMICITY_OS.ENDEMIC_OPTION_CODE:
+					endemicity_name = ENDEMICITY_OS.ENDEMIC_OPTION_NAME;
+					break;				
+				case ENDEMICITY_OS.PREVIOUSLY_REPORTED_OPTION_CODE:
+					endemicity_name = ENDEMICITY_OS.PREVIOUSLY_REPORTED_OPTION_NAME;
+					break;				
+				case ENDEMICITY_OS.NO_ENDEMIC_OPTION_CODE:
+					endemicity_name = ENDEMICITY_OS.NO_ENDEMIC_OPTION_NAME;
+					break;
+				default:
+					endemicity_name = WHEN_NO_DATA;
+			}
+			array[COUNTRY_ENDEMICITY_ROW][i+1] = endemicity_name;
+		}
+	}
 	/*
 		column :
 		epiDE : Epidemiology Data getElement
@@ -1647,10 +1708,10 @@
 	function updateNumberOfDivisions(subNationalLevel){
 
 		return $.when(getNumberOfDivisionsFor(ds.countryID, (subNationalLevel), "name"),
-					get_subnational_endemicity_for(SUBNATIONAL_ENDEMICITY, ds.year, subNationalLevel, ENDEMICITY.ACL, ACL_COLUMN),
-					get_subnational_endemicity_for(SUBNATIONAL_ENDEMICITY, ds.year, subNationalLevel, ENDEMICITY.ZCL, ZCL_COLUMN),
-					get_subnational_endemicity_for(SUBNATIONAL_ENDEMICITY, ds.year, subNationalLevel, ENDEMICITY.CL, CL_COLUMN),
-					get_subnational_endemicity_for(SUBNATIONAL_ENDEMICITY, ds.year, subNationalLevel, ENDEMICITY.VL, VL_COLUMN)
+					get_subnational_endemicity_for(SUBNATIONAL_ENDEMICITY, ds.year, subNationalLevel, SUB_ENDEMICITY.ACL, ACL_COLUMN),
+					get_subnational_endemicity_for(SUBNATIONAL_ENDEMICITY, ds.year, subNationalLevel, SUB_ENDEMICITY.ZCL, ZCL_COLUMN),
+					get_subnational_endemicity_for(SUBNATIONAL_ENDEMICITY, ds.year, subNationalLevel, SUB_ENDEMICITY.CL, CL_COLUMN),
+					get_subnational_endemicity_for(SUBNATIONAL_ENDEMICITY, ds.year, subNationalLevel, SUB_ENDEMICITY.VL, VL_COLUMN)
 				).done(function(result){
 			var numberOfDivisions = result.organisationUnits.length;
 			var aDivisionName = result.organisationUnits[0].name;
@@ -2940,6 +3001,7 @@
 			generateMapAndLegend(ACL_INDEX),
 			generateMapAndLegend(ZCL_INDEX),
 			get_cgi(),
+			get_gho_ntds(),
 			get_cl_cases(), get_vl_cases(), get_azcl_cases(),
 			getIncidenceFor(INCIDENCE[VL_INDEX], VL_COLUMN),
 			getIncidenceFor(INCIDENCE[CL_INDEX], CL_COLUMN),
