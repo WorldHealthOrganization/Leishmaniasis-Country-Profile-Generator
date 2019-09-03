@@ -111,6 +111,7 @@
 
 	/* config subnational level */
 
+	var NATIONAL_LEVEL = 3;
 	var SUBLEVEL1 = 1;
 	var SUBLEVEL2 = 2;
 	var SUBLEVEL3 = 3;
@@ -272,7 +273,7 @@
 						"Gender distribution (%F):",
 						"Age group distribution (%, <5/5-14/>14):",
 						"Incidence rate (cases/10 000 population in endemic areas):",
-						ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL2-1],
+						ENDEMIC_SUBN_LEVEL_LABELS[defaultSubnationalLevel-1],
 						"Population at risk (%, n/total):",
 						"Was there any outbreak?",
 						"Number of new foci:"
@@ -348,7 +349,8 @@
 
 	var initalMapDiv = new Array(4);
 	var mapLegends = new Array(4);
-	var map_levels = [3, 4];
+	var map_levels = [NATIONAL_LEVEL, NATIONAL_LEVEL + SUBLEVEL1];
+	var defaultSubnationalLevel = SUBLEVEL1;
 	var map_opacity = 80;
 	var map_height = 315;
 	var map_width = 420;
@@ -728,6 +730,12 @@
 	INCIDENCE[ACL_INDEX] = "J6grbcheses";
 	INCIDENCE[ZCL_INDEX] = "nFdRbLa6cj6";
 
+	var POP_AT_RISK = new Array(4);
+	POP_AT_RISK[VL_INDEX] = "qZrDWm2KJOh";
+	POP_AT_RISK[CL_INDEX] = "FwXQC7ARUBf";
+	POP_AT_RISK[ACL_INDEX] = "NYzjVXzaod5";
+	POP_AT_RISK[ZCL_INDEX] = "b4CaeIjuNqc";
+
 	/* Events Programs*/
 
 	var FOOTNOTE_PROGRAM = "NVUlJzIakuO";
@@ -805,6 +813,8 @@
 	var RG_footnote_text = "rWAis0fAWw9";
 
 	var builtUrl;
+
+	var totalPopulation;
 
 	var acl_and_zcl_activated = false;
 
@@ -1229,6 +1239,24 @@
 		});
 	}
 
+	function getPopulationAtRiskFor(indicator, column, subNationalLevel){
+
+		var absolute_level = NATIONAL_LEVEL + subNationalLevel
+
+		var params = {
+			dimension: ["dx:"+indicator,"pe:"+ds.year, "ou:"+ds.countryID+";LEVEL-4"], //TODO: adapt to each country
+			displayProperty : "NAME",
+			skipMeta:"true"
+		}
+
+		var builtUrl = buildAPIUrl(ANALYTICS, params);
+		return $.ajax({
+			url: builtUrl
+		}).then(function(data) {
+				fillPopulationAtRiskArray(data, column);
+		});
+	}
+
 
 	/****************************************************************************************************
  	 **********                      FILLING LOGICAL STRUCTURES (ARRAYS)               	       **********
@@ -1253,6 +1281,14 @@
 		array[INCD_ROW][column] = historicIncidence[column][0]; // 0 = this year
 	}
 
+	function fillPopulationAtRiskArray(data, column){
+
+		headerIndex = getHeaderIndex(data.headers, "value");
+		pop_at_risk = sumValueForHeader(data, headerIndex);
+		percentage =  percentageText(pop_at_risk, totalPopulation);
+
+		array[RISK_ROW][column] = percentage + " " + pop_at_risk + " / " + totalPopulation;
+	}
 
 
 	/*
@@ -1489,6 +1525,15 @@
 
 
 	}
+
+	function update_map_levels_var(min, max){
+
+		map_levels = [];
+		for(var i = min; i<=max; i++){
+			map_levels.push(i);
+		}
+	}
+
 	
 
 	/****************************************************************************************************
@@ -1543,7 +1588,8 @@
 
 		// gets population in miles, transforms it in units and adds local separators
 		var popIn1000 = getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_Pop_Tot_1000, CC_DEFAULT], VALUE_KEY);
-		generalInformationArray[CIG_ROW_POP][1] = (parseInt(popIn1000) * 1000 ).toLocaleString();
+		totalPopulation = parseInt(popIn1000) * 1000 ;
+		generalInformationArray[CIG_ROW_POP][1] = (totalPopulation).toLocaleString();
 
 		// gets all population age slices and adds its by sex 
 		var popm = 0, popf = 0;
@@ -1593,8 +1639,8 @@
 													" / " +
 													getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_LifeExpBirth_Male, CC_DEFAULT], VALUE_KEY)	;
 
-		setOptionSelectMenu("subnationalLevelSelector", SUBLEVEL2-1);
-		return updateNumberOfDivisions(SUBLEVEL2); // so it waits to have the information
+		setOptionSelectMenu("subnationalLevelSelector", defaultSubnationalLevel-1);
+		return updateNumberOfDivisions(defaultSubnationalLevel); // so it waits to have the information
 	}
 
 	// updates 
@@ -2549,7 +2595,13 @@
 		$("#subnationalLevelSelector").on('selectmenuchange', function() {
 			var subNationaSelectedLevel = parseInt($("#subnationalLevelSelector").val()) + 1;
 
-			$.when(updateNumberOfDivisions(subNationaSelectedLevel)).done(function(result){
+			$.when(updateNumberOfDivisions(subNationaSelectedLevel),
+					getPopulationAtRiskFor(POP_AT_RISK[VL_INDEX], VL_COLUMN, subNationaSelectedLevel),
+					getPopulationAtRiskFor(POP_AT_RISK[CL_INDEX], CL_COLUMN, subNationaSelectedLevel),
+					getPopulationAtRiskFor(POP_AT_RISK[ACL_INDEX], ACL_COLUMN, subNationaSelectedLevel),
+					getPopulationAtRiskFor(POP_AT_RISK[ZCL_INDEX], ZCL_COLUMN, subNationaSelectedLevel)
+			
+			).done(function(result){
 				writeTable(CGI_TABLE_NAME, "Body", generalInformationArray, LINES_BELOW_LABELS_CGI);
 				writeTable(EPI_TABLE_NAME, "Body", array, LINES_BELOW_LABELS_EPI);
 				// It writes the entire table data, so put also the headers
@@ -2557,6 +2609,20 @@
 				refreshEpiTableToggleStatus();
 			});
 
+
+			// recalculates maps to selected subnational level
+			if ($("#maps_to_selectedSubLevel").prop('checked')){
+				update_map_levels_var(map_levels[0], NATIONAL_LEVEL + subNationaSelectedLevel);
+				var mapStyle = MAP_STYLE[$('#mapStyleSelector').val()];
+				$.when(
+					generateMap(VL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity),
+					generateMap(CL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity),
+					generateMap(ACL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity),
+					generateMap(ZCL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity)
+				).done(function(result){
+					console.log("maps updated");
+				});
+			}
 
 			//getNumberOfDivisions(parseInt(selected_level)+1, CGI_TABLE_NAME+6+" td:nth-child(2) span");
 			//$("#"+CGI_TABLE_NAME+6+" td:nth-child(1) span").html(LEVEL_REPORT_LABELS[selected_level]);
@@ -2668,7 +2734,7 @@
 
 				//dialog_cs.dialog( "open" );
 				country_selector_open();
-				//DEBUG_AutomaticallyfillInitialForm(); //if commented, country_selector_close(); on startPreparingReport
+				DEBUG_AutomaticallyfillInitialForm(); //if commented, country_selector_close(); on startPreparingReport
 
 			});
 		
@@ -2680,10 +2746,10 @@
 		$( "#targetCountry" ).text("mNa42CHbkO7"); 
 		$( "#yearField" ).val(2017); 
 
-		buttons = dialog_cs.dialog('option', 'buttons');
-		buttons['Start preparing report'](); // Clicks the button
+		//buttons = dialog_cs.dialog('option', 'buttons');
+		//buttons['Start preparing report'](); // Clicks the button
 		//dialog_cs.dialog( "close" );
-		country_selector_close();
+		startPreparingReport();
 
 	}
 
@@ -2784,10 +2850,7 @@
 			values: [ map_levels[0], map_levels[map_levels.length-1]], // values = [firstValue, lastValue]
 			slide: function( event, ui ) {
 				$( "#ou_level_slider" ).val( text_values[ui.values[ 0 ]-1] + " - " + text_values[ui.values[ 1 ]-1] );
-				map_levels = [];
-				for(var i = ui.values[0]; i<=ui.values[1]; i++){
-					map_levels.push(i);
-				}
+				update_map_levels_var(ui.values[0], ui.values[1]);
 			}
 
 		});
@@ -2882,6 +2945,10 @@
 			getIncidenceFor(INCIDENCE[CL_INDEX], CL_COLUMN),
 			getIncidenceFor(INCIDENCE[ACL_INDEX], ACL_COLUMN),
 			getIncidenceFor(INCIDENCE[ZCL_INDEX], ZCL_COLUMN),
+			getPopulationAtRiskFor(POP_AT_RISK[VL_INDEX], VL_COLUMN, defaultSubnationalLevel),
+			getPopulationAtRiskFor(POP_AT_RISK[CL_INDEX], CL_COLUMN, defaultSubnationalLevel),
+			getPopulationAtRiskFor(POP_AT_RISK[ACL_INDEX], ACL_COLUMN, defaultSubnationalLevel),
+			getPopulationAtRiskFor(POP_AT_RISK[ZCL_INDEX], ZCL_COLUMN, defaultSubnationalLevel),
 			getNewCases(DE.VL_EPI_Type, VL_COLUMN),
 			getNewCases(DE.CL_EPI_Type, CL_COLUMN),
 			getNewCases(DE.ACL_EPI_Type, ACL_COLUMN),
@@ -2989,7 +3056,10 @@
 					<fieldset id="leish_detail_checkboxes"></fieldset>
 					<fieldset id="monthlyCheckboxes"></fieldset>
 					<fieldset id="chartCheckboxes"></fieldset>
-					<p><select name="subnationalLevelSelector" id="subnationalLevelSelector"></select></p>
+					<p><select name="subnationalLevelSelector" id="subnationalLevelSelector"></select>
+						<input id="maps_to_selectedSubLevel" type="checkbox" checked="checked" />
+						<label for="maps_to_selectedSubLevel"> recalculate maps to this level</label>
+					</p>
 				</div>
 				<div id="tabs-2">		
 					<fieldset id="mapCheckboxes"></fieldset>
