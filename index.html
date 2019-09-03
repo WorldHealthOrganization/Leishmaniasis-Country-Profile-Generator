@@ -1321,7 +1321,7 @@
 
 		headerIndex = getHeaderIndex(data.headers, "value");
 		pop_at_risk = sumValueForHeader(data, headerIndex);
-		percentage =  percentageText(pop_at_risk, totalPopulation, 0);
+		percentage =  percentageText(pop_at_risk, totalPopulation, 0, true);
 
 		array[RISK_ROW][column] = percentage + " " + pop_at_risk + " / " + totalPopulation;
 	}
@@ -1386,7 +1386,7 @@
 		var uns_female = getValueForKey(dataValues, CC_KEY, UNS_FEMALE, VALUE_KEY);
 		var female = add([new_female, rel_female, uns_female]);
 
-		array[SEX_ROW][column] = percentageText(female, add([male, female, unknown]), 0);
+		array[SEX_ROW][column] = percentageText(female, add([male, female, unknown]), 0, true);
 		
 		//age distribution 
 		var new_under_5 = getValueForKey(dataValues, CC_KEY, NEW_UNDER_5, VALUE_KEY);
@@ -1432,7 +1432,7 @@
 		var total_origin_cases = add([origin_autoc, origin_imported, origin_unknown]);
 		array[IMPORTED_ROW][column] = origin_imported 
 									+ ", "
-									+	percentageText(origin_imported, total_origin_cases, 0);
+									+	percentageText(origin_imported, total_origin_cases, 0, true);
 
 		// Data to retrive depending on Leish type
 		switch(epiDE){
@@ -1466,7 +1466,7 @@
 
 			var male = getValueForKey(dataValues, CC_KEY, MALE, VALUE_KEY);
 			var female = getValueForKey(dataValues, CC_KEY, FEMALE, VALUE_KEY);
-			array[SEX_ROW][column] = percentageText(female, add([male, female]), 0);
+			array[SEX_ROW][column] = percentageText(female, add([male, female]), 0, true);
 
 			var age_5 = getValueForKey(dataValues, CC_KEY, AGE_5, VALUE_KEY);
 			var age_5_14 = getValueForKey(dataValues, CC_KEY, AGE_5_14, VALUE_KEY);
@@ -1508,8 +1508,8 @@
 			var positive_unsp_rdt = getValueForKey(dataValues, CC_KEY, POSITIVE_UNSP,  VALUE_KEY);
 			var total_positive_rdt = add([positive_new_rdt, positive_unsp_rdt]);
 			
-			diagnosisArray[VL_CASES_DIAGNOSED_ROW][column] = percentageCasesAndTotal(total_positive_rdt, total_cases_type);
-			diagnosisArray[POSITIVE_RDT_ROW][column] = percentageCasesAndTotal(total_positive_rdt, total_rdt);
+			diagnosisArray[VL_CASES_DIAGNOSED_ROW][column] = percentageCasesAndTotal(total_positive_rdt, total_cases_type, 0, true);
+			diagnosisArray[POSITIVE_RDT_ROW][column] = percentageCasesAndTotal(total_positive_rdt, total_rdt, 0, true);
 
 			// percentage of cases with HIV-VL coinfection
 			var hiv_coinf_new = getValueForKey(dataValues,[CC_KEY, DE_KEY],[POSITIVE_NEW, DE.VL_LAB_HIVstatus_Type], VALUE_KEY); 
@@ -1517,7 +1517,7 @@
 			var hiv_coinf_uns = getValueForKey(dataValues,[CC_KEY, DE_KEY],[POSITIVE_UNSP, DE.VL_LAB_HIVstatus_Type], VALUE_KEY); 
 			var hiv_coinf_total = add([hiv_coinf_new, hiv_coinf_rel, hiv_coinf_uns]);
 
-			diagnosisArray[HIV_COINFECTION_ROW][column] = percentageCasesAndTotal(hiv_coinf_total, total_cases_type);
+			diagnosisArray[HIV_COINFECTION_ROW][column] = percentageCasesAndTotal(hiv_coinf_total, total_cases_type, 0, true);
 			
 		} else {
 			diagnosisArray[VL_CASES_DIAGNOSED_ROW][column] = WHEN_NON_APPLICABLE;
@@ -1544,10 +1544,10 @@
 			var uns_dead = getValueForKey(dataValues, CC_KEY, UNS_DEAD, VALUE_KEY);
 			var total_dead = add([new_dead, rel_dead, uns_dead]);
 
-			toutcomeArray[RELAPSE_PROPORTION_ROW][column] = percentageCasesAndTotal(relapse, total_cases_type);
-			toutcomeArray[INITIAL_CURE_RATE_ROW][column] = percentageCasesAndTotal(total_cured, total_cases_type);
-			toutcomeArray[FAILURE_RATE_ROW][column] = percentageCasesAndTotal(total_fail, total_cases_type);
-			toutcomeArray[CASE_FATALITY_ROW][column] = percentageCasesAndTotal(total_dead, total_cases_type);
+			toutcomeArray[RELAPSE_PROPORTION_ROW][column] = percentageCasesAndTotal(relapse, total_cases_type, 0, true);
+			toutcomeArray[INITIAL_CURE_RATE_ROW][column] = percentageCasesAndTotal(total_cured, total_cases_type, 0, true);
+			toutcomeArray[FAILURE_RATE_ROW][column] = percentageCasesAndTotal(total_fail, total_cases_type, 0, true);
+			toutcomeArray[CASE_FATALITY_ROW][column] = percentageCasesAndTotal(total_dead, total_cases_type, 0, true);
 		}
 
 
@@ -1565,7 +1565,7 @@
 			var direct_exam_uns = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED, DE.VL_LAB_parasito_tested_type], VALUE_KEY);
 			var direct_exam_total = add([direct_exam_new, direct_exam_rel, direct_exam_uns]);
 
-			diagnosisArray[DIRECT_EXAM_DIAGNOSED_ROW][column] = percentageCasesAndTotal(direct_exam_total, total_cases_type);
+			diagnosisArray[DIRECT_EXAM_DIAGNOSED_ROW][column] = percentageCasesAndTotal(direct_exam_total, total_cases_type, 0, true);
 
 			//Positive slides
 			var positive_slides_new = getValueForKey(dataValues,[CC_KEY, DE_KEY],[POSITIVE_NEW, DE.VL_LAB_parasito_result_type], VALUE_KEY); 
@@ -1573,7 +1573,7 @@
 			var positive_slides_uns = getValueForKey(dataValues,[CC_KEY, DE_KEY],[POSITIVE_UNSP, DE.VL_LAB_parasito_result_type], VALUE_KEY); 
 			var positive_slides_total = add([positive_slides_new, positive_slides_rel, positive_slides_uns]);
 
-			diagnosisArray[POSITIVE_DIRECT_EXAM_ROW][column] = percentageCasesAndTotal(positive_slides_new, positive_slides_total);
+			diagnosisArray[POSITIVE_DIRECT_EXAM_ROW][column] = percentageCasesAndTotal(positive_slides_new, positive_slides_total, 0, true);
 
 			//Cases diagnosed clinically
 			var clinical_cases_new = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_NEW_CASES, DE.VL_LAB_clinical], VALUE_KEY);
@@ -1581,7 +1581,7 @@
 			var clinical_cases_uns = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED, DE.VL_LAB_clinical], VALUE_KEY);
 			var clinical_cases_total = add([clinical_cases_new, clinical_cases_rel, clinical_cases_uns]);
 
-			diagnosisArray[CLINICALLY_DIAGNOSED_ROW][column] = percentageCasesAndTotal(clinical_cases_total, total_cases_type);
+			diagnosisArray[CLINICALLY_DIAGNOSED_ROW][column] = percentageCasesAndTotal(clinical_cases_total, total_cases_type, 0, true);
 		}
 
 
@@ -1660,7 +1660,7 @@
 		}
 		console.log( "popf " + popf);
 		console.log( "popm " + popm);
-		generalInformationArray[CIG_ROW_SEX][1] = percentageText(popf, totalPopulation, 1) + " / " + percentageText(popm, totalPopulation, 1);
+		generalInformationArray[CIG_ROW_SEX][1] = percentageText(popf, totalPopulation, 1, true) + " / " + percentageText(popm, totalPopulation, 1, true);
 
 		// gets GDP
 		generalInformationArray[CIG_ROW_GDP][1] = getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_WB_GDP_PPP_current, CC_DEFAULT], VALUE_KEY);
@@ -1693,7 +1693,7 @@
 		}
 		console.log( "pop_under15 " + pop_under15);
 		console.log( "pop_over15 " + pop_over15);
-		generalInformationArray[CIG_ROW_AGEG][1] = percentageText(pop_under15, totalPopulation, 1) + " / " + percentageText(pop_over15, totalPopulation, 1);
+		generalInformationArray[CIG_ROW_AGEG][1] = percentageText(pop_under15, totalPopulation, 1, true) + " / " + percentageText(pop_over15, totalPopulation, 1, true);
 
 		generalInformationArray[CIG_ROW_LIFE][1] = getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_LifeExpBirth_Female, CC_DEFAULT], VALUE_KEY) +  
 													" / " +
@@ -1979,9 +1979,9 @@
 			else {
 				
 				return 	"(" + 
-							percentageText(cases1, total, 0) + ", " +
-							percentageText(cases2, total, 0) + ", " +
-							percentageText(cases3, total, 0) + ")";
+							percentageText(cases1, total, 0, false) + ", " +
+							percentageText(cases2, total, 0, false) + ", " +
+							percentageText(cases3, total, 0, false) + ")";
 
 			}
 		}
@@ -1990,14 +1990,14 @@
 	/*	Returns a percentage with no decimals, the #cases and the total between parenthesis
 
 	*/
-	function percentageCasesAndTotal(numerator, denominator){
+	function percentageCasesAndTotal(numerator, denominator, precision, percentageSymbol){
 
 		if (numerator === WHEN_UNDEFINED || numerator === undefined ||
 			denominator === WHEN_UNDEFINED || denominator === undefined) {
 				return WHEN_UNDEFINED;
 			}
 			else {
-				return 	percentageText(numerator, denominator) + "  (" +
+				return 	percentageText(numerator, denominator, precision, percentageSymbol) + "  (" +
 				numerator + " / " + denominator + ")";
 			}
 	}
@@ -2005,8 +2005,9 @@
 	/*	Returns a percentage with no decimals 
 
 	*/
-	function percentageText(numerator, denominator, precision){
+	function percentageText(numerator, denominator, precision, percentageSymbol){
 		var multiplier = Math.pow(10, precision || 0);
+		var prctgText = percentageSymbol ? "%" : "";
 
 		if (denominator === 0 && numerator === 0){
 			return WHEN_DIV_0;
@@ -2015,7 +2016,7 @@
 		} else if (denominator === 0){
 			return ERROR;
 		}
-		return Math.round((numerator / denominator) * 100 * multiplier) /  multiplier + "%";
+		return Math.round((numerator / denominator) * 100 * multiplier) /  multiplier + prctgText;
 	}
 
 	/* Returns the addition of the elements of the array if they are not 
