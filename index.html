@@ -835,6 +835,7 @@
 	var builtUrl;
 
 	var totalPopulation;
+	var pop_at_risk_values = Array(6);
 
 	var acl_and_zcl_activated = false;
 
@@ -1314,16 +1315,25 @@
 	}
 	function fillIncidenceArray(data, column){
 		historicIncidence[column] = getAnalyticValueForKey(data, YEARLY_MODE);
-		array[INCD_ROW][column] = historicIncidence[column][0]; // 0 = this year
 	}
 
 	function fillPopulationAtRiskArray(data, column){
-
+		index = column - 1;
 		headerIndex = getHeaderIndex(data.headers, "value");
-		pop_at_risk = sumValueForHeader(data, headerIndex);
-		percentage =  percentageText(pop_at_risk, totalPopulation, 0, true);
+		pop_at_risk_values[index] = sumValueForHeader(data, headerIndex);
+		percentage =  percentageText(pop_at_risk_values[index], totalPopulation, 0, true);
 
-		array[RISK_ROW][column] = percentage + " " + pop_at_risk + " / " + totalPopulation;
+		array[RISK_ROW][column] = percentage + " " + pop_at_risk_values[index] + " / " + totalPopulation;
+	}
+
+	function fillArray_IncidenceRow(){
+		var incidence, incidence_text;
+		for (var i = VL_INDEX; i<= MCL_INDEX ; i++) {
+			// array[row][col], col = index + 1
+			incidence = percentageText(array[NEW_ROW][i+1] / 100, pop_at_risk_values[i], 2, false); 
+			incidence_text = (incidence.localeCompare(ERROR) != 0 ) ? incidence : WHEN_NON_APPLICABLE; // shows N/A if denominator = 0
+			array[INCD_ROW][i+1] = incidence_text;
+		}
 	}
 
 	/**
@@ -2658,12 +2668,17 @@
 		$("#subnationalLevelSelector").on('selectmenuchange', function() {
 			var subNationaSelectedLevel = parseInt($("#subnationalLevelSelector").val()) + 1;
 
-			$.when(updateNumberOfDivisions(subNationaSelectedLevel),
-					getPopulationAtRiskFor(POP_AT_RISK[VL_INDEX], VL_COLUMN, subNationaSelectedLevel),
-					getPopulationAtRiskFor(POP_AT_RISK[CL_INDEX], CL_COLUMN, subNationaSelectedLevel),
-					getPopulationAtRiskFor(POP_AT_RISK[ACL_INDEX], ACL_COLUMN, subNationaSelectedLevel),
-					getPopulationAtRiskFor(POP_AT_RISK[ZCL_INDEX], ZCL_COLUMN, subNationaSelectedLevel)
-			
+			var get_pops_at_risk = $.when(
+				getPopulationAtRiskFor(POP_AT_RISK[VL_INDEX], VL_COLUMN, defaultSubnationalLevel),
+				getPopulationAtRiskFor(POP_AT_RISK[CL_INDEX], CL_COLUMN, defaultSubnationalLevel),
+				getPopulationAtRiskFor(POP_AT_RISK[ACL_INDEX], ACL_COLUMN, defaultSubnationalLevel),
+				getPopulationAtRiskFor(POP_AT_RISK[ZCL_INDEX], ZCL_COLUMN, defaultSubnationalLevel)
+				)
+			.then( function(){return fillArray_IncidenceRow();} ); // recalculates EPI table incidence
+
+			$.when(
+					get_pops_at_risk,
+					updateNumberOfDivisions(subNationaSelectedLevel),
 			).done(function(result){
 				writeTable(CGI_TABLE_NAME, "Body", generalInformationArray, LINES_BELOW_LABELS_CGI);
 				writeTable(EPI_TABLE_NAME, "Body", array, LINES_BELOW_LABELS_EPI);
@@ -2997,22 +3012,34 @@
 		// Code to execute after API calls have been done.
 		// $.when(ajax1(), ajax2(), ajax3(), ajax4()).done(function(a1, a2, a3, a4){
 		// http://stackoverflow.com/questions/3709597/wait-until-all-jquery-ajax-requests-are-done
+//        var async2 = $.when( a3() ).then(function(){ return a4(); });
+
+
+		var get_pops_at_risk = $.when(get_cgi()) // gets totalPopulation var who is neeeded for popAtRisk
+			.then( function(){return getPopulationAtRiskFor(POP_AT_RISK[VL_INDEX], VL_COLUMN, defaultSubnationalLevel);} )
+			.then( function(){return getPopulationAtRiskFor(POP_AT_RISK[CL_INDEX], CL_COLUMN, defaultSubnationalLevel);} )
+			.then( function(){return getPopulationAtRiskFor(POP_AT_RISK[ACL_INDEX], ACL_COLUMN, defaultSubnationalLevel);} )
+			.then( function(){return getPopulationAtRiskFor(POP_AT_RISK[ZCL_INDEX], ZCL_COLUMN, defaultSubnationalLevel);} );
+
+		var epi_incidence_async = $.when(
+			get_cl_cases(), // gets cl cases who is needed for EPI incidence
+			get_vl_cases(), 
+			get_azcl_cases(),	
+			get_pops_at_risk) // gets popAtRisks who is needed for EPI incidence
+			//.then(function(){ return fillArray_IncidenceRow(VL_COLUMN); });
+			.then( function(){return fillArray_IncidenceRow();} );
+	
 		$.when(
+			epi_incidence_async,
 			generateMapAndLegend(VL_INDEX),
 			generateMapAndLegend(CL_INDEX),
 			generateMapAndLegend(ACL_INDEX),
 			generateMapAndLegend(ZCL_INDEX),
-			get_cgi(),
 			get_gho_ntds(),
-			get_cl_cases(), get_vl_cases(), get_azcl_cases(),
 			getIncidenceFor(INCIDENCE[VL_INDEX], VL_COLUMN),
 			getIncidenceFor(INCIDENCE[CL_INDEX], CL_COLUMN),
 			getIncidenceFor(INCIDENCE[ACL_INDEX], ACL_COLUMN),
 			getIncidenceFor(INCIDENCE[ZCL_INDEX], ZCL_COLUMN),
-			getPopulationAtRiskFor(POP_AT_RISK[VL_INDEX], VL_COLUMN, defaultSubnationalLevel),
-			getPopulationAtRiskFor(POP_AT_RISK[CL_INDEX], CL_COLUMN, defaultSubnationalLevel),
-			getPopulationAtRiskFor(POP_AT_RISK[ACL_INDEX], ACL_COLUMN, defaultSubnationalLevel),
-			getPopulationAtRiskFor(POP_AT_RISK[ZCL_INDEX], ZCL_COLUMN, defaultSubnationalLevel),
 			getNewCases(DE.VL_EPI_Type, VL_COLUMN),
 			getNewCases(DE.CL_EPI_Type, CL_COLUMN),
 			getNewCases(DE.ACL_EPI_Type, ACL_COLUMN),
