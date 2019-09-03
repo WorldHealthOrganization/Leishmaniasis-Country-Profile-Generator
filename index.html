@@ -744,11 +744,11 @@
 	var UNS_DEAD = "qAneJjz2lLH";
 
 	/* Indicators*/
-	var INCIDENCE = new Array(4);
-	INCIDENCE[VL_INDEX] = "znrCp1SsKA8";
-	INCIDENCE[CL_INDEX] = "aZQ1Cmgvnnn";
-	INCIDENCE[ACL_INDEX] = "J6grbcheses";
-	INCIDENCE[ZCL_INDEX] = "nFdRbLa6cj6";
+	var INCIDENCE_FOR_MAPS = new Array(4);
+	INCIDENCE_FOR_MAPS[VL_INDEX] = "k8OBrohsSSg";
+	INCIDENCE_FOR_MAPS[CL_INDEX] = "Yw3FULKBFgt";
+	INCIDENCE_FOR_MAPS[ACL_INDEX] = "wR0vjRjXpO8";
+	INCIDENCE_FOR_MAPS[ZCL_INDEX] = "bkNwROwt8lc";
 
 	var POP_AT_RISK = new Array(4);
 	POP_AT_RISK[VL_INDEX] = "qZrDWm2KJOh";
@@ -1055,7 +1055,7 @@
 		
 		var base = "../../..";
 		var idHtmlElement = MAP_PREFIX+(index);
-		var dimension = INCIDENCE[index];
+		var dimension = INCIDENCE_FOR_MAPS[index];
 
 		// Resizes the map contener
 		$("#" + MAP_PREFIX + index).height(map_height);
@@ -3036,10 +3036,10 @@
 			generateMapAndLegend(ACL_INDEX),
 			generateMapAndLegend(ZCL_INDEX),
 			get_gho_ntds(),
-			getIncidenceFor(INCIDENCE[VL_INDEX], VL_COLUMN),
-			getIncidenceFor(INCIDENCE[CL_INDEX], CL_COLUMN),
-			getIncidenceFor(INCIDENCE[ACL_INDEX], ACL_COLUMN),
-			getIncidenceFor(INCIDENCE[ZCL_INDEX], ZCL_COLUMN),
+			getIncidenceFor(INCIDENCE_FOR_MAPS[VL_INDEX], VL_COLUMN),
+			getIncidenceFor(INCIDENCE_FOR_MAPS[CL_INDEX], CL_COLUMN),
+			getIncidenceFor(INCIDENCE_FOR_MAPS[ACL_INDEX], ACL_COLUMN),
+			getIncidenceFor(INCIDENCE_FOR_MAPS[ZCL_INDEX], ZCL_COLUMN),
 			getNewCases(DE.VL_EPI_Type, VL_COLUMN),
 			getNewCases(DE.CL_EPI_Type, CL_COLUMN),
 			getNewCases(DE.ACL_EPI_Type, ACL_COLUMN),
