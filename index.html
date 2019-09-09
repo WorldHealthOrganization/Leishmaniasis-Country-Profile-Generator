@@ -1337,11 +1337,14 @@
 
 	function fillArray_IncidenceRow(){
 		var incidence, incidence_text;
-		for (var i = VL_INDEX; i<= MCL_INDEX ; i++) {
+		for (var i = VL_INDEX; i<= ZCL_INDEX ; i++) {
 			// array[row][col], col = index + 1
 			incidence = percentageText(array[NEW_ROW][i+1] / 100, pop_at_risk_values[i], 2, false); 
-			incidence_text = (incidence.localeCompare(ERROR) != 0 ) ? incidence : WHEN_NON_APPLICABLE; // shows N/A if denominator = 0
+			incidence_text = (incidence.localeCompare(ERROR) != 0 ) ? incidence : WHEN_NO_DATA; // shows No data if denominator = 0 or no data
 			array[INCD_ROW][i+1] = incidence_text;
+		}
+		for (var i = PKDL_INDEX; i<= MCL_INDEX ; i++) {
+			array[INCD_ROW][i+1] = WHEN_NON_APPLICABLE;
 		}
 	}
 
