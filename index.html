@@ -2025,18 +2025,18 @@
 	}
 
 	/*	Returns a percentage with no decimals 
-
+			    or the numerator if cannot be converted to number. e.g. if it's a string
 	*/
 	function percentageText(numerator, denominator, precision, percentageSymbol){
 		var multiplier = Math.pow(10, precision || 0);
 		var prctgText = percentageSymbol ? "%" : "";
 
-		if (denominator === 0 && numerator === 0){
+		if (isNaN(numerator)){
+			return numerator; // It's not a number. Return numerator
+		} else if (denominator === 0){
 			return WHEN_DIV_0;
 		} else if (denominator === WHEN_UNDEFINED){
 			return WHEN_UNDEFINED;
-		} else if (denominator === 0){
-			return ERROR;
 		}
 		return Math.round((numerator / denominator) * 100 * multiplier) /  multiplier + prctgText;
 	}
