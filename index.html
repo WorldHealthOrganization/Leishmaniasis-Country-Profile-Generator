@@ -486,7 +486,7 @@
 	var toutcomeArray = create_2_dim_array(toutcomeLabels.length, toutcomeLabels, LABELS_ON_COLUMNS);
 	
 	var historicLength = HISTORIC_DEFAULT_VALUE;
-	var historicIncidence = create_2_dim_array(5,"",LABELS_ON_ROWS);
+	var historicIncidenceChart = create_2_dim_array(5,"",LABELS_ON_ROWS);
 	var historicNewCases = create_2_dim_array(5,"",LABELS_ON_ROWS);
 
 
@@ -749,6 +749,12 @@
 	INCIDENCE_FOR_MAPS[CL_INDEX] = "Yw3FULKBFgt";
 	INCIDENCE_FOR_MAPS[ACL_INDEX] = "wR0vjRjXpO8";
 	INCIDENCE_FOR_MAPS[ZCL_INDEX] = "bkNwROwt8lc";
+
+	var INCIDENCE_FOR_CHARTS = new Array(4);
+	INCIDENCE_FOR_CHARTS[VL_INDEX] = "R8mWrVeFBog";
+	INCIDENCE_FOR_CHARTS[CL_INDEX] = "e16AVRh07kk";
+	INCIDENCE_FOR_CHARTS[ACL_INDEX] = "VxWuCmDA1x8";
+	INCIDENCE_FOR_CHARTS[ZCL_INDEX] = "hRzNpxG8Qg3";
 
 	var POP_AT_RISK = new Array(4);
 	POP_AT_RISK[VL_INDEX] = "qZrDWm2KJOh";
@@ -1256,8 +1262,11 @@
 				fillNewCasesArray(data, column);
 		});
 	}
-	function getIncidenceFor(indicator, column){
 
+	/**
+	* thenFunction(data, column)
+	*/
+	function getIncidenceForCharts(indicator, column){
 
 		var params = {
 			dimension: ["dx:"+indicator,"pe:"+ds.year],
@@ -1272,7 +1281,7 @@
 		return $.ajax({
 			url: builtUrl
 		}).then(function(data) {
-				fillIncidenceArray(data, column);
+			fillIncidenceChartArray(data, column);
 		});
 	}
 
@@ -1313,8 +1322,8 @@
 	function fillNewCasesArray(data, column){
 		historicNewCases[column] = getAnalyticValueForKey(data, YEARLY_MODE);
 	}
-	function fillIncidenceArray(data, column){
-		historicIncidence[column] = getAnalyticValueForKey(data, YEARLY_MODE);
+	function fillIncidenceChartArray(data, column){
+		historicIncidenceChart[column] = getAnalyticValueForKey(data, YEARLY_MODE);
 	}
 
 	function fillPopulationAtRiskArray(data, column){
@@ -2182,7 +2191,7 @@
 
 		var dataLabelArray = [ACL_CHART_INCIDENCE_LEGEND, ZCL_CHART_INCIDENCE_LEGEND, ACL_CHART_CASES_LEGEND, ZCL_CHART_CASES_LEGEND];
 		var charType = ["line","line","bar","bar"];
-		var dataArray = [historicIncidence[ACL_COLUMN], historicIncidence[ZCL_COLUMN], historicNewCases[ACL_COLUMN], historicNewCases[ZCL_COLUMN]];
+		var dataArray = [historicIncidenceChart[ACL_COLUMN], historicIncidenceChart[ZCL_COLUMN], historicNewCases[ACL_COLUMN], historicNewCases[ZCL_COLUMN]];
 		var colorArray = [COLORS.blue, COLORS.green, COLORS.soft_blue, COLORS.soft_green];
 		var dataChartIDs= [DATASID.RIGHT, DATASID.RIGHT, DATASID.LEFT, DATASID.LEFT];
 		lineBarChart(newAZCLAndHistoricIncidenceID, CL_INCIDENCE_CHART_TITLE, dataLabelArray, CL_INCIDENCE_CHART_Y1_TITLE, CL_INCIDENCE_CHART_Y2_TITLE, charType, dataArray, colorArray, dataChartIDs);
@@ -2191,7 +2200,7 @@
 
 		dataLabelArray = [VL_CHART_INCIDENCE_LEGEND, VL_CHART_CASES_LEGEND];
 		charType = ["line","bar"];
-		dataArray = [historicIncidence[VL_COLUMN], historicNewCases[VL_COLUMN]];
+		dataArray = [historicIncidenceChart[VL_COLUMN], historicNewCases[VL_COLUMN]];
 		colorArray = [COLORS.violet, COLORS.soft_violet];
 		dataChartIDs= [DATASID.RIGHT, DATASID.LEFT];
 		lineBarChart(newVLAndHistoricIncidenceID, VL_INCIDENCE_CHART_TITLE, dataLabelArray, VL_INCIDENCE_CHART_Y1_TITLE, VL_INCIDENCE_CHART_Y2_TITLE, charType, dataArray, colorArray, dataChartIDs);
@@ -2199,7 +2208,7 @@
 
 		dataLabelArray = [CL_CHART_INCIDENCE_LEGEND, CL_CHART_CASES_LEGEND];
 		charType = ["line","bar"];
-		dataArray = [historicIncidence[CL_COLUMN], historicNewCases[CL_COLUMN]];
+		dataArray = [historicIncidenceChart[CL_COLUMN], historicNewCases[CL_COLUMN]];
 		colorArray = [COLORS.blue, COLORS.green];
 		dataChartIDs= [DATASID.RIGHT, DATASID.LEFT];
 		lineBarChart(newCLAndHistoricIncidenceID, CL_INCIDENCE_CHART_TITLE, dataLabelArray, CL_INCIDENCE_CHART_Y1_TITLE, CL_INCIDENCE_CHART_Y2_TITLE, charType, dataArray, colorArray, dataChartIDs);
@@ -3036,10 +3045,10 @@
 			generateMapAndLegend(ACL_INDEX),
 			generateMapAndLegend(ZCL_INDEX),
 			get_gho_ntds(),
-			getIncidenceFor(INCIDENCE_FOR_MAPS[VL_INDEX], VL_COLUMN),
-			getIncidenceFor(INCIDENCE_FOR_MAPS[CL_INDEX], CL_COLUMN),
-			getIncidenceFor(INCIDENCE_FOR_MAPS[ACL_INDEX], ACL_COLUMN),
-			getIncidenceFor(INCIDENCE_FOR_MAPS[ZCL_INDEX], ZCL_COLUMN),
+			getIncidenceForCharts(INCIDENCE_FOR_CHARTS[VL_INDEX], VL_COLUMN),
+			getIncidenceForCharts(INCIDENCE_FOR_CHARTS[CL_INDEX], CL_COLUMN),
+			getIncidenceForCharts(INCIDENCE_FOR_CHARTS[ACL_INDEX], ACL_COLUMN),
+			getIncidenceForCharts(INCIDENCE_FOR_CHARTS[ZCL_INDEX], ZCL_COLUMN),
 			getNewCases(DE.VL_EPI_Type, VL_COLUMN),
 			getNewCases(DE.CL_EPI_Type, CL_COLUMN),
 			getNewCases(DE.ACL_EPI_Type, ACL_COLUMN),
