@@ -1332,7 +1332,7 @@
 		pop_at_risk_values[index] = sumValueForHeader(data, headerIndex);
 		percentage =  percentageText(pop_at_risk_values[index], totalPopulation, 0, true);
 
-		array[RISK_ROW][column] = percentage + " " + pop_at_risk_values[index] + " / " + totalPopulation;
+		array[RISK_ROW][column] = percentage + " " + pop_at_risk_values[index] + " / " + (totalPopulation || WHEN_NO_DATA);
 	}
 
 	function fillArray_IncidenceRow(){
@@ -1340,7 +1340,7 @@
 		for (var i = VL_INDEX; i<= ZCL_INDEX ; i++) {
 			// array[row][col], col = index + 1
 			incidence = percentageText(array[NEW_ROW][i+1] / 100, pop_at_risk_values[i], 2, false); 
-			incidence_text = (isNaN(incidence) || typeof incidence === 'string' ) ? incidence : WHEN_NO_DATA; // shows No data if denominator = 0 or no data
+			incidence_text = (!isNaN(incidence) || typeof incidence === 'string' ) ? incidence : WHEN_NO_DATA; // shows No data if denominator = 0 or no data
 			array[INCD_ROW][i+1] = incidence_text;
 		}
 		for (var i = PKDL_INDEX; i<= MCL_INDEX ; i++) {
@@ -1672,7 +1672,7 @@
 		// gets population in miles, transforms it in units and adds local separators
 		var popIn1000 = getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_Pop_Tot_1000, CC_DEFAULT], VALUE_KEY);
 		totalPopulation = parseInt(popIn1000) * 1000 ;
-		generalInformationArray[CIG_ROW_POP][1] = (totalPopulation).toLocaleString();
+		generalInformationArray[CIG_ROW_POP][1] = (totalPopulation || WHEN_NO_DATA).toLocaleString();
 
 		// gets all population age slices and adds its by sex 
 		var popm = 0, popf = 0;
@@ -1682,7 +1682,7 @@
 		}
 		console.log( "popf " + popf);
 		console.log( "popm " + popm);
-		generalInformationArray[CIG_ROW_SEX][1] = percentageText(popf, totalPopulation, 1, true) + " / " + percentageText(popm, totalPopulation, 1, true);
+		generalInformationArray[CIG_ROW_SEX][1] = (percentageText(popf, totalPopulation, 1, true) || WHEN_NO_DATA) + " / " + (percentageText(popm, totalPopulation, 1, true) || WHEN_NO_DATA);
 
 		// gets GDP
 		generalInformationArray[CIG_ROW_GDP][1] = getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_WB_GDP_PPP_current, CC_DEFAULT], VALUE_KEY);
@@ -1715,7 +1715,7 @@
 		}
 		console.log( "pop_under15 " + pop_under15);
 		console.log( "pop_over15 " + pop_over15);
-		generalInformationArray[CIG_ROW_AGEG][1] = percentageText(pop_under15, totalPopulation, 1, true) + " / " + percentageText(pop_over15, totalPopulation, 1, true);
+		generalInformationArray[CIG_ROW_AGEG][1] = (percentageText(pop_under15, totalPopulation, 1, true) || WHEN_NO_DATA) + " / " + (percentageText(pop_over15, totalPopulation, 1, true)  || WHEN_NO_DATA);
 
 		generalInformationArray[CIG_ROW_LIFE][1] = getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_LifeExpBirth_Female, CC_DEFAULT], VALUE_KEY) +  
 													" / " +
@@ -2033,7 +2033,7 @@
 
 		if (isNaN(numerator)){
 			return numerator; // It's not a number. Return numerator
-		} else if (denominator === 0){
+		} else if (denominator === 0 || isNaN(denominator)){
 			return WHEN_DIV_0;
 		} else if (denominator === WHEN_UNDEFINED){
 			return WHEN_UNDEFINED;
@@ -2802,7 +2802,7 @@
 				autocompleteSearcher("targetCountry", organisationUnits, doNothing, 2, 200);
 
 				country_selector_open();
-				//DEBUG_AutomaticallyfillInitialForm();
+				DEBUG_AutomaticallyfillInitialForm();
 
 			});
 		
