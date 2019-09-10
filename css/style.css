@@ -9,8 +9,16 @@
    .non-printable {
        display: none;
     }
-    
+
 }
+
+@media all { 
+  div.pagebreak{ /* it should be under print and here only display:none, but that's not working */ 
+    display:block;
+    page-break-before:always;
+  }
+}
+
 @page {
         size:  A4;   /* auto is the initial value */
         margin: 5mm;  /* this affects the margin in the printer settings */		
