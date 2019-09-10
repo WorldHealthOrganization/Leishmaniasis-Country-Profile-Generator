@@ -896,7 +896,7 @@
 	var generatedYears = [], organisationUnits = [];
 
 
-	var dialog_cs, dialog, editor;
+	var dialog, editor;
 
 	var ds = {};
 
@@ -1340,7 +1340,7 @@
 		for (var i = VL_INDEX; i<= ZCL_INDEX ; i++) {
 			// array[row][col], col = index + 1
 			incidence = percentageText(array[NEW_ROW][i+1] / 100, pop_at_risk_values[i], 2, false); 
-			incidence_text = (incidence.localeCompare(ERROR) != 0 ) ? incidence : WHEN_NO_DATA; // shows No data if denominator = 0 or no data
+			incidence_text = (isNaN(incidence) || typeof incidence === 'string' ) ? incidence : WHEN_NO_DATA; // shows No data if denominator = 0 or no data
 			array[INCD_ROW][i+1] = incidence_text;
 		}
 		for (var i = PKDL_INDEX; i<= MCL_INDEX ; i++) {
@@ -2529,27 +2529,6 @@
 				//allFields.removeClass( "ui-state-error" );
 			}
 		});
-
-
-/*
-		dialog_cs = $( "#dialog-country-selector" ).dialog({
-			dialogClass: "no-title-bar",
-			autoOpen: false,
-			//height: 350,
-			//width: 650,
-			modal: true,
-			//title: "Select a year and a country",
-			buttons: {
-				"Start preparing report": startPreparingReport
-			},
-			close: function(event) {
-				event.preventDefault();
-				Pace.restart();
-				return false;
-				//allFields.removeClass( "ui-state-error" );
-			}
-		});
-*/
 	}
 
 	function saveChanges(){
@@ -2822,9 +2801,8 @@
 				autocompleteSearcher("yearField", generatedYears, doNothing, 1, 200);
 				autocompleteSearcher("targetCountry", organisationUnits, doNothing, 2, 200);
 
-				//dialog_cs.dialog( "open" );
 				country_selector_open();
-				DEBUG_AutomaticallyfillInitialForm(); //if commented, country_selector_close(); on startPreparingReport
+				//DEBUG_AutomaticallyfillInitialForm();
 
 			});
 		
@@ -2836,16 +2814,12 @@
 		$( "#targetCountry" ).text("mNa42CHbkO7"); 
 		$( "#yearField" ).val(2017); 
 
-		//buttons = dialog_cs.dialog('option', 'buttons');
-		//buttons['Start preparing report'](); // Clicks the button
-		//dialog_cs.dialog( "close" );
 		startPreparingReport();
 
 	}
 
 	function startPreparingReport() {
 	
-		//dialog_cs.dialog( "close" );
 		country_selector_close();
 
 		// retrieves values from form
