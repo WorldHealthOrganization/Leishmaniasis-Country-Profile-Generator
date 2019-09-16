@@ -1550,6 +1550,12 @@
 		if (column === VL_COLUMN || column == CL_COLUMN){
 			
 			/* Treatment table */
+
+			// Number of VL cases followed-up at 6 months	
+			var new_rel6_cases = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_NEW_CASES, DE.VL_TREATMENT_OUTCOME], VALUE_KEY);
+			var rel_rel6_cases = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_RELAPSE, DE.VL_TREATMENT_OUTCOME], VALUE_KEY);
+			var uns_rel6_cases = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED, DE.VL_TREATMENT_OUTCOME], VALUE_KEY);
+			var total_rel6_cases = add([new_rel6_cases, rel_rel6_cases, uns_rel6_cases]);
 		
 			var new_cured = getValueForKey(dataValues, CC_KEY, NEW_CURED, VALUE_KEY);
 			var rel_cured = getValueForKey(dataValues, CC_KEY, REL_CURED, VALUE_KEY);
@@ -1566,7 +1572,7 @@
 			var uns_dead = getValueForKey(dataValues, CC_KEY, UNS_DEAD, VALUE_KEY);
 			var total_dead = add([new_dead, rel_dead, uns_dead]);
 
-			toutcomeArray[RELAPSE_PROPORTION_ROW][column] = percentageCasesAndTotal(relapse, total_cases_type, 0, true);
+			toutcomeArray[RELAPSE_PROPORTION_ROW][column] = percentageCasesAndTotal(total_rel6_cases, total_cases_type, 0, true);
 			toutcomeArray[INITIAL_CURE_RATE_ROW][column] = percentageCasesAndTotal(total_cured, total_cases_type, 0, true);
 			toutcomeArray[FAILURE_RATE_ROW][column] = percentageCasesAndTotal(total_fail, total_cases_type, 0, true);
 			toutcomeArray[CASE_FATALITY_ROW][column] = percentageCasesAndTotal(total_dead, total_cases_type, 0, true);
