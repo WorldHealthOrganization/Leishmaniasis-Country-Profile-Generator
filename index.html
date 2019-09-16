@@ -1601,7 +1601,7 @@
 			var positive_slides_uns = getValueForKey(dataValues,[CC_KEY, DE_KEY],[POSITIVE_UNSP, DE.VL_LAB_parasito_result_type], VALUE_KEY); 
 			var positive_slides_total = add([positive_slides_new, positive_slides_rel, positive_slides_uns]);
 
-			diagnosisArray[POSITIVE_DIRECT_EXAM_ROW][column] = percentageCasesAndTotal(positive_slides_new, positive_slides_total, 0, true);
+			diagnosisArray[POSITIVE_DIRECT_EXAM_ROW][column] = percentageCasesAndTotal(positive_slides_total, direct_exam_total, 0, true);
 
 			//Cases diagnosed clinically
 			var clinical_cases_new = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_NEW_CASES, DE.VL_LAB_clinical], VALUE_KEY);
