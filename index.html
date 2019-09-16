@@ -1579,7 +1579,7 @@
 			diagnosisArray[CLINICALLY_DIAGNOSED_ROW][column] = percentageCasesAndTotal(clinical_cases_total, total_cases_type, 0, true);
 		}
 
-		
+
 		/* Treatment table */
 		if (column === VL_COLUMN || column == CL_COLUMN){
 			
@@ -1901,7 +1901,7 @@
 				valueColumn = j;
 			}
 		}
-		var returnValues = new Array(dataObject.rows.length);
+		var returnValues = new Array(historicLength);
 
 		switch(mode){
 			case YEARLY_MODE:
