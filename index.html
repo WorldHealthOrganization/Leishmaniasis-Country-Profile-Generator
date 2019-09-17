@@ -1460,19 +1460,19 @@
 		switch(epiDE){
 			case DE.CL_EPI_Type:
 				array[FOCI_ROW][column] = getValueForKey(dataValues, DE_KEY, DE.CL_GEN_EPID_NEW_FOCUS, VALUE_KEY);
-				array[OUTBK_ROW][column] = toBoolText(getValueForKey(dataValues, DE_KEY, DE.CL_GEN_EPID_outbreak, VALUE_KEY));				
+				array[OUTBK_ROW][column] = booleanToYesNo(getValueForKey(dataValues, DE_KEY, DE.CL_GEN_EPID_outbreak, VALUE_KEY));				
 				break;
 			case DE.ACL_EPI_Type:
 				array[FOCI_ROW][column] = getValueForKey(dataValues, DE_KEY, DE.ACL_GEN_EPID_NEW_FOCUS, VALUE_KEY);
-				array[OUTBK_ROW][column] = toBoolText(getValueForKey(dataValues, DE_KEY, DE.ACL_GEN_EPID_outbreak, VALUE_KEY));				
+				array[OUTBK_ROW][column] = toBoolText_OpS_YNU_Numeric_129(getValueForKey(dataValues, DE_KEY, DE.ACL_GEN_EPID_outbreak, VALUE_KEY));				
 				break;
 			case DE.ZCL_EPI_Type:
 				array[FOCI_ROW][column] = getValueForKey(dataValues, DE_KEY, DE.ZCL_GEN_EPID_NEW_FOCUS, VALUE_KEY);
-				array[OUTBK_ROW][column] = toBoolText(getValueForKey(dataValues, DE_KEY, DE.ZCL_GEN_EPID_outbreak, VALUE_KEY));				
+				array[OUTBK_ROW][column] = toBoolText_OpS_YNU_Numeric_129(getValueForKey(dataValues, DE_KEY, DE.ZCL_GEN_EPID_outbreak, VALUE_KEY));				
 				break;
 			case DE.VL_EPI_Type:
 				array[FOCI_ROW][column] = getValueForKey(dataValues, DE_KEY, DE.VL_GEN_EPID_NEW_FOCUS, VALUE_KEY);
-				array[OUTBK_ROW][column] = toBoolText(getValueForKey(dataValues, DE_KEY, DE.VL_GEN_EPID_outbreak, VALUE_KEY));				
+				array[OUTBK_ROW][column] = booleanToYesNo(getValueForKey(dataValues, DE_KEY, DE.VL_GEN_EPID_outbreak, VALUE_KEY));				
 				break;
 		}
 
@@ -1633,27 +1633,27 @@
 
 	function fillControlAndSurveillance(dataValues){
 		controlArray[CAS_ROW_LNCP][1] = getValueForKey(dataValues, DE_KEY, Leish_GEN_LNCP_year, VALUE_KEY); 
-		controlArray[CAS_ROW_TYPE][1] =  getValueForKey(dataValues, DE_KEY, CL_GEN_Surv_Type, VALUE_KEY) +
+		controlArray[CAS_ROW_TYPE][1] =  toBoolText_OpS_YNU_Numeric_129(getValueForKey(dataValues, DE_KEY, CL_GEN_Surv_Type, VALUE_KEY)) +
 											TWO_VALUES_SEPARATOR +
-											getValueForKey(dataValues, DE_KEY, VL_GEN_Surv_Type, VALUE_KEY); 
-		controlArray[CAS_ROW_PROGRAMME][1] = toBoolText(getValueForKey(dataValues, DE_KEY, Leish_GEN_VectorControl, VALUE_KEY)); 
+											toBoolText_OpS_YNU_Numeric_129(getValueForKey(dataValues, DE_KEY, VL_GEN_Surv_Type, VALUE_KEY)); 
+		controlArray[CAS_ROW_PROGRAMME][1] = toBoolText_OpS_YNU_Numeric_129(getValueForKey(dataValues, DE_KEY, Leish_GEN_VectorControl, VALUE_KEY)); 
 		controlArray[CAS_ROW_IRS][1] = getValueForKey(dataValues, DE_KEY, Leish_GEN_VectorControl_Insecticide, VALUE_KEY); 
-		controlArray[CAS_ROW_NOTIF][1] = toBoolText(getValueForKey(dataValues, DE_KEY, CL_GEN_Surv_Notif, VALUE_KEY)) +
+		controlArray[CAS_ROW_NOTIF][1] = toBoolText_OpS_YNU_Numeric_129(getValueForKey(dataValues, DE_KEY, CL_GEN_Surv_Notif, VALUE_KEY)) +
 											TWO_VALUES_SEPARATOR +
-											toBoolText(getValueForKey(dataValues, DE_KEY, VL_GEN_Surv_Notif, VALUE_KEY)); 
+											toBoolText_OpS_YNU_Numeric_129(getValueForKey(dataValues, DE_KEY, VL_GEN_Surv_Notif, VALUE_KEY)); 
 		controlArray[CAS_ROW_GUIDELINES][1] = getValueForKey(dataValues, DE_KEY, CL_GEN_Guidelines_year, VALUE_KEY) +
 											TWO_VALUES_SEPARATOR +
 											getValueForKey(dataValues, DE_KEY, VL_GEN_Guidelines_year, VALUE_KEY); 
-		controlArray[CAS_ROW_RESER][1] = toBoolText(getValueForKey(dataValues, DE_KEY, Leish_GEN_ReservoirControl, VALUE_KEY)); 
+		controlArray[CAS_ROW_RESER][1] = toBoolText_OpS_YNU_Numeric_129(getValueForKey(dataValues, DE_KEY, Leish_GEN_ReservoirControl, VALUE_KEY)); 
 		controlArray[CAS_ROW_FACIL][1] = getValueForKey(dataValues, DE_KEY, CL_GEN_Surv_HF, VALUE_KEY) +
 											TWO_VALUES_SEPARATOR +
 											getValueForKey(dataValues, DE_KEY, VL_GEN_Surv_HF, VALUE_KEY);
 	}
 	
 	function fillTreatmentAndMedicines(dataValues){
-		tamArray[TAM_ROW_FREEOFCHARGE][1] =  toBoolText(getValueForKey(dataValues, DE_KEY, CL_GEN_TxFree, VALUE_KEY)) +
+		tamArray[TAM_ROW_FREEOFCHARGE][1] =  toBoolText_OpS_YNU_Numeric_129(getValueForKey(dataValues, DE_KEY, CL_GEN_TxFree, VALUE_KEY)) +
 											TWO_VALUES_SEPARATOR +
-											toBoolText(getValueForKey(dataValues, DE_KEY, VL_GEN_TxFree, VALUE_KEY));
+											toBoolText_OpS_YNU_Numeric_129(getValueForKey(dataValues, DE_KEY, VL_GEN_TxFree, VALUE_KEY));
 
 		
 		
@@ -2810,7 +2810,7 @@
 				autocompleteSearcher("targetCountry", organisationUnits, doNothing, 2, 200);
 
 				country_selector_open();
-				// DEBUG_AutomaticallyfillInitialForm();
+				DEBUG_AutomaticallyfillInitialForm();
 
 			});
 		
@@ -2818,9 +2818,9 @@
 	function DEBUG_AutomaticallyfillInitialForm()
 	{
 
-		$( "#targetCountry" ).val("Federal Democratic Republic of Nepal");//val("Algeria"); 
-		$( "#targetCountry" ).text("pZZriU4sY0l");//text("mNa42CHbkO7"); 
-		$( "#yearField" ).val(2016); 
+		$( "#targetCountry" ).val("Algeria"); //val("Federal Democratic Republic of Nepal");//
+		$( "#targetCountry" ).text("mNa42CHbkO7"); //text("pZZriU4sY0l");//
+		$( "#yearField" ).val(2017); // val(2016);
 
 		startPreparingReport();
 
