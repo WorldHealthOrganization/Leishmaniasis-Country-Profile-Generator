@@ -1838,28 +1838,32 @@
 
 	function makeElementsEditables(){
 			// Avoid to show menu
-		$('.'+CLASS_EDITABLE_ELEMENT).contextmenu(function() {
+		$(document).bind("contextmenu", "." + CLASS_EDITABLE_ELEMENT, function(e) {
+			editingElement = e.target;
+			editor.jqteVal(editingElement.outerHTML);
+			dialog.dialog( "option", "position", { my: "left top", at: "center bottom+10%", of: editingElement } );	
+			dialog.dialog( "open" );	
+
 			return false;
+
 		});
-	
-		$('.'+CLASS_EDITABLE_ELEMENT).mousedown(function(event) {
-			if (event.which === 3){
-				//event.preventDefault();
-
-				editingElement = this;
-				editor.jqteVal(editingElement.outerHTML);
-				dialog.dialog( "option", "position", { my: "left top", at: "center bottom+10%", of: editingElement } );	
-				dialog.dialog( "open" );	
-
-
-			}
+	}
+   /**
+	* removes all footnotes marks and footNotedElement class from parent
+	* and restarts footNoteCounter
+	*/
+	function removeAllFootnotesMarks(){
+		$('[id^="footNoteNumber"]').each(function (index, value) {
+			$(this).parent().toggleClass('footNotedElement');
+			$(this).remove();
 		});
+		footNoteCounter = 0;
+
 	}
 	
 	function makeElementsFootnotables(){
-		$('.'+CLASS_FOOTNOTABLE_ELEMENT).mousedown(function(event) {
-			if (event.which === 1){
-				if ($(this).hasClass('footNotedElement')) {
+		$(document).on("click", "." + CLASS_FOOTNOTABLE_ELEMENT, function(e) {
+			if ($(this).hasClass('footNotedElement')) {
 					var element = $('#footNoteNumber' + footNoteCounter ); // will return element
 					if ($(this).children().attr("id")===element.attr("id")) {  // Check if trying to remove last element
 						element[0].parentNode.removeChild(element[0]); // will remove the element from DOM
@@ -1874,11 +1878,7 @@
 				}
 
 				event.preventDefault();
-				
-			}
 		});
-
-
 	}
 
 	function numberToTwoDigits( number){
@@ -2675,7 +2675,7 @@
 				)
 			.then( function(){return fillArray_IncidenceRow();} ); // recalculates EPI table incidence
 
-			$.when(
+			var update_epi_and_cgi_tables = $.when(
 					get_pops_at_risk,
 					updateNumberOfDivisions(subNationaSelectedLevel),
 			).done(function(result){
@@ -2687,11 +2687,12 @@
 			});
 
 
+			var update_maps;
 			// recalculates maps to selected subnational level
 			if ($("#maps_to_selectedSubLevel").prop('checked')){
 				update_map_levels_var(map_levels[0], NATIONAL_LEVEL + subNationaSelectedLevel);
 				var mapStyle = MAP_STYLE[$('#mapStyleSelector').val()];
-				$.when(
+				update_maps = $.when(
 					generateMap(VL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity),
 					generateMap(CL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity),
 					generateMap(ACL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity),
@@ -2701,10 +2702,14 @@
 				});
 			}
 
-			//getNumberOfDivisions(parseInt(selected_level)+1, CGI_TABLE_NAME+6+" td:nth-child(2) span");
-			//$("#"+CGI_TABLE_NAME+6+" td:nth-child(1) span").html(LEVEL_REPORT_LABELS[selected_level]);
-			//$("#"+CGI_TABLE_NAME+6+" td:nth-child(2) span").html(nbdiv);
-
+			// removes all footnotes marks since refreshed elements will lost its footnote mark
+			$.when(
+					update_epi_and_cgi_tables,
+					update_epi_and_cgi_tables,
+					update_maps
+				).done(function(result){
+					removeAllFootnotesMarks();
+			});
 
 		}).change();
 
