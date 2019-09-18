@@ -445,13 +445,11 @@
 									];
 
 	var DIAG_LEGEND_LABELS_2 = [	"RDT",
-									"HIV",
-									"MCL"
+									"HIV"
 									];
 
 	var DIAG_LEGEND_LABELS_DESC_2 = [ 	"rapid diagnostic rest",
-										"human immunodeficiency virus",
-										"mucocutaneous leishmaniasis"
+										"human immunodeficiency virus"
 										];
 
 	var DIAG_ASTERISK_RDT_COMMENT = "<span><sup>*</sup> These indicators apply only for primary VL cases</span>";
@@ -2563,6 +2561,10 @@
 		$(":checkbox."+LEISH_COLUMN_DETAIL_PREFIX).each(function(){
 			if( !this.checked ) {
 				$( this ).trigger('change');
+				// selects appropiate footnote and hides it since that part of the two tables has no changed
+				var id_num = $( this ).prop('id').split('_').pop(); // gets the X on LeishDetail_BUTTON_X
+				$("#" + TEXT_UNDER_EPI + id_num).toggle();
+				$("#" + TEXT_UNDER_DIAG1 + id_num).toggle();
 			}
 		});
 		
@@ -2581,7 +2583,7 @@
 					$(this).find("span").eq(index+1).toggle();
 				});
 				$('#textUnderDiagTable1').each(function() {
-					$(this).find("span").eq(index).toggle();
+					$(this).find("span").eq(index+1).toggle();
 				});
 			}
 		);
@@ -2898,19 +2900,12 @@
 		fillNotaBene();
 		fillNotaBeneMaps();
 
-		/*
-		DIAG_LEGEND_LABELS_DESC_2
-			var DIAG_ASTERISK_RDT_COMMENT = "<sup>*</sup> These indicators apply only for primary VL cases";
-		var PUT_NA_TEXT = true;
-		*/
-
-
 		setTextUnderTables("textUnderEpiTable", TEXT_UNDER_EPI, COLUMNS_LABELS, COLUMNS_LABELS_DESC, PUT_NA_TEXT);
 		setTextUnderTables("textUnderDiagTable1", TEXT_UNDER_DIAG1, 
-								DIAG_LEGEND_LABELS.slice(0, DIAG_LEGEND_LABELS.length-1), 
-								DIAG_LEGEND_LABELS_DESC.slice(0, DIAG_LEGEND_LABELS_DESC.length-1), 
-								DIAG_ASTERISK_RDT_COMMENT);
-		setTextUnderTables("textUnderDiagTable2", TEXT_UNDER_DIAG2, DIAG_LEGEND_LABELS_2, DIAG_LEGEND_LABELS_DESC_2, PUT_NA_TEXT);
+								DIAG_LEGEND_LABELS, 
+								DIAG_LEGEND_LABELS_DESC, 
+								PUT_NA_TEXT);
+		setTextUnderTables("textUnderDiagTable2", TEXT_UNDER_DIAG2, DIAG_LEGEND_LABELS_2, DIAG_LEGEND_LABELS_DESC_2, DIAG_ASTERISK_RDT_COMMENT);
 		
 		text_values = [
 			"WHO Global",
