@@ -9,7 +9,7 @@
    .non-printable {
        display: none;
     }
-
+    body {-webkit-print-color-adjust: exact;}
 }
 
 @media all { 
