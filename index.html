@@ -470,17 +470,18 @@
 
 	/* Treatment outcome table */
 	
-	var RELAPSE_PROPORTION_ROW = 0;
-	var INITIAL_CURE_RATE_ROW = 1;
-	var FAILURE_RATE_ROW = 2;
-	var CASE_FATALITY_ROW = 3;
+	var INITIAL_CURE_RATE_ROW = 0;
+	var FAILURE_RATE_ROW = 1;
+	var CASE_FATALITY_ROW = 2;
+	var RELAPSE_PROPORTION_ROW = 3;
 
-	var toutcomeLabels = [ "Proportion of relapse cases:",
-							"Initial cure rate:",
-							"Failure rate:",				
-							"Case-fatality rate:"
-							];
-	var LINES_BELOW_LABELS_TREAT = [true, false, false, true];
+	var toutcomeLabels = new Array(4);
+	toutcomeLabels[INITIAL_CURE_RATE_ROW] = "Initial cure rate:";
+	toutcomeLabels[FAILURE_RATE_ROW] = "Failure rate:";
+	toutcomeLabels[CASE_FATALITY_ROW] = "Case-fatality rate:";
+	toutcomeLabels[RELAPSE_PROPORTION_ROW] = "Proportion of relapse cases:";
+
+	var LINES_BELOW_LABELS_TREAT = [false, false, true, true];
 	var toutcomeArray = create_2_dim_array(toutcomeLabels.length, toutcomeLabels, LABELS_ON_COLUMNS);
 	
 	var historicLength = HISTORIC_DEFAULT_VALUE;
@@ -518,7 +519,6 @@
 		PKDL_EPID_sex: "ipWXN3NeXac",
 		PKDL_EPID_age : "rw4tu6PNGKO",
 		PKDL_LAB_HIV: "sxjZutF1AMx",
-		VL_TREATMENT_OUTCOME: "eh7Lbb7Rslc",
 		UNS_USE_PREVIOUS_DATA : "ZjIDKHFwMUw",
 		ACL_GEN_EPID_NEW_FOCUS : "TF0LMI2yPPZ",
 		CL_GEN_EPID_NEW_FOCUS : "Euaxw5lULOI",
@@ -527,7 +527,15 @@
 		ACL_GEN_EPID_outbreak :  "fW73iTXOe8r",
 		CL_GEN_EPID_outbreak :  "l0cmjII8aSl",
 		VL_GEN_EPID_outbreak :  "kH8ZxF9Biwv",
-		ZCL_GEN_EPID_outbreak :  "nfnq7idjj3Q"
+		ZCL_GEN_EPID_outbreak :  "nfnq7idjj3Q",
+		VL_INIT_ITxO_Drug_Type : "ossDxe1C4F2",
+		CL_ITxO_Tx_drug : "OjY8uiHVetP",
+		ACL_ITxO_Tx_drug : "GXyfQMlaXEn",
+		ZCL_ITxO_Tx_drug : "GPG5qCJ65uO",
+		VL_FU_M6_FTxO_Type : "s52F14VRGTL",
+		CL_FU_TxO_type : "oDKlLMhPo2Z",
+		ACL_FU_TxO : "mjtuwvBk7Ge",
+		ZCL_FU_TxO : "PIZqvu83jfC",
 	};
 
 	var SUB_ENDEMICITY = {
@@ -731,15 +739,55 @@
 
 	/* Treatment Category options*/
 
-	var NEW_CURED = "UnXwCSYnnvT";
-	var NEW_RELOUT = "HjLmlc308bk";
-	var NEW_DEAD = "SWQatS9z4sL";
-	var REL_CURED = "a6I7BzjrnmJ";
-	var REL_RELOUT = "j7RGAw4zpVi";
-	var REL_DEAD = "iML4aJx17bq";
-	var UNS_CURED = "SZiY6xiTgy6";
-	var UNS_RELOUT = "D08F1WAa6x6";
-	var UNS_DEAD = "qAneJjz2lLH";
+	var VL_CURED_NEW = "UnXwCSYnnvT";
+	var VL_CURED_REL = "a6I7BzjrnmJ";
+	var VL_CURED_UNS = "SZiY6xiTgy6";
+	var VL_REL_NEW = "HjLmlc308bk";
+	var VL_REL_REL = "j7RGAw4zpVi";
+	var VL_REL_UNS = "D08F1WAa6x6";
+	var VL_DEAD_NEW = "SWQatS9z4sL";
+	var VL_DEAD_REL = "iML4aJx17bq";
+	var VL_DEAD_UNS = "qAneJjz2lLH";
+
+	var CL_CURED_NEW = "WHtWpXnQmS4";
+	var CL_CURED_REL = "UCFZTILyPc8";
+	var CL_CURED_UNS = "D8c6zefeJmA";
+	var CL_REL_NEW = "apmCD5hHH4O";
+	var CL_REL_REL = "ixMkSNV6pAD";
+	var CL_REL_UNS = "JyhoMuXOVNC";
+	var CL_DEAD_NEW = "ci77j9YDMmC";
+	var CL_DEAD_REL = "IkCzNFkuVzl";
+	var CL_DEAD_UNS = "L4wrPRwEvzX";
+
+	// CC for drugs failure Initial Treatment outcome
+	var FAIL_NEW_AMB = "T2MDkJzCKf7"; // VL
+	var FAIL_REL_AMB = "W9ZHKO3NeZp";
+	var FAIL_UNS_AMB = "Pr6aEN8PC5M";
+	var FAIL_NEW_GLU = "WJf6H2HVZKN"; // CL, ACL, ZCL
+	var FAIL_REL_GLU = "oefw5w6qZBo";
+	var FAIL_UNS_GLU = "hggEQ5Xm0cN";
+	var FAIL_NEW_PEN = "aeBFt3rX6NP"; // VL
+	var FAIL_REL_PEN = "ds0XBIt6PoY";
+	var FAIL_UNS_PEN = "BWqkFDITG0V";
+	var FAIL_NEW_SSG = "dzqOoSKXPKL"; // CL, ACL, ZCL
+	var FAIL_REL_SSG = "cD3SqlrJPjF";
+	var FAIL_UNS_SSG = "jFmiZOTK9rc";
+	var FAIL_NEW_SSG_PARO = "if1h2SRcku2"; // VL
+	var FAIL_REL_SSG_PARO = "fZYrDUNI6nm";
+	var FAIL_UNS_SSG_PARO = "azirNffjDgP";
+	var VL_FAIL_NEW_OTH = "WUWQqRMnWDq"; // VL
+	var VL_FAIL_REL_OTH = "EZox1NNUf3S";
+	var VL_FAIL_UNS_OTH = "yaX1pqDkpQg";
+	var VL_FAIL_NEW_UNS = "IDinKF2U3Ck"; // VL
+	var VL_FAIL_REL_UNS = "KpStyHyHmxT";
+	var VL_FAIL_UNS_UNS = "bmukoyyu4Pr";	
+	var CL_FAIL_NEW_OTH = "Cl3ZokvTdwK"; // CL, ACL, ZCL
+	var CL_FAIL_REL_OTH = "V19rqPBT5w2";
+	var CL_FAIL_UNS_OTH = "EJDj412Rxso";
+	var CL_FAIL_NEW_UNS = "SHKozECi3D8"; // CL, ACL, ZCL
+	var CL_FAIL_REL_UNS = "vnHYporLk7L";
+	var CL_FAIL_UNS_UNS = "ZmlPKopCQ4C";
+
 
 	/* Indicators*/
 	var INCIDENCE_FOR_MAPS = new Array(4);
@@ -1577,35 +1625,118 @@
 			diagnosisArray[CLINICALLY_DIAGNOSED_ROW][column] = percentageCasesAndTotal(clinical_cases_total, total_cases_type, 0, true);
 		}
 
-
 		/* Treatment table */
-		if (column === VL_COLUMN || column == CL_COLUMN){
-			
-			// Number of VL cases followed-up at 6 months	
-			var new_rel6_cases = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_NEW_CASES, DE.VL_TREATMENT_OUTCOME], VALUE_KEY);
-			var rel_rel6_cases = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_RELAPSE, DE.VL_TREATMENT_OUTCOME], VALUE_KEY);
-			var uns_rel6_cases = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED, DE.VL_TREATMENT_OUTCOME], VALUE_KEY);
-			var total_rel6_cases = add([new_rel6_cases, rel_rel6_cases, uns_rel6_cases]);
+		var drug_ito_fail, txo_cases;
 		
-			var new_cured = getValueForKey(dataValues, CC_KEY, NEW_CURED, VALUE_KEY);
-			var rel_cured = getValueForKey(dataValues, CC_KEY, REL_CURED, VALUE_KEY);
-			var uns_cured = getValueForKey(dataValues, CC_KEY, UNS_CURED, VALUE_KEY);
+
+		if (column === VL_COLUMN || column == CL_COLUMN || column == ACL_COLUMN || column == ZCL_COLUMN){
+			
+			switch (column){
+				case VL_COLUMN:
+					drug_ito_fail = DE.VL_INIT_ITxO_Drug_Type;
+					txo_cases = DE.VL_FU_M6_FTxO_Type;	
+					break;
+				case CL_COLUMN:
+					drug_ito_fail = DE.CL_ITxO_Tx_drug;
+					txo_cases = DE.CL_FU_TxO_type;
+					break;
+				case ACL_COLUMN:
+					drug_ito_fail = DE.ACL_ITxO_Tx_drug;
+					txo_cases = DE.ACL_FU_TxO;
+					break;
+				case ZCL_COLUMN:
+					drug_ito_fail = DE.ZCL_ITxO_Tx_drug;
+					txo_cases = DE.ZCL_FU_TxO;
+					break;
+			}
+			if (column == VL_COLUMN) {
+				cured_new = VL_CURED_NEW;
+				cured_rel = VL_CURED_REL;
+				cured_uns = VL_CURED_UNS;
+				rel_new = VL_REL_NEW;
+				rel_rel = VL_REL_REL;
+				rel_uns = VL_REL_UNS;
+				dead_new = VL_DEAD_NEW;
+				dead_rel = VL_DEAD_REL;
+				dead_uns = VL_DEAD_UNS;
+				fail_new_oth = VL_FAIL_NEW_OTH ;
+				fail_rel_oth =  VL_FAIL_REL_OTH;
+				fail_uns_oth =  VL_FAIL_UNS_OTH;
+				fail_new_uns =  VL_FAIL_NEW_UNS;
+				fail_rel_uns =  VL_FAIL_REL_UNS;
+				fail_uns_uns =  VL_FAIL_UNS_UNS;	
+			} else {
+				// CL_COLUMN, ACL_COLUMN, ZCL_COLUMN
+				cured_new = CL_CURED_NEW;
+				cured_rel = CL_CURED_REL;
+				cured_uns = CL_CURED_UNS;
+				rel_new = CL_REL_NEW;
+				rel_rel = CL_REL_REL;
+				rel_uns = CL_REL_UNS;
+				dead_new = CL_DEAD_NEW;
+				dead_rel = CL_DEAD_REL;
+				dead_uns = CL_DEAD_UNS;
+				fail_new_oth = CL_FAIL_NEW_OTH ;
+				fail_rel_oth =  CL_FAIL_REL_OTH;
+				fail_uns_oth =  CL_FAIL_UNS_OTH;
+				fail_new_uns =  CL_FAIL_NEW_UNS;
+				fail_rel_uns =  CL_FAIL_REL_UNS;
+				fail_uns_uns =  CL_FAIL_UNS_UNS;	
+			}
+
+
+			// Number of VL cases followed-up at 6 months	
+			var new_rel = getValueForKey(dataValues, [CC_KEY, DE_KEY], [rel_new, txo_cases], VALUE_KEY);
+			var rel_rel_t = getValueForKey(dataValues, [CC_KEY, DE_KEY], [rel_rel, txo_cases], VALUE_KEY);
+			var uns_rel = getValueForKey(dataValues, [CC_KEY, DE_KEY], [rel_uns, txo_cases], VALUE_KEY);
+			var total_rel6_cases = add([new_rel, rel_rel_t, uns_rel]);
+		
+			var new_cured = getValueForKey(dataValues, [CC_KEY, DE_KEY], [cured_new, txo_cases], VALUE_KEY);
+			var rel_cured = getValueForKey(dataValues, [CC_KEY, DE_KEY], [cured_rel, txo_cases], VALUE_KEY);
+			var uns_cured = getValueForKey(dataValues, [CC_KEY, DE_KEY], [cured_uns, txo_cases], VALUE_KEY);
 			var total_cured = add([new_cured, rel_cured, uns_cured]);
 
-			var new_fail = getValueForKey(dataValues, CC_KEY, NEW_RELOUT, VALUE_KEY);
-			var rel_fail = getValueForKey(dataValues, CC_KEY, REL_RELOUT, VALUE_KEY);
-			var uns_fail = getValueForKey(dataValues, CC_KEY, UNS_RELOUT, VALUE_KEY);
-			var total_fail = add([new_fail, rel_fail, uns_fail]);
-
-			var new_dead = getValueForKey(dataValues, CC_KEY, NEW_DEAD, VALUE_KEY);
-			var rel_dead = getValueForKey(dataValues, CC_KEY, REL_DEAD, VALUE_KEY);
-			var uns_dead = getValueForKey(dataValues, CC_KEY, UNS_DEAD, VALUE_KEY);
+			var new_dead = getValueForKey(dataValues, [CC_KEY, DE_KEY], [dead_new, txo_cases], VALUE_KEY);
+			var rel_dead = getValueForKey(dataValues, [CC_KEY, DE_KEY], [dead_rel, txo_cases], VALUE_KEY);
+			var uns_dead = getValueForKey(dataValues, [CC_KEY, DE_KEY], [dead_uns, txo_cases], VALUE_KEY);
 			var total_dead = add([new_dead, rel_dead, uns_dead]);
 
-			toutcomeArray[RELAPSE_PROPORTION_ROW][column] = percentageCasesAndTotal(total_rel6_cases, total_cases_type, 0, true);
+			var fail_new_amb = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_NEW_AMB, drug_ito_fail], VALUE_KEY);
+            var fail_rel_amb = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_REL_AMB, drug_ito_fail], VALUE_KEY);
+            var fail_uns_amb = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_UNS_AMB, drug_ito_fail], VALUE_KEY);
+			var fail_new_glu = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_NEW_GLU, drug_ito_fail], VALUE_KEY);
+            var fail_rel_glu = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_REL_GLU, drug_ito_fail], VALUE_KEY);
+            var fail_uns_glu = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_UNS_GLU, drug_ito_fail], VALUE_KEY);
+            var fail_new_pen = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_NEW_PEN, drug_ito_fail], VALUE_KEY);
+            var fail_rel_pen = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_REL_PEN, drug_ito_fail], VALUE_KEY);
+            var fail_uns_pen = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_UNS_PEN, drug_ito_fail], VALUE_KEY);
+			var fail_new_ssg = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_NEW_SSG, drug_ito_fail], VALUE_KEY);
+            var fail_rel_ssg = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_REL_SSG, drug_ito_fail], VALUE_KEY);
+            var fail_uns_ssg = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_UNS_SSG, drug_ito_fail], VALUE_KEY);
+            var fail_new_ssg_paro = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_NEW_SSG_PARO, drug_ito_fail], VALUE_KEY);
+            var fail_rel_ssg_paro = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_REL_SSG_PARO, drug_ito_fail], VALUE_KEY);
+            var fail_uns_ssg_paro = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_UNS_SSG_PARO, drug_ito_fail], VALUE_KEY);
+            var fail_new_oth_t = getValueForKey(dataValues,[CC_KEY, DE_KEY],[fail_new_oth, drug_ito_fail], VALUE_KEY);
+            var fail_rel_oth_t = getValueForKey(dataValues,[CC_KEY, DE_KEY],[fail_rel_oth, drug_ito_fail], VALUE_KEY);
+            var fail_uns_oth_t = getValueForKey(dataValues,[CC_KEY, DE_KEY],[fail_uns_oth, drug_ito_fail], VALUE_KEY);
+            var fail_new_uns_t = getValueForKey(dataValues,[CC_KEY, DE_KEY],[fail_new_uns, drug_ito_fail], VALUE_KEY);
+            var fail_rel_uns_t = getValueForKey(dataValues,[CC_KEY, DE_KEY],[fail_rel_uns, drug_ito_fail], VALUE_KEY);
+            var fail_uns_uns_t = getValueForKey(dataValues,[CC_KEY, DE_KEY],[fail_uns_uns, drug_ito_fail], VALUE_KEY);
+
+
+			total_fail = add([fail_new_amb, fail_rel_amb, fail_uns_amb,
+								fail_new_glu, fail_rel_glu, fail_uns_glu,
+								fail_new_pen, fail_rel_pen, fail_uns_pen,
+								fail_new_ssg, fail_rel_ssg, fail_uns_ssg,
+								fail_new_ssg_paro, fail_rel_ssg_paro, fail_uns_ssg_paro,
+								fail_new_oth_t, fail_rel_oth_t, fail_uns_oth_t,
+								fail_new_uns_t, fail_rel_uns_t, fail_uns_uns_t]);
+
 			toutcomeArray[INITIAL_CURE_RATE_ROW][column] = percentageCasesAndTotal(total_cured, total_cases_type, 0, true);
 			toutcomeArray[FAILURE_RATE_ROW][column] = percentageCasesAndTotal(total_fail, total_cases_type, 0, true);
 			toutcomeArray[CASE_FATALITY_ROW][column] = percentageCasesAndTotal(total_dead, total_cases_type, 0, true);
+			toutcomeArray[RELAPSE_PROPORTION_ROW][column] = percentageCasesAndTotal(total_rel6_cases, total_cases_type, 0, true);
+
 		}
 
 
@@ -2574,7 +2705,7 @@
 		// Listener ACL/ZCL PKDL buttons
 		$(":checkbox."+LEISH_COLUMN_DETAIL_PREFIX).change(function() {
 				var index = Number(this.id.slice(this.id.length-1, this.id.length));
-				$('#epiTable tr, #diagTable tr').each(function() {
+				$('#epiTable tr, #diagTable tr, #toutcomeTable tr').each(function() {
 					$(this).find("td,th").eq(index+1).toggle();
 				});
 
@@ -2997,7 +3128,7 @@
 		fillTableHead(EPI_TABLE_NAME, "Head", '', COLUMNS_LABELS);
 		fillTableHead(MONTHLY_TABLE_NAME, "Head", '', MONTHS_ABBREV);
 		fillTableHead(DIAG_TABLE_NAME, "Head", '', COLUMNS_LABELS);
-		fillTableHead(TOUTCOME_TABLE_NAME, "Head", TOUTCOME_TABLE_FIRST_COLUMNS, COLUMNS_LABELS.slice(0,2));
+		fillTableHead(TOUTCOME_TABLE_NAME, "Head", TOUTCOME_TABLE_FIRST_COLUMNS, COLUMNS_LABELS.slice(0,4));
 
 
 		// Dragable activation
