@@ -1762,9 +1762,9 @@
 
 	function fillControlAndSurveillance(dataValues){
 		controlArray[CAS_ROW_LNCP][1] = getValueForKey(dataValues, DE_KEY, Leish_GEN_LNCP_year, VALUE_KEY); 
-		controlArray[CAS_ROW_TYPE][1] =  toBoolText_OpS_YNU_Numeric_129(getValueForKey(dataValues, DE_KEY, CL_GEN_Surv_Type, VALUE_KEY)) +
+		controlArray[CAS_ROW_TYPE][1] =  toBoolText_OpS_Leish_SurvType(getValueForKey(dataValues, DE_KEY, CL_GEN_Surv_Type, VALUE_KEY)) +
 											TWO_VALUES_SEPARATOR +
-											toBoolText_OpS_YNU_Numeric_129(getValueForKey(dataValues, DE_KEY, VL_GEN_Surv_Type, VALUE_KEY)); 
+											toBoolText_OpS_Leish_SurvType(getValueForKey(dataValues, DE_KEY, VL_GEN_Surv_Type, VALUE_KEY)); 
 		controlArray[CAS_ROW_PROGRAMME][1] = toBoolText_OpS_YNU_Numeric_129(getValueForKey(dataValues, DE_KEY, Leish_GEN_VectorControl, VALUE_KEY)); 
 		controlArray[CAS_ROW_IRS][1] = getValueForKey(dataValues, DE_KEY, Leish_GEN_VectorControl_Insecticide, VALUE_KEY); 
 		controlArray[CAS_ROW_NOTIF][1] = toBoolText_OpS_YNU_Numeric_129(getValueForKey(dataValues, DE_KEY, CL_GEN_Surv_Notif, VALUE_KEY)) +
