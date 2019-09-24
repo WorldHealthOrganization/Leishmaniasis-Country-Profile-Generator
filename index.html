@@ -2687,7 +2687,7 @@
 	 **********                               LISTENERS                                        **********
 	 ****************************************************************************************************/
 
-	 function refreshEpiTableToggleStatus(){
+	 function refreshToggleStatus(){
 
 		$(":checkbox."+LEISH_COLUMN_DETAIL_PREFIX).each(function(){
 			if( !this.checked ) {
@@ -2820,7 +2820,14 @@
 				writeTable(EPI_TABLE_NAME, "Body", array, LINES_BELOW_LABELS_EPI);
 				// It writes the entire table data, so put also the headers
 				fillTableHead(EPI_TABLE_NAME, "Head", '', COLUMNS_LABELS);
-				refreshEpiTableToggleStatus();
+
+				// rewrites also DiagTable and Toutcome table since buttons are going to be clicked
+				writeTable(DIAG_TABLE_NAME, "Body", diagnosisArray, LINES_BELOW_LABELS_DIAG);
+				writeTable(TOUTCOME_TABLE_NAME, "Body", toutcomeArray, LINES_BELOW_LABELS_TREAT);
+				fillTableHead(DIAG_TABLE_NAME, "Head", '', COLUMNS_LABELS);
+				fillTableHead(TOUTCOME_TABLE_NAME, "Head", TOUTCOME_TABLE_FIRST_COLUMNS, COLUMNS_LABELS.slice(0,4));
+
+				refreshToggleStatus();
 			});
 
 
