@@ -490,9 +490,12 @@
 
 
 	var DATASET = {
-		CL : "tnek2LjfuIm",
-		VL : "fdBM4sWSuPR",
-		AZCL : "Uc3j0vpsfSB",
+		CL_Detailed : "tnek2LjfuIm",
+		CL_Simple : "zna8KfLMXn4",
+		VL_Detailed : "fdBM4sWSuPR",
+		VL_Simple : "SHw2zOysJ1R",
+		AZCL_Detailed : "Uc3j0vpsfSB",
+		AZCL_Simple : "Sn0dExPzQqW",
 		GI: "NKWbkXyfO5F",
 		GHO_NTDs : "p0NhuIUoeST"
 	};
@@ -500,7 +503,10 @@
 	var PROGRAM = {
 		CL_MONTHLY : "w9hSFsNr3Vh",
 		VL_MONTHLY : "i5JSf4ffFl2",
+		FOOTNOTES : "NVUlJzIakuO",
+		SUBN_ENDEMCTY : "Jd8gnEIt8uT"
 	}
+	
 	
 	// DATA_ELEMENTS
 	var DE = {
@@ -808,11 +814,6 @@
 	POP_AT_RISK[ACL_INDEX] = "NYzjVXzaod5";
 	POP_AT_RISK[ZCL_INDEX] = "b4CaeIjuNqc";
 
-	/* Events Programs*/
-
-	var FOOTNOTE_PROGRAM = "NVUlJzIakuO";
-	var SUBNATIONAL_ENDEMICITY = "Jd8gnEIt8uT";
-	
 	// Control & Surveillance
 
 	var Leish_GEN_LNCP_year = "X628bzppb3C";
@@ -1016,12 +1017,12 @@
 			if (typeof data.organisationUnits !== 'undefined' ) {
 				var orgUnitArray = data.organisationUnits[0].path.replace(/^\/|\/$/, "").split("/");
 			}
-			return getAndFillEventsFor(FOOTNOTE_PROGRAM, orgUnitArray, params);
+			return getAndFillEventsFor(PROGRAM.FOOTNOTES, orgUnitArray, params);
 		});
 	}
 
-	function getAndFillEventsFor(FOOTNOTE_PROGRAM, orgUnitArray, params){
-		return $.when(getEventsFor(FOOTNOTE_PROGRAM, orgUnitArray[0], params), orgUnitArray).then(function(eventRes, orgUnitArray){
+	function getAndFillEventsFor(PROGRAM.FOOTNOTES, orgUnitArray, params){
+		return $.when(getEventsFor(PROGRAM.FOOTNOTES, orgUnitArray[0], params), orgUnitArray).then(function(eventRes, orgUnitArray){
 					for (var i = 0; i<eventRes[0].events.length; i++) {
 						var event = eventRes[0].events[i];
 						var  footnote = getValueForKey(event.dataValues, DE_KEY, RG_footnote_text, VALUE_KEY);
@@ -1040,7 +1041,7 @@
 					if (orgUnitArray.length <= 1) {
 						return;
 					} else {
-						return getAndFillEventsFor(FOOTNOTE_PROGRAM, orgUnitArray.slice(1), params)
+						return getAndFillEventsFor(PROGRAM.FOOTNOTES, orgUnitArray.slice(1), params)
 					}
 				});
 	}
@@ -1233,7 +1234,7 @@
 	function get_cl_cases() {
 
 		var params = {
-			dataSet: DATASET.CL,
+			dataSet: DATASET.CL_Detailed,
 			period: ds.year,
 			orgUnit: ds.countryID
 
@@ -1253,7 +1254,7 @@
 	/* getting cl cases from API */
 	function get_azcl_cases() {
 		var params = {
-			dataSet: DATASET.AZCL,
+			dataSet: DATASET.AZCL_Detailed,
 			period: ds.year,
 			orgUnit: ds.countryID
 		}
@@ -1273,7 +1274,7 @@
 	function get_vl_cases() {
 
 		var params = {
-			dataSet: DATASET.VL,
+			dataSet: DATASET.VL_Detailed,
 			period: ds.year,
 			orgUnit: ds.countryID
 		}
@@ -1866,10 +1867,10 @@
 	function updateNumberOfDivisions(subNationalLevel){
 
 		return $.when(getNumberOfDivisionsFor(ds.countryID, (subNationalLevel), "name"),
-					get_subnational_endemicity_for(SUBNATIONAL_ENDEMICITY, ds.year, subNationalLevel, SUB_ENDEMICITY.ACL, ACL_COLUMN),
-					get_subnational_endemicity_for(SUBNATIONAL_ENDEMICITY, ds.year, subNationalLevel, SUB_ENDEMICITY.ZCL, ZCL_COLUMN),
-					get_subnational_endemicity_for(SUBNATIONAL_ENDEMICITY, ds.year, subNationalLevel, SUB_ENDEMICITY.CL, CL_COLUMN),
-					get_subnational_endemicity_for(SUBNATIONAL_ENDEMICITY, ds.year, subNationalLevel, SUB_ENDEMICITY.VL, VL_COLUMN)
+					get_subnational_endemicity_for(PROGRAM.SUBN_ENDEMCTY, ds.year, subNationalLevel, SUB_ENDEMICITY.ACL, ACL_COLUMN),
+					get_subnational_endemicity_for(PROGRAM.SUBN_ENDEMCTY, ds.year, subNationalLevel, SUB_ENDEMICITY.ZCL, ZCL_COLUMN),
+					get_subnational_endemicity_for(PROGRAM.SUBN_ENDEMCTY, ds.year, subNationalLevel, SUB_ENDEMICITY.CL, CL_COLUMN),
+					get_subnational_endemicity_for(PROGRAM.SUBN_ENDEMCTY, ds.year, subNationalLevel, SUB_ENDEMICITY.VL, VL_COLUMN)
 				).done(function(result){
 			var numberOfDivisions = result.organisationUnits.length;
 			var aDivisionName = result.organisationUnits[0].name;
@@ -2959,7 +2960,7 @@
 				autocompleteSearcher("targetCountry", organisationUnits, doNothing, 2, 200);
 
 				country_selector_open();
-				DEBUG_AutomaticallyfillInitialForm();
+			//	DEBUG_AutomaticallyfillInitialForm();
 
 			});
 		
