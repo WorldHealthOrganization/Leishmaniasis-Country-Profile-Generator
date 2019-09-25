@@ -494,9 +494,12 @@
 
 
 
-	var mtd = new Array(12);
+	var de_assigned = new Array();
+	var dsinfo = new Array(8);
+	var pinfo = new Array(4);
 	var NAME = 0;
 	var ASSG = 1;
+	var DE_IDX = 2;
 	
 	CL_DETAILED = "tnek2LjfuIm";
 	CL_SIMPLE = "zna8KfLMXn4";
@@ -511,18 +514,18 @@
 	FOOTNOTES = "NVUlJzIakuO";
 	SUBN_ENDEMCTY = "Jd8gnEIt8uT";
 
-	mtd[CL_DETAILED] = ["Cutaneous Leishmaniasis - Detailed - Annual", false];
-	mtd[CL_SIMPLE] = ["CL - Simple - Annual", false];
-	mtd[VL_DETAILED] = ["VL - Detailed - Annual", false];
-	mtd[VL_SIMPLE] = ["VL - Simple - Annual", false];
-	mtd[AZCL_DETAILED] = ["ACL/ZCL - Detailed - Annual", false];
-	mtd[AZCL_SIMPLE] = ["ACL/ZCL - - Simple aggregated - Annual", false];
-	mtd[GI] = ["General information", false];
-	mtd[GHO_NTDS] = ["GHO indicators for NTDs", false];
-	mtd[CL_MONTHLY] = ["CL_cases_by provenance", false];
-	mtd[VL_MONTHLY] = ["VL_cases_by provenance", false];
-	mtd[FOOTNOTES] = ["Footnotes for Report Generator", false];
-	mtd[SUBN_ENDEMCTY] = ["Leishmaniasis endemicity", false];
+	dsinfo[CL_DETAILED] = ["Cutaneous Leishmaniasis - Detailed - Annual", false];
+	dsinfo[CL_SIMPLE] = ["CL - Simple - Annual", false];
+	dsinfo[VL_DETAILED] = ["VL - Detailed - Annual", false];
+	dsinfo[VL_SIMPLE] = ["VL - Simple - Annual", false];
+	dsinfo[AZCL_DETAILED] = ["ACL/ZCL - Detailed - Annual", false];
+	dsinfo[AZCL_SIMPLE] = ["ACL/ZCL - - Simple aggregated - Annual", false];
+	dsinfo[GI] = ["General information", false];
+	dsinfo[GHO_NTDS] = ["GHO indicators for NTDs", false];
+	pinfo[CL_MONTHLY] = ["CL_cases_by provenance", false];
+	pinfo[VL_MONTHLY] = ["VL_cases_by provenance", false];
+	pinfo[FOOTNOTES] = ["Footnotes for Report Generator", false];
+	pinfo[SUBN_ENDEMCTY] = ["Leishmaniasis endemicity", false];
 	
 	// DATA_ELEMENTS
 	var DE = {
@@ -1177,6 +1180,73 @@
                 }
 				
 			});
+		});
+	}
+
+	function getDEUsedByMetadata(){
+
+
+		var promises = [];
+		var ds_indexes = [];
+		var p_indexes = [];
+		for (var uid in dsinfo) {
+			if (dsinfo[uid][ASSG]){
+				promises.push(getDEusedByDataSet(uid));
+				ds_indexes.push(uid);
+			}
+		}
+		for (var uid in pinfo) {
+			if (pinfo[uid][ASSG]){
+				promises.push(getDEusedByProgram(uid));
+				p_indexes.push(uid);
+			}
+		}
+		promises.push(ds_indexes);
+		promises.push(p_indexes);
+		return Promise.all(promises)
+		.then(function(result) {
+			console.log("all promises");
+			console.log(result);
+
+			ds_indexes = result[result.length - 2];
+			p_indexes = result[result.length - 1];
+
+			for (var i = 0; i < ds_indexes.length; i++) {
+				dsinfo[ds_indexes[i]][DE_IDX] = [...result[i].listGrid.rows];
+				de_assigned = de_assigned.concat(result[i].listGrid.rows);
+			}
+
+			var shift = ds_indexes.length;
+			for (i = shift; i < shift + p_indexes.length; i++) {
+				pinfo[p_indexes[i-shift]][DE_IDX] = [...result[i].listGrid.rows];
+				de_assigned = de_assigned.concat(result[i].listGrid.rows);
+			}
+			return;
+		});
+
+	}
+
+	function getDEusedByDataSet(dsuid){
+		var params = {
+			var: "datasetuid:" + dsuid,
+			paging: false
+		}
+
+		return $.when(getv3("sqlViews/oQdIVqkVlxC/data", params))
+		.done(function(result){
+			dsinfo[dsuid][DE_IDX] = result.dataelements;
+		});
+	}
+
+	function getDEusedByProgram(puid){
+		var params = {
+			var: "programuid:" + puid,
+			paging: false
+		}
+
+		return $.when(getv3("sqlViews/IrawAndH02Y/data", params))
+		.done(function(result){
+			pinfo[puid][DE_IDX] = result.dataelements;
 		});
 	}
 
@@ -2077,21 +2147,32 @@
 			return returnValue;
 		}
 		if (typeof keyName === 'string') {
-			// one property check
-			$.each( array, function( index, object ) {
-				if(object[keyName]===keyValue){
-					returnValue = object[valueName];
-					return false;
-				} 
-			});
+			// checks if DE is assigned
+			if (keyName == DE_KEY && de_assigned.filter(obj => { return obj[0] === keyValue}).length == 0){
+				return WHEN_NON_APPLICABLE;
+			} else {
+				// one property check
+				$.each( array, function( index, object ) {
+					if(object[keyName]===keyValue){
+						returnValue = object[valueName];
+						return false;
+					} 
+				});
+			}
 		} else if (keyName.length > 1 && keyValue.length > 1) {
-			// two properties check  // not used
-			$.each( array, function( index, object ) {
-				if(object[keyName[0]]===keyValue[0] && object[keyName[1]]===keyValue[1]){
-					returnValue = object[valueName];
-					return false;
-				} 
-			});
+			// checks if DE is assigned
+			if ((keyName[0] == DE_KEY && de_assigned.filter(obj => { return obj[0] === keyValue[0]}).length == 0) 
+			|| (keyName[1] == DE_KEY && de_assigned.filter(obj => { return obj[0] === keyValue[1]}).length == 0)){
+				return WHEN_NON_APPLICABLE;
+			} else {
+				// two properties check  // not used
+				$.each( array, function( index, object ) {
+					if(object[keyName[0]]===keyValue[0] && object[keyName[1]]===keyValue[1]){
+						returnValue = object[valueName];
+						return false;
+					} 
+				});
+			}
 		} else {
 			console.log('ERROR in ' + arguments.callee.name);
 			return 'ERROR in ' + arguments.callee.name ;
@@ -2976,7 +3057,7 @@
 				autocompleteSearcher("targetCountry", organisationUnits, doNothing, 2, 200);
 
 				country_selector_open();
-			//	DEBUG_AutomaticallyfillInitialForm();
+				DEBUG_AutomaticallyfillInitialForm();
 
 			});
 		
@@ -3009,32 +3090,32 @@
 			if (typeof  dataSetResult.dataSets != 'undefined') {
 				var dsRes = dataSetResult.dataSets;
 				for (var i=0; i < dsRes.length; i++){
-					if (dsRes[i].id in mtd){
-						mtd[dsRes[i].id][ASSG] = true;
+					if (dsRes[i].id in dsinfo){
+						dsinfo[dsRes[i].id][ASSG] = true;
 					}
 				}
 			}
 			if (typeof  programResult.programs != 'undefined') {
 				var pRes = programResult.programs;
 				for (var i=0; i < pRes.length; i++){
-					if (pRes[i].id in mtd){
-						mtd[pRes[i].id][ASSG] = true;
+					if (pRes[i].id in pinfo){
+						pinfo[pRes[i].id][ASSG] = true;
 					}
 				}
 			}
 			var notAssginedMtd = "";
 			var IS_NOT_ASSG = " is not assigned to this country.</br>";
-			if (!mtd[GI][ASSG] ){
-				notAssginedMtd += mtd[GI][NAME] + IS_NOT_ASSG;
+			if (!dsinfo[GI][ASSG] ){
+				notAssginedMtd += dsinfo[GI][NAME] + IS_NOT_ASSG;
 			}			
-			if (!mtd[GHO_NTDS][ASSG] ){
-				notAssginedMtd += mtd[GHO_NTDS][NAME] + IS_NOT_ASSG;
+			if (!dsinfo[GHO_NTDS][ASSG] ){
+				notAssginedMtd += dsinfo[GHO_NTDS][NAME] + IS_NOT_ASSG;
 			}
-			if (!mtd[FOOTNOTES][ASSG] ){
-				notAssginedMtd += mtd[FOOTNOTES][NAME] + IS_NOT_ASSG;
+			if (!pinfo[FOOTNOTES][ASSG] ){
+				notAssginedMtd += pinfo[FOOTNOTES][NAME] + IS_NOT_ASSG;
 			}
-			if (!mtd[SUBN_ENDEMCTY][ASSG] ){
-				notAssginedMtd += mtd[SUBN_ENDEMCTY][NAME] + IS_NOT_ASSG;
+			if (!pinfo[SUBN_ENDEMCTY][ASSG] ){
+				notAssginedMtd += pinfo[SUBN_ENDEMCTY][NAME] + IS_NOT_ASSG;
 			}
 			if (notAssginedMtd.length > 0){
 				return showFeedbackToUser(notAssginedMtd);
@@ -3256,6 +3337,7 @@
 	
 		$.when(
 			epi_incidence_async,
+			getDEUsedByMetadata(),
 			generateMapAndLegend(VL_INDEX),
 			generateMapAndLegend(CL_INDEX),
 			generateMapAndLegend(ACL_INDEX),
