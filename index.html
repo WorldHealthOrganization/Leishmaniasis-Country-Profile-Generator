@@ -489,24 +489,40 @@
 	var historicNewCases = create_2_dim_array(5,"",LABELS_ON_ROWS);
 
 
-	var DATASET = {
-		CL_Detailed : "tnek2LjfuIm",
-		CL_Simple : "zna8KfLMXn4",
-		VL_Detailed : "fdBM4sWSuPR",
-		VL_Simple : "SHw2zOysJ1R",
-		AZCL_Detailed : "Uc3j0vpsfSB",
-		AZCL_Simple : "Sn0dExPzQqW",
-		GI: "NKWbkXyfO5F",
-		GHO_NTDs : "p0NhuIUoeST"
-	};
 
-	var PROGRAM = {
-		CL_MONTHLY : "w9hSFsNr3Vh",
-		VL_MONTHLY : "i5JSf4ffFl2",
-		FOOTNOTES : "NVUlJzIakuO",
-		SUBN_ENDEMCTY : "Jd8gnEIt8uT"
-	}
+
+
+
+
+	var mtd = new Array(12);
+	var NAME = 0;
+	var ASSG = 1;
 	
+	CL_DETAILED = "tnek2LjfuIm";
+	CL_SIMPLE = "zna8KfLMXn4";
+	VL_DETAILED = "fdBM4sWSuPR";
+	VL_SIMPLE = "SHw2zOysJ1R";
+	AZCL_DETAILED = "Uc3j0vpsfSB";
+	AZCL_SIMPLE = "Sn0dExPzQqW";
+	GI = "NKWbkXyfO5F";
+	GHO_NTDS = "p0NhuIUoeST";
+	CL_MONTHLY = "w9hSFsNr3Vh";
+	VL_MONTHLY = "i5JSf4ffFl2";
+	FOOTNOTES = "NVUlJzIakuO";
+	SUBN_ENDEMCTY = "Jd8gnEIt8uT";
+
+	mtd[CL_DETAILED] = ["Cutaneous Leishmaniasis - Detailed - Annual", false];
+	mtd[CL_SIMPLE] = ["CL - Simple - Annual", false];
+	mtd[VL_DETAILED] = ["VL - Detailed - Annual", false];
+	mtd[VL_SIMPLE] = ["VL - Simple - Annual", false];
+	mtd[AZCL_DETAILED] = ["ACL/ZCL - Detailed - Annual", false];
+	mtd[AZCL_SIMPLE] = ["ACL/ZCL - - Simple aggregated - Annual", false];
+	mtd[GI] = ["General information", false];
+	mtd[GHO_NTDS] = ["GHO indicators for NTDs", false];
+	mtd[CL_MONTHLY] = ["CL_cases_by provenance", false];
+	mtd[VL_MONTHLY] = ["VL_cases_by provenance", false];
+	mtd[FOOTNOTES] = ["Footnotes for Report Generator", false];
+	mtd[SUBN_ENDEMCTY] = ["Leishmaniasis endemicity", false];
 	
 	// DATA_ELEMENTS
 	var DE = {
@@ -1017,12 +1033,12 @@
 			if (typeof data.organisationUnits !== 'undefined' ) {
 				var orgUnitArray = data.organisationUnits[0].path.replace(/^\/|\/$/, "").split("/");
 			}
-			return getAndFillEventsFor(PROGRAM.FOOTNOTES, orgUnitArray, params);
+			return getAndFillEventsFor(FOOTNOTES, orgUnitArray, params);
 		});
 	}
 
-	function getAndFillEventsFor(PROGRAM.FOOTNOTES, orgUnitArray, params){
-		return $.when(getEventsFor(PROGRAM.FOOTNOTES, orgUnitArray[0], params), orgUnitArray).then(function(eventRes, orgUnitArray){
+	function getAndFillEventsFor(program, orgUnitArray, params){
+		return $.when(getEventsFor(program, orgUnitArray[0], params), orgUnitArray).then(function(eventRes, orgUnitArray){
 					for (var i = 0; i<eventRes[0].events.length; i++) {
 						var event = eventRes[0].events[i];
 						var  footnote = getValueForKey(event.dataValues, DE_KEY, RG_footnote_text, VALUE_KEY);
@@ -1041,7 +1057,7 @@
 					if (orgUnitArray.length <= 1) {
 						return;
 					} else {
-						return getAndFillEventsFor(PROGRAM.FOOTNOTES, orgUnitArray.slice(1), params)
+						return getAndFillEventsFor(program, orgUnitArray.slice(1), params)
 					}
 				});
 	}
@@ -1168,7 +1184,7 @@
 	function get_cgi() {
 
 		var params = {
-			dataSet: DATASET.GI,
+			dataSet: GI,
 			period: ds.year,
 			orgUnit: ds.countryID
 		}
@@ -1184,7 +1200,7 @@
 	function get_gho_ntds() {
 
 		var params = {
-			dataSet: DATASET.GHO_NTDs,
+			dataSet: GHO_NTDS,
 			period: ds.year,
 			orgUnit: ds.countryID
 		}
@@ -1234,7 +1250,7 @@
 	function get_cl_cases() {
 
 		var params = {
-			dataSet: DATASET.CL_Detailed,
+			dataSet: CL_DETAILED,
 			period: ds.year,
 			orgUnit: ds.countryID
 
@@ -1254,7 +1270,7 @@
 	/* getting cl cases from API */
 	function get_azcl_cases() {
 		var params = {
-			dataSet: DATASET.AZCL_Detailed,
+			dataSet: AZCL_DETAILED,
 			period: ds.year,
 			orgUnit: ds.countryID
 		}
@@ -1274,7 +1290,7 @@
 	function get_vl_cases() {
 
 		var params = {
-			dataSet: DATASET.VL_Detailed,
+			dataSet: VL_DETAILED,
 			period: ds.year,
 			orgUnit: ds.countryID
 		}
@@ -1867,10 +1883,10 @@
 	function updateNumberOfDivisions(subNationalLevel){
 
 		return $.when(getNumberOfDivisionsFor(ds.countryID, (subNationalLevel), "name"),
-					get_subnational_endemicity_for(PROGRAM.SUBN_ENDEMCTY, ds.year, subNationalLevel, SUB_ENDEMICITY.ACL, ACL_COLUMN),
-					get_subnational_endemicity_for(PROGRAM.SUBN_ENDEMCTY, ds.year, subNationalLevel, SUB_ENDEMICITY.ZCL, ZCL_COLUMN),
-					get_subnational_endemicity_for(PROGRAM.SUBN_ENDEMCTY, ds.year, subNationalLevel, SUB_ENDEMICITY.CL, CL_COLUMN),
-					get_subnational_endemicity_for(PROGRAM.SUBN_ENDEMCTY, ds.year, subNationalLevel, SUB_ENDEMICITY.VL, VL_COLUMN)
+					get_subnational_endemicity_for(SUBN_ENDEMCTY, ds.year, subNationalLevel, SUB_ENDEMICITY.ACL, ACL_COLUMN),
+					get_subnational_endemicity_for(SUBN_ENDEMCTY, ds.year, subNationalLevel, SUB_ENDEMICITY.ZCL, ZCL_COLUMN),
+					get_subnational_endemicity_for(SUBN_ENDEMCTY, ds.year, subNationalLevel, SUB_ENDEMICITY.CL, CL_COLUMN),
+					get_subnational_endemicity_for(SUBN_ENDEMCTY, ds.year, subNationalLevel, SUB_ENDEMICITY.VL, VL_COLUMN)
 				).done(function(result){
 			var numberOfDivisions = result.organisationUnits.length;
 			var aDivisionName = result.organisationUnits[0].name;
@@ -2965,6 +2981,73 @@
 			});
 		
 	});
+
+	function checkMetadataAssignedToThisCountry(){
+		saveSelectedYearAndCountry();
+
+		var datasets = [];
+		datasets.push(CL_DETAILED, CL_SIMPLE, VL_DETAILED, VL_SIMPLE, 
+						AZCL_DETAILED, AZCL_SIMPLE, GI, GHO_NTDS);
+
+		var programs = [];
+		programs.push(CL_MONTHLY, VL_MONTHLY, FOOTNOTES, SUBN_ENDEMCTY);
+
+		var datasetFilter = "id:in:["+datasets+"]";
+		var programFilter = "id:in:["+programs+"]";
+		var ouFilter = "organisationUnits.id:in:["+ ds.countryID +"]";
+		var FILTER = "&filter=";
+		var ds_filters = FILTER + datasetFilter + FILTER + ouFilter;
+		var p_filters = FILTER + programFilter + FILTER + ouFilter;
+	
+		var params = {
+			fields: "id",
+			paging: false
+		}
+	
+		return $.when(getv3(DATASETS, params, ds_filters), getv3(PROGRAMS, params, p_filters))
+		.done(function(dataSetResult, programResult){
+			if (typeof  dataSetResult.dataSets != 'undefined') {
+				var dsRes = dataSetResult.dataSets;
+				for (var i=0; i < dsRes.length; i++){
+					if (dsRes[i].id in mtd){
+						mtd[dsRes[i].id][ASSG] = true;
+					}
+				}
+			}
+			if (typeof  programResult.programs != 'undefined') {
+				var pRes = programResult.programs;
+				for (var i=0; i < pRes.length; i++){
+					if (pRes[i].id in mtd){
+						mtd[pRes[i].id][ASSG] = true;
+					}
+				}
+			}
+			var notAssginedMtd = "";
+			var IS_NOT_ASSG = " is not assigned to this country.</br>";
+			if (!mtd[GI][ASSG] ){
+				notAssginedMtd += mtd[GI][NAME] + IS_NOT_ASSG;
+			}			
+			if (!mtd[GHO_NTDS][ASSG] ){
+				notAssginedMtd += mtd[GHO_NTDS][NAME] + IS_NOT_ASSG;
+			}
+			if (!mtd[FOOTNOTES][ASSG] ){
+				notAssginedMtd += mtd[FOOTNOTES][NAME] + IS_NOT_ASSG;
+			}
+			if (!mtd[SUBN_ENDEMCTY][ASSG] ){
+				notAssginedMtd += mtd[SUBN_ENDEMCTY][NAME] + IS_NOT_ASSG;
+			}
+			if (notAssginedMtd.length > 0){
+				return showFeedbackToUser(notAssginedMtd);
+			} else {
+				return startPreparingReport();
+			}
+
+
+
+
+		});
+	}
+
 	function DEBUG_AutomaticallyfillInitialForm()
 	{
 
@@ -2972,23 +3055,28 @@
 		$( "#targetCountry" ).text("mNa42CHbkO7"); //text("pZZriU4sY0l");//
 		$( "#yearField" ).val(2017); // val(2016);
 
-		startPreparingReport();
+		checkMetadataAssignedToThisCountry();
 
+	}
+
+	function showFeedbackToUser(text){
+		$("#metadataFeedback").html(text);
+	}
+
+	function saveSelectedYearAndCountry() {
+		// retrieves values from form
+		ds.countryName =  $( "#targetCountry" ).val(); 
+		ds.countryID =  $( "#targetCountry" ).text(); 
+		ds.year = $( "#yearField" ).val(); 
 	}
 
 	function startPreparingReport() {
 	
 		country_selector_close();
 
-		// retrieves values from form
-		ds.countryName =  $( "#targetCountry" ).val(); 
-		ds.countryID =  $( "#targetCountry" ).text(); 
-		ds.year = $( "#yearField" ).val(); 
-
 		$( "#country_name" ).text(ds.countryName);
 		$( "#year" ).text(ds.year);
 		$( "#published_date").text(getDatePublished());
-
 
 		generateCheckboxes($("#leish_detail_checkboxes"), COLUMNS_LABELS, "Leishmaniasis types to show:", LEISH_COLUMN_DETAIL_PREFIX, -1);
 		generateCheckboxes($("#monthlyCheckboxes"), MONTHLY_LABELS, "Leishmaniasis types to show in monthly table:", MONTHLY_TABLE_NAME, -1);
@@ -3181,14 +3269,14 @@
 			getNewCases(DE.CL_EPI_Type, CL_COLUMN),
 			getNewCases(DE.ACL_EPI_Type, ACL_COLUMN),
 			getNewCases(DE.ZCL_EPI_Type, ZCL_COLUMN),
-			get_monthly_cases_for(PROGRAM.CL_MONTHLY, ds.year, DE_MONTHLY.CL_CASES, CL_ROW),
-			get_monthly_cases_for(PROGRAM.CL_MONTHLY, ds.year-1, DE_MONTHLY.CL_CASES, CL_PREVIOUS_YEAR_ROW),
-			get_monthly_cases_for(PROGRAM.VL_MONTHLY, ds.year, DE_MONTHLY.VL_CASES, VL_ROW),
-			get_monthly_cases_for(PROGRAM.VL_MONTHLY, ds.year-1, DE_MONTHLY.VL_CASES, VL_PREVIOUS_YEAR_ROW),
-			get_monthly_cases_for(PROGRAM.CL_MONTHLY, ds.year, DE_MONTHLY.ACL_CASES, ACL_ROW),
-			get_monthly_cases_for(PROGRAM.CL_MONTHLY, ds.year-1, DE_MONTHLY.ACL_CASES, ACL_PREVIOUS_YEAR_ROW),
-			get_monthly_cases_for(PROGRAM.CL_MONTHLY, ds.year, DE_MONTHLY.ZCL_CASES, ZCL_ROW),
-			get_monthly_cases_for(PROGRAM.CL_MONTHLY, ds.year-1, DE_MONTHLY.ZCL_CASES, ZCL_PREVIOUS_YEAR_ROW),
+			get_monthly_cases_for(CL_MONTHLY, ds.year, DE_MONTHLY.CL_CASES, CL_ROW),
+			get_monthly_cases_for(CL_MONTHLY, ds.year-1, DE_MONTHLY.CL_CASES, CL_PREVIOUS_YEAR_ROW),
+			get_monthly_cases_for(VL_MONTHLY, ds.year, DE_MONTHLY.VL_CASES, VL_ROW),
+			get_monthly_cases_for(VL_MONTHLY, ds.year-1, DE_MONTHLY.VL_CASES, VL_PREVIOUS_YEAR_ROW),
+			get_monthly_cases_for(CL_MONTHLY, ds.year, DE_MONTHLY.ACL_CASES, ACL_ROW),
+			get_monthly_cases_for(CL_MONTHLY, ds.year-1, DE_MONTHLY.ACL_CASES, ACL_PREVIOUS_YEAR_ROW),
+			get_monthly_cases_for(CL_MONTHLY, ds.year, DE_MONTHLY.ZCL_CASES, ZCL_ROW),
+			get_monthly_cases_for(CL_MONTHLY, ds.year-1, DE_MONTHLY.ZCL_CASES, ZCL_PREVIOUS_YEAR_ROW),
 			getFootnotes()).done(function(cgi,i1,i2,i3,i4,nc1,nc2,nc3,nc4,m1,m2,m3,m4,m5,m6,ls1,ls2,ls3,ls4,f1,tm1,le1,ft1){
 			// the code here will be executed when all four ajax requests resolve.
 			// a1, a2, a3 and a4 are lists of length 3 containing the response text,
@@ -3522,7 +3610,7 @@
 
 
 	<div class="form-popup" id="country-selector">
-		<form action="javascript:startPreparingReport()" class="form-container">
+		<form action="javascript:checkMetadataAssignedToThisCountry()" class="form-container">
 	  
 		  <h2><div class="formTitle">Generate <br> Country Profile </div></h2>
 	  
@@ -3534,6 +3622,7 @@
 		  <label for="targetCountry"><b>Country</b></label>
 		  <input  id="targetCountry" type="text" placeholder="Enter and select country name" name="targetCountry" required>
 							
+		  <div id= "metadataFeedback"></div>
 		  <button type="submit" class="btn">Start preparing CP</button>
 
 		</form>
