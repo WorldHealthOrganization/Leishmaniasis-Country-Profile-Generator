@@ -911,8 +911,6 @@
 	var totalPopulation;
 	var pop_at_risk_values = Array(6);
 
-	var acl_and_zcl_activated = false;
-
 	var editingElement;
 
 	var footNoteCounter = 0;
@@ -1370,7 +1368,6 @@
 		return $.ajax({
 			url: builtUrl
 		}).then(function(data) {
-				set_aclzcl_mode_to_true_if_data(data.dataValues);
 				fillArray(data.dataValues, ACL_COLUMN, DE.ACL_EPI_Type, "", ""); 
 				fillArray(data.dataValues, ZCL_COLUMN, DE.ZCL_EPI_Type, "", ""); 
 		});
@@ -2009,11 +2006,6 @@
 		}
 	}
 
-	function set_aclzcl_mode_to_true_if_data(dataValues){
-		if (dataValues !== undefined ){
-			acl_and_zcl_activated = true;
-		}
-	}
 	/* return a text about publishing date with the current month and year*/
 	function getDatePublished(){
 		var d = new Date();
@@ -2250,14 +2242,15 @@
 
 	*/
 	function threePercentages(cases1, cases2, cases3, total){
-		if (total === WHEN_UNDEFINED || total === undefined){
-			return WHEN_UNDEFINED;
+		
+		if (total === WHEN_UNDEFINED || total === WHEN_NON_APPLICABLE || total === undefined){
+			return total || WHEN_UNDEFINED;
 		} else {
-			if ((cases1 === WHEN_UNDEFINED || cases1 === undefined) &&
-				(cases2 === WHEN_UNDEFINED || cases2 === undefined) &&
-				(cases3 === WHEN_UNDEFINED || cases3 === undefined))
+			if ((cases1 === WHEN_UNDEFINED || cases1 === WHEN_NON_APPLICABLE || cases1 === undefined) &&
+				(cases2 === WHEN_UNDEFINED || cases2 === WHEN_NON_APPLICABLE || cases2 === undefined) &&
+				(cases3 === WHEN_UNDEFINED || cases3 === WHEN_NON_APPLICABLE || cases3 === undefined))
 			{	
-				return WHEN_UNDEFINED;
+				return cases1 || cases2 || cases3 || WHEN_UNDEFINED;
 			}
 			else {
 				
@@ -2275,14 +2268,18 @@
 	*/
 	function percentageCasesAndTotal(numerator, denominator, precision, percentageSymbol){
 
-		if (numerator === WHEN_UNDEFINED || numerator === undefined ||
+		if (numerator === WHEN_NON_APPLICABLE  ||
+			denominator === WHEN_NON_APPLICABLE) {
+			return WHEN_NON_APPLICABLE;
+		}
+		else if (numerator === WHEN_UNDEFINED || numerator === undefined ||
 			denominator === WHEN_UNDEFINED || denominator === undefined) {
-				return WHEN_UNDEFINED;
-			}
-			else {
-				return 	percentageText(numerator, denominator, precision, percentageSymbol) + "  (" +
-				numerator + " / " + denominator + ")";
-			}
+			return WHEN_UNDEFINED;
+		}
+		else {
+			return 	percentageText(numerator, denominator, precision, percentageSymbol) + "  (" +
+			numerator + " / " + denominator + ")";
+		}
 	}
 
 	/*	Returns a percentage with no decimals 
@@ -2307,14 +2304,17 @@
 	function add(arrayOfNumbers){
 		var addition = 0;
 		var counter = 0;
+		var error = "";
 		for (var number of arrayOfNumbers) {
-			if (typeof number !== "undefined" && number != WHEN_UNDEFINED){
+			if (typeof number !== "undefined" && number != WHEN_UNDEFINED && number != WHEN_NON_APPLICABLE){
 				addition = addition + +number;
 				counter++;
-			} 
+			} else {
+				error = number;
+			}
 		}
-		if (counter === 0){
-			return WHEN_UNDEFINED;
+		if (error.length != 0){
+			return error || willWHEN_UNDEFINED;
 		} else {
 			return addition;
 		}
@@ -2345,42 +2345,53 @@
 		return array;
 	}
 
-	function setMonthlyCheckboxes(){
+	function hideNoRelevantContent(){
 		// checked by default, trigger click for desactivate and for fire behaviour.
-		$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+VL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
-		$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+CL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
-		$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+ACL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
-		$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+ZCL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
 
-		//$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+VL_COLUMN).trigger('click');
-		//$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+MCL_COLUMN).trigger('click');
-
-		if(acl_and_zcl_activated){
-			
-			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+CL_ROW).trigger('click');
-
+		// deactivates CL content if no CL dataset is assigned to the country
+		if (!dsinfo[CL_DETAILED][ASSG] && !dsinfo[CL_DETAILED][ASSG]){
 			$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(CL_COLUMN-1)).trigger('click');
-			$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(PKDL_COLUMN-1)).trigger('click');
 
-		
+			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+CL_ROW).trigger('click');
+			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+CL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
+			// CL charts
 			$('#'+CHART_PREFIX+BUTTON_PREFIX+"0").trigger('click');
 			$('#'+CHART_PREFIX+BUTTON_PREFIX+"3").trigger('click');
+			$('#'+MAP_PREFIX+BUTTON_PREFIX+ CL_INDEX ).trigger('click');
+		}
 
-			$('#'+MAP_PREFIX+BUTTON_PREFIX+"1").trigger('click');
-		} else {
-			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+ACL_ROW).trigger('click');
-			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+ZCL_ROW).trigger('click');
+		// deactivates VL content if no VL dataset is assigned to the country
+		if (!dsinfo[VL_DETAILED][ASSG] && !dsinfo[VL_SIMPLE][ASSG]){
+			$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(VL_COLUMN-1)).trigger('click');
 
+			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+VL_ROW).trigger('click');//.prop('checked', false);
+			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+VL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
+			$('#'+CHART_PREFIX+BUTTON_PREFIX+"2").trigger('click');
+			$('#'+CHART_PREFIX+BUTTON_PREFIX+"5").trigger('click');
+			$('#'+MAP_PREFIX+BUTTON_PREFIX+ VL_INDEX ).trigger('click');
+		}
+
+		// deactivates AZCL content if no AZCL dataset is assigned to the country
+		if (!dsinfo[AZCL_DETAILED][ASSG] && !dsinfo[AZCL_SIMPLE][ASSG]){
 			$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(ACL_COLUMN-1)).trigger('click');
 			$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(ZCL_COLUMN-1)).trigger('click');
 
+			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+ACL_ROW).trigger('click');
+			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+ZCL_ROW).trigger('click');
+			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+ACL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
+			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+ZCL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
+			
 			$('#'+CHART_PREFIX+BUTTON_PREFIX+"1").trigger('click');
 			$('#'+CHART_PREFIX+BUTTON_PREFIX+"4").trigger('click');
-
-			$('#'+MAP_PREFIX+BUTTON_PREFIX+"2").trigger('click');
-			$('#'+MAP_PREFIX+BUTTON_PREFIX+"3").trigger('click');
+			$('#'+MAP_PREFIX+BUTTON_PREFIX+ ACL_INDEX ).trigger('click');
+			$('#'+MAP_PREFIX+BUTTON_PREFIX+ ZCL_INDEX ).trigger('click');
 
 		}
+
+		// PKDL and MCL always deactivated
+		 $('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(PKDL_COLUMN-1)).trigger('click');
+		 $('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(MCL_COLUMN-1)).trigger('click');
+
 
 		$(':checkbox').button( "refresh" );
 
@@ -3083,7 +3094,7 @@
 				autocompleteSearcher("targetCountry", organisationUnits, doNothing, 2, 200);
 
 				country_selector_open();
-				DEBUG_AutomaticallyfillInitialForm();
+			//	DEBUG_AutomaticallyfillInitialForm();
 
 			});
 		
@@ -3346,8 +3357,11 @@
 		// http://stackoverflow.com/questions/3709597/wait-until-all-jquery-ajax-requests-are-done
 //        var async2 = $.when( a3() ).then(function(){ return a4(); });
 
-
-		var get_pops_at_risk = $.when(get_cgi()) // gets totalPopulation var who is neeeded for popAtRisk
+		
+		var getDEUsedByMetadataPromise = $.when(getDEUsedByMetadata()) // gets totalPopulation var who is neeeded for popAtRisk
+			.then( function(){return;});
+			
+		var get_pops_at_risk = $.when(get_cgi(), getDEUsedByMetadataPromise) // gets totalPopulation var who is neeeded for popAtRisk
 			.then( function(){return getPopulationAtRiskFor(POP_AT_RISK[VL_INDEX], VL_COLUMN, defaultSubnationalLevel);} )
 			.then( function(){return getPopulationAtRiskFor(POP_AT_RISK[CL_INDEX], CL_COLUMN, defaultSubnationalLevel);} )
 			.then( function(){return getPopulationAtRiskFor(POP_AT_RISK[ACL_INDEX], ACL_COLUMN, defaultSubnationalLevel);} )
@@ -3363,7 +3377,6 @@
 	
 		$.when(
 			epi_incidence_async,
-			getDEUsedByMetadata(),
 			generateMapAndLegend(VL_INDEX),
 			generateMapAndLegend(CL_INDEX),
 			generateMapAndLegend(ACL_INDEX),
@@ -3407,7 +3420,7 @@
 				fillHTMLListWithArray(SORTABLE_LIST_3_NAME, activeFootnotesPage2, 'ui-state-highlight '+CLASS_EDITABLE_ELEMENT);
 				fillFootnotes();
 
-				setMonthlyCheckboxes();
+				hideNoRelevantContent();
 				
 				makeElementsEditables();
 				makeElementsFootnotables();
