@@ -2313,7 +2313,7 @@
 				error = number;
 			}
 		}
-		if (error.length != 0){
+		if (error.length != 0 && counter == 0){
 			return error || willWHEN_UNDEFINED;
 		} else {
 			return addition;
