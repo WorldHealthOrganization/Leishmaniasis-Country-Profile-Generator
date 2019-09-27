@@ -57,6 +57,7 @@
  crossorigin="anonymous"></script>
  <script type="text/javascript" src ="js/jquery-te-1.4.0-oms.js"></script>
  <script type="text/javascript" src ="js/tools.js"></script>
+ <script type="text/javascript" src ="js/largestRemainderRound.js"></script>
 <script type="text/javascript" src ="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js">//TODO:use the cdn officiel</script>
 <script type="text/javascript" src="../../../dhis-web-visualizer/chart.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.js"></script>
@@ -2252,16 +2253,30 @@
 			{	
 				return cases1 || cases2 || cases3 || WHEN_UNDEFINED;
 			}
-			else {
-				
+			else if (cases1 + cases2 + cases3 != total){
 				return 	"(" + 
 							percentageText(cases1, total, 0, false) + ", " +
 							percentageText(cases2, total, 0, false) + ", " +
-							percentageText(cases3, total, 0, false) + ")";
+							percentageText(cases3, total, 0, false) + ")" + ". WARN. Cases do not add up to total.";
+			}
+			else {
+
+				var dataset = [cases1/total*100, cases2/total*100, cases3/total*100];
+				var percentages100 = largestRemainderRound(dataset, 100);
+				
+				return 	"(" + 
+							percentageText(percentages100[0], 100, 0, false) + ", " +
+							percentageText(percentages100[1], 100, 0, false) + ", " +
+							percentageText(percentages100[2], 100, 0, false) + ")";
 
 			}
 		}
 	}
+
+
+
+	
+
 
 	/*	Returns a percentage with no decimals, the #cases and the total between parenthesis
 
@@ -3094,7 +3109,7 @@
 				autocompleteSearcher("targetCountry", organisationUnits, doNothing, 2, 200);
 
 				country_selector_open();
-			//	DEBUG_AutomaticallyfillInitialForm();
+				DEBUG_AutomaticallyfillInitialForm();
 
 			});
 		
