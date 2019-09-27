@@ -107,7 +107,7 @@ tr.bottom_line td,th {
   border-bottom: 2px solid #cad5e5;	/* Info : Border from first row table doesn't come from here. Just same property. */
 }
 
-/* */
+/*  */
 
 #monthlyTable th, #monthlyTable td {
   text-align: center;
@@ -121,6 +121,9 @@ th {
   text-align: left;
 }
 
+#cgiTable6 td:nth-child(2) {
+  color: red;
+}
 
 /* for graphs */
 .sameLine
