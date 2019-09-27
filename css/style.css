@@ -38,7 +38,8 @@ body
 
 h4 {
 	margin-top: 20px;
-	margin-bottom:5px;
+  margin-bottom:5px;
+  color: #029ADE;
 }
 
 h6 {
@@ -87,7 +88,7 @@ img.center {
 /* Organize content of div in equal-sized colons*/
 .head_container {
 	margin-top:2px;
-	border-top: solid 2px #39547d ;
+	border-top: solid 3px #39547d ;
   	display: flex;
 }
 .head_container > div {
@@ -103,8 +104,23 @@ img.center {
 
 /* lines for tables */
 tr.bottom_line td,th {
-  border-bottom: 1px solid #cad5e5;	/* Info : Border from first row table doesn't come from here. Just same property. */
+  border-bottom: 2px solid #cad5e5;	/* Info : Border from first row table doesn't come from here. Just same property. */
 }
+
+/* */
+
+#monthlyTable th, #monthlyTable td {
+  text-align: center;
+}
+
+#monthlyTable td:first-child {
+  text-align: left;
+}
+
+th {
+  text-align: left;
+}
+
 
 /* for graphs */
 .sameLine
