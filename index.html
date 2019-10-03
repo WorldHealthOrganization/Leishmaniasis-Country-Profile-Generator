@@ -560,7 +560,6 @@
 		ACL_EPI_Type : 	"f1bBSpuIyzD",
 		ZCL_EPI_Type : 	"Ta96pnXcAum",
 		MCL_EPI_Type : 	"K8k1LRZagmc",
-		VL_LAB_RDT_tested_type : "rFy4bKMa977",
 		VL_LAB_parasito_tested_type : "RrKpXTbayoB",
 		VL_LAB_parasito_result_type : "Qc7ujS567UL",
 		VL_LAB_clinical : "BAsexzzzJZC",
@@ -781,10 +780,17 @@
 	var ORIGIN_UNKNOWN_UNS = "EGvT9lj2BOy";
 
 	/* Diagnosis DataElements */
-	//o1smtpQE1tm
+	var VL_Lab_RDT_tested_type = "rFy4bKMa977";
+	var VL_Lab_RDT_results_type = "o1smtpQE1tm";
 	var POSITIVE_NEW = "jRcT6HVKb2t";
 	var POSITIVE_RELAPSE = "QKqVJ13mGZI";
 	var POSITIVE_UNSP = "YXktM46YiXo";
+	var NEGATIVE_NEW = "SsY20ch0Ri4";
+	var NEGATIVE_RELAPSE = "Mw5NBmlJmJF";
+	var NEGATIVE_UNSP = "pMU7m3rxXDc";
+	var INCONCL_NEW = "RfRabx6yhF6";
+	var INCONCL_RELAPSE = "KhEAlYVy3NQ";
+	var INCONCL_UNSP = "CdVlOzconBD";
 
 	/* Treatment Category options*/
 
@@ -1372,8 +1378,8 @@
 			url: builtUrl
 		}).then(function(data) {
 			//	decide_cl_or_aclzcl_mode(data.dataValues);
-				fillArray(data.dataValues, CL_COLUMN, DE.CL_EPI_Type, ""); 
-				fillArray(data.dataValues, MCL_COLUMN, DE.MCL_EPI_Type, "", DE.MCL_GEN_EPID_cases); 
+				fillArray(data.dataValues, CL_COLUMN, DE.CL_EPI_Type); 
+				fillArray(data.dataValues, MCL_COLUMN, DE.MCL_EPI_Type, DE.MCL_GEN_EPID_cases); 
 		});
 	}
 
@@ -1390,8 +1396,8 @@
 		return $.ajax({
 			url: builtUrl
 		}).then(function(data) {
-				fillArray(data.dataValues, ACL_COLUMN, DE.ACL_EPI_Type, "", ""); 
-				fillArray(data.dataValues, ZCL_COLUMN, DE.ZCL_EPI_Type, "", ""); 
+				fillArray(data.dataValues, ACL_COLUMN, DE.ACL_EPI_Type, ""); 
+				fillArray(data.dataValues, ZCL_COLUMN, DE.ZCL_EPI_Type, ""); 
 		});
 	}
 
@@ -1409,8 +1415,8 @@
 		return $.ajax({
 			url: builtUrl
 		}).then(function(data) {
-				fillArray(data.dataValues, VL_COLUMN, DE.VL_EPI_Type, DE.VL_LAB_RDT_tested_type, "");
-				fillArray(data.dataValues, PKDL_COLUMN, DE.VL_EPI_Type, DE.VL_LAB_RDT_tested_type, DE.PKDL_GEN_EPID_cases);
+				fillArray(data.dataValues, VL_COLUMN, DE.VL_EPI_Type, "");
+				fillArray(data.dataValues, PKDL_COLUMN, DE.VL_EPI_Type, DE.PKDL_GEN_EPID_cases);
 
 				//TODO: move to a proper place
 				fillControlAndSurveillance(data.dataValues);
@@ -1556,9 +1562,8 @@
 	/*
 		column :
 		epiDE : Epidemiology Data getElement
-		diagDE : diagnosis DataElement
 	*/
-	function fillArray(dataValues, column, epiDE, diagDE, epiPKDLMCLCases) {
+	function fillArray(dataValues, column, epiDE, epiPKDLMCLCases) {
 		/* Edidemiology table */
 	
 		// type of cases
@@ -1704,12 +1709,12 @@
 
 		if (column == VL_COLUMN) {
 			// cases diagnosed by RDT and %positive RDT
-			var new_rdt = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_NEW_CASES,diagDE], VALUE_KEY);
-			var unsp_rdt = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED,diagDE], VALUE_KEY);
+			var new_rdt = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_NEW_CASES,VL_Lab_RDT_tested_type], VALUE_KEY);
+			var unsp_rdt = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED, VL_Lab_RDT_tested_type], VALUE_KEY);
 			var total_rdt = add([new_rdt, unsp_rdt]);
 
-			var positive_new_rdt = getValueForKey(dataValues, CC_KEY, POSITIVE_NEW,  VALUE_KEY);
-			var positive_unsp_rdt = getValueForKey(dataValues, CC_KEY, POSITIVE_UNSP,  VALUE_KEY);
+			var positive_new_rdt = getValueForKey(dataValues, [CC_KEY, DE_KEY], [POSITIVE_NEW,VL_Lab_RDT_results_type],  VALUE_KEY);
+			var positive_unsp_rdt = getValueForKey(dataValues, [CC_KEY, DE_KEY], [POSITIVE_UNSP,VL_Lab_RDT_results_type],  VALUE_KEY);
 			var total_positive_rdt = add([positive_new_rdt, positive_unsp_rdt]);
 			
 			diagnosisArray[VL_CASES_DIAGNOSED_ROW][column] = percentageCasesAndTotal(total_positive_rdt, total_cases_type, 0, true);
