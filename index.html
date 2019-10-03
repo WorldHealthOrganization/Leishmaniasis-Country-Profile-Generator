@@ -1512,7 +1512,7 @@
 		var incidence, incidence_text;
 		for (var i = VL_INDEX; i<= ZCL_INDEX ; i++) {
 			// array[row][col], col = index + 1
-			incidence = percentageText(array[NEW_ROW][i+1] / 100, pop_at_risk_values[i], 2, false); 
+			incidence = percentageText(array[NEW_ROW][i+1] * 100, pop_at_risk_values[i], 2, false); // incd = 10000 * cases / pop_at_risk. 2 decimal places
 			incidence_text = (!isNaN(incidence) || typeof incidence === 'string' ) ? incidence : WHEN_NO_DATA; // shows No data if denominator = 0 or no data
 			array[INCD_ROW][i+1] = incidence_text;
 		}
