@@ -1631,7 +1631,7 @@
 		
 		/* only PKDL and MCL TODO: place that if that's true */
 
-		if (column === PKDL_COLUMN || column === MCL_COLUMN){
+		if (column == PKDL_COLUMN || column == MCL_COLUMN){
 			var cases = getValueForKey(dataValues, DE_KEY, epiPKDLMCLCases, VALUE_KEY);
 			array[NEW_ROW][column] = cases;
 			array[RELAPSE_ROW][column] = WHEN_NON_APPLICABLE;
@@ -1661,7 +1661,7 @@
 		/* Diagnosis table */
 		
 		// active and passive screening
-		if (column === PKDL_COLUMN || column === MCL_COLUMN) {
+		if (column == PKDL_COLUMN || column == MCL_COLUMN) {
 			diagnosisArray[SCREENED_ACTIVELY_ROW][column] = WHEN_NON_APPLICABLE;
 			diagnosisArray[SCREENED_PASSIVELY_ROW][column] = WHEN_NON_APPLICABLE;
 		} else {
@@ -1672,7 +1672,7 @@
 		}
 		
 
-		if (column === VL_COLUMN) {
+		if (column == VL_COLUMN) {
 			// cases diagnosed by RDT and %positive RDT
 			var new_rdt = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_NEW_CASES,diagDE], VALUE_KEY);
 			var unsp_rdt = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED,diagDE], VALUE_KEY);
@@ -1699,7 +1699,7 @@
 			diagnosisArray[HIV_COINFECTION_ROW][column] = WHEN_NON_APPLICABLE;
 		}
 
-		if (column === PKDL_COLUMN || column === MCL_COLUMN) {
+		if (column == PKDL_COLUMN || column == MCL_COLUMN) {
 			diagnosisArray[DIRECT_EXAM_DIAGNOSED_ROW][column] = WHEN_NON_APPLICABLE;
 			diagnosisArray[POSITIVE_DIRECT_EXAM_ROW][column] = WHEN_NON_APPLICABLE;
 			diagnosisArray[CLINICALLY_DIAGNOSED_ROW][column] = WHEN_NON_APPLICABLE;
@@ -1735,7 +1735,7 @@
 		var drug_ito_fail, txo_cases;
 		
 
-		if (column === VL_COLUMN || column == CL_COLUMN || column == ACL_COLUMN || column == ZCL_COLUMN){
+		if (column == VL_COLUMN || column == CL_COLUMN || column == ACL_COLUMN || column == ZCL_COLUMN){
 			
 			switch (column){
 				case VL_COLUMN:
