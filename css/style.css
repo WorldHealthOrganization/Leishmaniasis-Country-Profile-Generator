@@ -55,6 +55,13 @@ h6 {
 	font-size: 15px;
 }
 
+.title_section {
+  background-color: #1e80b8;
+  color: white;
+  margin:0;
+  padding:0;
+  height: 26mm;
+}
 
 .comment {
 	font-style: italic;
@@ -73,16 +80,20 @@ h6 {
 }
 
 
-img.center {
+
+
+img.right {
     display: block;
-    margin: 0 auto;
+    margin: 2pt;
+    float: right;
 }
 
 .center_text{
 	text-align: center;
 }
-.align_to_right{
-	text-align:right;
+/* TODO: check if needed */
+.align_to_left{
+	text-align:left;
 }
 
 /* Organize content of div in equal-sized colons*/

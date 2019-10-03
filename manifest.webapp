@@ -1,7 +1,7 @@
 {
-    "version": "0.6 - 26.09.2019",
-    "name": "Leishmaniasis Country Profile Generator",
-    "description": "Leishmaniasis Country Profile Generator",
+    "version": "01.10.2019",
+    "name": "Leishmaniasis CPG - CSS version",
+    "description": "Leishmaniasis Country Profile Generator - CSS version",
     "launch_path": "index.html",
     "appType": "APP",
     "icons": {
