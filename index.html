@@ -284,6 +284,13 @@
 	var LINES_BELOW_LABELS_EPI = [true,false,false,true,true,false,true,false,false,true,false,true];
 	var array = create_2_dim_array(rowTitles.length, rowTitles, LABELS_ON_COLUMNS);
 
+	var IMPORTED_DE = new Array(7);
+	IMPORTED_DE[VL_COLUMN] = "fwoGVaxEDHW";  // VL_EPI_Type_Origin
+	IMPORTED_DE[CL_COLUMN] = "k87tHFKjlsP";  // CL_EPI_Type_Origin
+	IMPORTED_DE[ACL_COLUMN] = "KgntvjxDA5K"; // ACL_EPI_Type_Origin
+	IMPORTED_DE[ZCL_COLUMN] = "PxDoizHyyrk"; // ZCL_EPI_Type_Origin
+
+
 	/* Monthly distribution table constants */
 	var VL_ROW = 0;
 	var CL_ROW = 1;
@@ -1589,19 +1596,19 @@
 
 		//origin distribution
 		var origin_autoc = add([
-			getValueForKey(dataValues,CC_KEY, ORIGIN_AUTOC_NEW, VALUE_KEY),
-			getValueForKey(dataValues,CC_KEY, ORIGIN_AUTOC_REL, VALUE_KEY),
-			getValueForKey(dataValues,CC_KEY, ORIGIN_AUTOC_UNS, VALUE_KEY)
+			getValueForKey(dataValues,[CC_KEY, DE_KEY],[ORIGIN_AUTOC_NEW, IMPORTED_DE[column]], VALUE_KEY),
+			getValueForKey(dataValues,[CC_KEY, DE_KEY],[ORIGIN_AUTOC_REL, IMPORTED_DE[column]], VALUE_KEY),
+			getValueForKey(dataValues,[CC_KEY, DE_KEY],[ORIGIN_AUTOC_UNS, IMPORTED_DE[column]], VALUE_KEY)
 		]);
 		var origin_imported = add([
-			getValueForKey(dataValues,CC_KEY, ORIGIN_IMPORT_NEW, VALUE_KEY),
-			getValueForKey(dataValues,CC_KEY, ORIGIN_IMPORT_REL, VALUE_KEY),
-			getValueForKey(dataValues,CC_KEY, ORIGIN_IMPORT_UNS, VALUE_KEY)
+			getValueForKey(dataValues,[CC_KEY, DE_KEY],[ORIGIN_IMPORT_NEW, IMPORTED_DE[column]], VALUE_KEY),
+			getValueForKey(dataValues,[CC_KEY, DE_KEY],[ORIGIN_IMPORT_REL, IMPORTED_DE[column]], VALUE_KEY),
+			getValueForKey(dataValues,[CC_KEY, DE_KEY],[ORIGIN_IMPORT_UNS, IMPORTED_DE[column]], VALUE_KEY)
 		]);
 		var origin_unknown = add([
-			getValueForKey(dataValues,CC_KEY, ORIGIN_UNKNOWN_NEW, VALUE_KEY),
-			getValueForKey(dataValues,CC_KEY, ORIGIN_UNKNOWN_REL, VALUE_KEY),
-			getValueForKey(dataValues,CC_KEY, ORIGIN_UNKNOWN_UNS, VALUE_KEY)
+			getValueForKey(dataValues,[CC_KEY, DE_KEY],[ORIGIN_UNKNOWN_NEW, IMPORTED_DE[column]], VALUE_KEY),
+			getValueForKey(dataValues,[CC_KEY, DE_KEY],[ORIGIN_UNKNOWN_REL, IMPORTED_DE[column]], VALUE_KEY),
+			getValueForKey(dataValues,[CC_KEY, DE_KEY],[ORIGIN_UNKNOWN_UNS, IMPORTED_DE[column]], VALUE_KEY)
 		]);
 		var total_origin_cases = add([origin_autoc, origin_imported, origin_unknown]);
 		array[IMPORTED_ROW][column] = origin_imported 
