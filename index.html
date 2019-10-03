@@ -1527,24 +1527,30 @@
 	function fillGHO(data){
 
 		var dataValues = data.dataValues;
-		var endemicty_code, endemicity_name;
+		var endemicty_code, endemicity_text;
 
 		for (var i = 0; i<COUNTRY_ENDEMICITY.length; i++){
 			endemicty_code = getValueForKey(dataValues, DE_KEY, COUNTRY_ENDEMICITY[i], VALUE_KEY);
 			switch (endemicty_code){
 				case ENDEMICITY_OS.ENDEMIC_OPTION_CODE:
-					endemicity_name = ENDEMICITY_OS.ENDEMIC_OPTION_NAME;
+					endemicity_text = ENDEMICITY_OS.ENDEMIC_OPTION_NAME;
 					break;				
 				case ENDEMICITY_OS.PREVIOUSLY_REPORTED_OPTION_CODE:
-					endemicity_name = ENDEMICITY_OS.PREVIOUSLY_REPORTED_OPTION_NAME;
+					endemicity_text = ENDEMICITY_OS.PREVIOUSLY_REPORTED_OPTION_NAME;
 					break;				
 				case ENDEMICITY_OS.NO_ENDEMIC_OPTION_CODE:
-					endemicity_name = ENDEMICITY_OS.NO_ENDEMIC_OPTION_NAME;
+					endemicity_text = ENDEMICITY_OS.NO_ENDEMIC_OPTION_NAME;
+					break;
+				case WHEN_NO_DATA:
+					endemicity_text = WHEN_NO_DATA;
+					break;
+				case WHEN_NON_APPLICABLE:
+					endemicity_text = WHEN_NON_APPLICABLE;
 					break;
 				default:
-					endemicity_name = ERROR;
+					endemicity_text = ERROR;
 			}
-			array[COUNTRY_ENDEMICITY_ROW][i+1] = endemicity_name;
+			array[COUNTRY_ENDEMICITY_ROW][i+1] = endemicity_text;
 		}
 	}
 	/*
