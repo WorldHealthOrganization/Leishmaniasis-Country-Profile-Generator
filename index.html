@@ -1661,7 +1661,9 @@
 
 			var male = getValueForKey(dataValues, [CC_KEY, DE_KEY],[MALE, GENDER_DE[column]], VALUE_KEY);
 			var female = getValueForKey(dataValues, [CC_KEY, DE_KEY],[FEMALE, GENDER_DE[column]], VALUE_KEY);
-			array[SEX_ROW][column] = percentageText(female, add([male, female]), 0, true);
+			var unknown_sex = getValueForKey(dataValues, [CC_KEY, DE_KEY],[UNKNOWN_SEX, GENDER_DE[column]], VALUE_KEY);
+			var total_sex_cases = add([male, female, unknown_sex]);
+			array[SEX_ROW][column] = percentageText(female, total_sex_cases, 0, true);
 
 			var age_5 = getValueForKey(dataValues, [CC_KEY, DE_KEY],[AGE_5, AGE_DE[column]], VALUE_KEY);
 			var age_5_14 = getValueForKey(dataValues, [CC_KEY, DE_KEY],[AGE_5_14, AGE_DE[column]], VALUE_KEY);
