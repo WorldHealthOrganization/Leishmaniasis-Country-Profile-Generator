@@ -290,6 +290,14 @@
 	IMPORTED_DE[ACL_COLUMN] = "KgntvjxDA5K"; // ACL_EPI_Type_Origin
 	IMPORTED_DE[ZCL_COLUMN] = "PxDoizHyyrk"; // ZCL_EPI_Type_Origin
 
+	var GENDER_DE = new Array(7);
+	GENDER_DE[VL_COLUMN] = "CaF8iMJFfkg";  // VL_EPI_Type_Gender
+	GENDER_DE[CL_COLUMN] = "tuHHLQp2GnJ";  // CL_EPI_Type_Gender
+	GENDER_DE[ACL_COLUMN] = "FYhYVWmpweT"; // ACL_EPI_Type_Gender
+	GENDER_DE[ZCL_COLUMN] = "mkmMnWroxMh"; // ZCL_EPI_Type_Gender
+	GENDER_DE[PKDL_COLUMN] = "ipWXN3NeXac"; // PKDL_EPID_sex
+	GENDER_DE[MCL_COLUMN] = "Ujpe40hXdvf"; // MCL_EPID_sex
+
 
 	/* Monthly distribution table constants */
 	var VL_ROW = 0;
@@ -551,8 +559,6 @@
 		VL_LAB_HIVstatus_Type : "NTo887FeHdI",
 		PKDL_GEN_EPID_cases : "NdbsWSygpqz",
 		MCL_GEN_EPID_cases : "K8k1LRZagmc",
-		PKDL_EPID_sex: "ipWXN3NeXac",
-		PKDL_EPID_age : "rw4tu6PNGKO",
 		PKDL_LAB_HIV: "sxjZutF1AMx",
 		UNS_USE_PREVIOUS_DATA : "ZjIDKHFwMUw",
 		ACL_GEN_EPID_NEW_FOCUS : "TF0LMI2yPPZ",
@@ -1552,19 +1558,19 @@
 		array[TOTAL_ROW][column] = total_cases_type;
 
 		// sex distribution 
-		var new_unknown = getValueForKey(dataValues, CC_KEY, NEW_UNKNOWN, VALUE_KEY);
-		var rel_unknown = getValueForKey(dataValues, CC_KEY, REL_UNKNOWN, VALUE_KEY);
-		var uns_unknown = getValueForKey(dataValues, CC_KEY, UNS_UNKNOWN, VALUE_KEY);
+		var new_unknown = getValueForKey(dataValues, [CC_KEY, DE_KEY],[NEW_UNKNOWN, GENDER_DE[column]], VALUE_KEY);
+		var rel_unknown = getValueForKey(dataValues, [CC_KEY, DE_KEY],[REL_UNKNOWN, GENDER_DE[column]], VALUE_KEY);
+		var uns_unknown = getValueForKey(dataValues, [CC_KEY, DE_KEY],[UNS_UNKNOWN, GENDER_DE[column]], VALUE_KEY);
 		var unknown = add([new_unknown, rel_unknown, uns_unknown]);
 
-		var new_male = getValueForKey(dataValues, CC_KEY, NEW_MALE, VALUE_KEY);
-		var rel_male = getValueForKey(dataValues, CC_KEY, REL_MALE, VALUE_KEY);
-		var uns_male = getValueForKey(dataValues, CC_KEY, UNS_MALE, VALUE_KEY);
+		var new_male = getValueForKey(dataValues, [CC_KEY, DE_KEY],[NEW_MALE, GENDER_DE[column]], VALUE_KEY);
+		var rel_male = getValueForKey(dataValues, [CC_KEY, DE_KEY],[REL_MALE, GENDER_DE[column]], VALUE_KEY);
+		var uns_male = getValueForKey(dataValues, [CC_KEY, DE_KEY],[UNS_MALE, GENDER_DE[column]], VALUE_KEY);
 		var male = add([new_male, rel_male, uns_male]);
 
-		var new_female = getValueForKey(dataValues, CC_KEY, NEW_FEMALE, VALUE_KEY);
-		var rel_female = getValueForKey(dataValues, CC_KEY, REL_FEMALE, VALUE_KEY);
-		var uns_female = getValueForKey(dataValues, CC_KEY, UNS_FEMALE, VALUE_KEY);
+		var new_female = getValueForKey(dataValues, [CC_KEY, DE_KEY],[NEW_FEMALE, GENDER_DE[column]], VALUE_KEY);
+		var rel_female = getValueForKey(dataValues, [CC_KEY, DE_KEY],[REL_FEMALE, GENDER_DE[column]], VALUE_KEY);
+		var uns_female = getValueForKey(dataValues, [CC_KEY, DE_KEY],[UNS_FEMALE, GENDER_DE[column]], VALUE_KEY);
 		var female = add([new_female, rel_female, uns_female]);
 
 		array[SEX_ROW][column] = percentageText(female, add([male, female, unknown]), 0, true);
@@ -1645,8 +1651,8 @@
 			array[TOTAL_ROW][column] = cases;
 			array[IMPORTED_ROW][column] = WHEN_NON_APPLICABLE; 
 
-			var male = getValueForKey(dataValues, CC_KEY, MALE, VALUE_KEY);
-			var female = getValueForKey(dataValues, CC_KEY, FEMALE, VALUE_KEY);
+			var male = getValueForKey(dataValues, [CC_KEY, DE_KEY],[MALE, GENDER_DE[column]], VALUE_KEY);
+			var female = getValueForKey(dataValues, [CC_KEY, DE_KEY],[FEMALE, GENDER_DE[column]], VALUE_KEY);
 			array[SEX_ROW][column] = percentageText(female, add([male, female]), 0, true);
 
 			var age_5 = getValueForKey(dataValues, CC_KEY, AGE_5, VALUE_KEY);
