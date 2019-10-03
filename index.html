@@ -1502,7 +1502,7 @@
 	function fillPopulationAtRiskArray(data, column){
 		index = column - 1;
 		headerIndex = getHeaderIndex(data.headers, "value");
-		pop_at_risk_values[index] = sumValueForHeader(data, headerIndex);
+		pop_at_risk_values[index] = parseInt(sumValueForHeader(data, headerIndex));
 		percentage =  percentageText(pop_at_risk_values[index], totalPopulation, 0, true);
 
 		array[RISK_ROW][column] = percentage + " " + pop_at_risk_values[index] + " / " + (totalPopulation || WHEN_NO_DATA);
