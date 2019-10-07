@@ -1708,6 +1708,8 @@
 		
 
 		if (column == VL_COLUMN) {
+			var total_cases_type_new_and_unsp = add([new_cases, unspecified]);
+
 			// cases diagnosed by RDT and %positive RDT
 			var new_rdt = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_NEW_CASES,VL_Lab_RDT_tested_type], VALUE_KEY);
 			var unsp_rdt = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED, VL_Lab_RDT_tested_type], VALUE_KEY);
@@ -1717,7 +1719,7 @@
 			var positive_unsp_rdt = getValueForKey(dataValues, [CC_KEY, DE_KEY], [POSITIVE_UNSP,VL_Lab_RDT_results_type],  VALUE_KEY);
 			var total_positive_rdt = add([positive_new_rdt, positive_unsp_rdt]);
 			
-			diagnosisArray[VL_CASES_DIAGNOSED_ROW][column] = percentageCasesAndTotal(total_positive_rdt, total_cases_type, 0, true);
+			diagnosisArray[VL_CASES_DIAGNOSED_ROW][column] = percentageCasesAndTotal(total_positive_rdt, total_cases_type_new_and_unsp, 0, true);
 			diagnosisArray[POSITIVE_RDT_ROW][column] = percentageCasesAndTotal(total_positive_rdt, total_rdt, 0, true);
 
 			// percentage of cases with HIV-VL coinfection
@@ -3147,7 +3149,7 @@
 				autocompleteSearcher("targetCountry", organisationUnits, doNothing, 2, 200);
 
 				country_selector_open();
-				DEBUG_AutomaticallyfillInitialForm();
+				//DEBUG_AutomaticallyfillInitialForm();
 
 			});
 		
