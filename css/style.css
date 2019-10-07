@@ -153,7 +153,8 @@ th {
     column-count:2;
     -moz-column-count:2;
     -webkit-column-count:2;
-    
+    break-inside: avoid-column;
+    -webkit-column-break-inside: avoid;
     width:900px;
 }
 

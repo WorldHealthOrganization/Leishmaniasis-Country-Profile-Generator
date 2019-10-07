@@ -442,6 +442,24 @@
 	var CLINICALLY_DIAGNOSED_ROW = 6;
 	var HIV_COINFECTION_ROW = 7;
 
+	var DIRECTEXAM_DE = new Array(5);
+	DIRECTEXAM_DE[VL_COLUMN] = "RrKpXTbayoB";  // VL_Lab_parasito_tested_type
+	DIRECTEXAM_DE[CL_COLUMN] = "Cj4t9M02Stv";  // CL_LAB_parasito_Suspects
+	DIRECTEXAM_DE[ACL_COLUMN] = "VKWHFyDvZxg"; // ACL_Lab_Parasito_Suspects
+	DIRECTEXAM_DE[ZCL_COLUMN] = "LvqN7RkPdc6"; // ZCL_Lab_Parasito_Suspects
+
+	var POSITIVESLIDES_DE = new Array(5);
+	POSITIVESLIDES_DE[VL_COLUMN] = "Qc7ujS567UL";  // VL_LAB_parasito_result_type
+	POSITIVESLIDES_DE[CL_COLUMN] = "fXPoRfJbFsE";  // CL_LAB_Parasito_Results
+	POSITIVESLIDES_DE[ACL_COLUMN] = "KSidYi6vKfR"; // ACL_Lab_Parasito_Results
+	POSITIVESLIDES_DE[ZCL_COLUMN] = "wyfYiCFojPL"; // ZCL_Lab_Parasito_Results
+
+	var LABCLINICAL_DE = new Array(5);
+	LABCLINICAL_DE[VL_COLUMN] = "BAsexzzzJZC";  // VL_LAB_clinical
+	LABCLINICAL_DE[CL_COLUMN] = "";  // 
+	LABCLINICAL_DE[ACL_COLUMN] = ""; // 
+	LABCLINICAL_DE[ZCL_COLUMN] = ""; // 
+
 	var diagnosisLabels = [	"Number of people screened actively for:",
 							"Number of people screened passively for:",
 							"VL cases diagnosed by RDT<sup>*</sup><br>(%, RDT+/total VL cases):",
@@ -560,9 +578,6 @@
 		ACL_EPI_Type : 	"f1bBSpuIyzD",
 		ZCL_EPI_Type : 	"Ta96pnXcAum",
 		MCL_EPI_Type : 	"K8k1LRZagmc",
-		VL_LAB_parasito_tested_type : "RrKpXTbayoB",
-		VL_LAB_parasito_result_type : "Qc7ujS567UL",
-		VL_LAB_clinical : "BAsexzzzJZC",
 		VL_LAB_HIVstatus_Type : "NTo887FeHdI",
 		PKDL_GEN_EPID_cases : "NdbsWSygpqz",
 		MCL_GEN_EPID_cases : "K8k1LRZagmc",
@@ -1578,42 +1593,35 @@
 
 		// sex distribution 
 		var new_unknown = getValueForKey(dataValues, [CC_KEY, DE_KEY],[NEW_UNKNOWN, GENDER_DE[column]], VALUE_KEY);
-		var rel_unknown = getValueForKey(dataValues, [CC_KEY, DE_KEY],[REL_UNKNOWN, GENDER_DE[column]], VALUE_KEY);
 		var uns_unknown = getValueForKey(dataValues, [CC_KEY, DE_KEY],[UNS_UNKNOWN, GENDER_DE[column]], VALUE_KEY);
-		var unknown = add([new_unknown, rel_unknown, uns_unknown]);
+		var unknown = add([new_unknown, uns_unknown]);
 
 		var new_male = getValueForKey(dataValues, [CC_KEY, DE_KEY],[NEW_MALE, GENDER_DE[column]], VALUE_KEY);
-		var rel_male = getValueForKey(dataValues, [CC_KEY, DE_KEY],[REL_MALE, GENDER_DE[column]], VALUE_KEY);
 		var uns_male = getValueForKey(dataValues, [CC_KEY, DE_KEY],[UNS_MALE, GENDER_DE[column]], VALUE_KEY);
-		var male = add([new_male, rel_male, uns_male]);
+		var male = add([new_male, uns_male]);
 
 		var new_female = getValueForKey(dataValues, [CC_KEY, DE_KEY],[NEW_FEMALE, GENDER_DE[column]], VALUE_KEY);
-		var rel_female = getValueForKey(dataValues, [CC_KEY, DE_KEY],[REL_FEMALE, GENDER_DE[column]], VALUE_KEY);
 		var uns_female = getValueForKey(dataValues, [CC_KEY, DE_KEY],[UNS_FEMALE, GENDER_DE[column]], VALUE_KEY);
-		var female = add([new_female, rel_female, uns_female]);
+		var female = add([new_female, uns_female]);
 
 		array[SEX_ROW][column] = percentageText(female, add([male, female, unknown]), 0, true);
 		
 		//age distribution 
 		var new_under_5 = getValueForKey(dataValues, [CC_KEY, DE_KEY],[NEW_UNDER_5, AGE_DE[column]], VALUE_KEY);
-		var rel_under_5 = getValueForKey(dataValues, [CC_KEY, DE_KEY],[REL_UNDER_5, AGE_DE[column]], VALUE_KEY);
 		var uns_under_5 = getValueForKey(dataValues, [CC_KEY, DE_KEY],[UNS_UNDER_5, AGE_DE[column]], VALUE_KEY);
-		var under_5 =  add([new_under_5, rel_under_5, uns_under_5]);
+		var under_5 =  add([new_under_5, uns_under_5]);
 
 		var new_5_14 = getValueForKey(dataValues, [CC_KEY, DE_KEY],[NEW_5_14, AGE_DE[column]], VALUE_KEY);
-		var rel_5_14 = getValueForKey(dataValues, [CC_KEY, DE_KEY],[REL_5_14, AGE_DE[column]], VALUE_KEY);
 		var uns_5_14 = getValueForKey(dataValues, [CC_KEY, DE_KEY],[UNS_5_14, AGE_DE[column]], VALUE_KEY);
-		var _5_14 =  add([new_5_14, rel_5_14, uns_5_14]);
+		var _5_14 =  add([new_5_14, uns_5_14]);
 
 		var new_over_14 = getValueForKey(dataValues, [CC_KEY, DE_KEY],[NEW_OVER_14, AGE_DE[column]], VALUE_KEY);
-		var rel_over_14 = getValueForKey(dataValues, [CC_KEY, DE_KEY],[REL_OVER_14, AGE_DE[column]], VALUE_KEY);
 		var uns_over_14 = getValueForKey(dataValues, [CC_KEY, DE_KEY],[UNS_OVER_14, AGE_DE[column]], VALUE_KEY);
-		var over_14 =  add([new_over_14, rel_over_14, uns_over_14]);
+		var over_14 =  add([new_over_14, uns_over_14]);
 
 		var new_age_unknown = getValueForKey(dataValues, [CC_KEY, DE_KEY],[NEW_AGE_UNKNOWN, AGE_DE[column]], VALUE_KEY);
-		var rel_age_unknown = getValueForKey(dataValues, [CC_KEY, DE_KEY],[REL_AGE_UNKNOWN, AGE_DE[column]], VALUE_KEY);
 		var uns_age_unknown = getValueForKey(dataValues, [CC_KEY, DE_KEY],[UNS_AGE_UNKNOWN, AGE_DE[column]], VALUE_KEY);
-		var age_unknown =  add([new_age_unknown, rel_age_unknown, uns_age_unknown]);
+		var age_unknown =  add([new_age_unknown, uns_age_unknown]);
 
 		var total_age_cases = add([under_5, _5_14, over_14, age_unknown]);
 
@@ -1744,25 +1752,25 @@
 		else {
 		
 			// Direct exam
-			var direct_exam_new = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_NEW_CASES, DE.VL_LAB_parasito_tested_type], VALUE_KEY);
-			var direct_exam_rel = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_RELAPSE, DE.VL_LAB_parasito_tested_type], VALUE_KEY);
-			var direct_exam_uns = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED, DE.VL_LAB_parasito_tested_type], VALUE_KEY);
+			var direct_exam_new = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_NEW_CASES, DIRECTEXAM_DE[column]], VALUE_KEY);
+			var direct_exam_rel = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_RELAPSE, DIRECTEXAM_DE[column]], VALUE_KEY);
+			var direct_exam_uns = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED, DIRECTEXAM_DE[column]], VALUE_KEY);
 			var direct_exam_total = add([direct_exam_new, direct_exam_rel, direct_exam_uns]);
 
 			diagnosisArray[DIRECT_EXAM_DIAGNOSED_ROW][column] = percentageCasesAndTotal(direct_exam_total, total_cases_type, 0, true);
 
 			//Positive slides
-			var positive_slides_new = getValueForKey(dataValues,[CC_KEY, DE_KEY],[POSITIVE_NEW, DE.VL_LAB_parasito_result_type], VALUE_KEY); 
-			var positive_slides_rel = getValueForKey(dataValues,[CC_KEY, DE_KEY],[POSITIVE_RELAPSE, DE.VL_LAB_parasito_result_type], VALUE_KEY); 
-			var positive_slides_uns = getValueForKey(dataValues,[CC_KEY, DE_KEY],[POSITIVE_UNSP, DE.VL_LAB_parasito_result_type], VALUE_KEY); 
+			var positive_slides_new = getValueForKey(dataValues,[CC_KEY, DE_KEY],[POSITIVE_NEW, POSITIVESLIDES_DE[column]], VALUE_KEY); 
+			var positive_slides_rel = getValueForKey(dataValues,[CC_KEY, DE_KEY],[POSITIVE_RELAPSE, POSITIVESLIDES_DE[column]], VALUE_KEY); 
+			var positive_slides_uns = getValueForKey(dataValues,[CC_KEY, DE_KEY],[POSITIVE_UNSP, POSITIVESLIDES_DE[column]], VALUE_KEY); 
 			var positive_slides_total = add([positive_slides_new, positive_slides_rel, positive_slides_uns]);
 
 			diagnosisArray[POSITIVE_DIRECT_EXAM_ROW][column] = percentageCasesAndTotal(positive_slides_total, direct_exam_total, 0, true);
 
 			//Cases diagnosed clinically
-			var clinical_cases_new = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_NEW_CASES, DE.VL_LAB_clinical], VALUE_KEY);
-			var clinical_cases_rel = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_RELAPSE, DE.VL_LAB_clinical], VALUE_KEY);
-			var clinical_cases_uns = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED, DE.VL_LAB_clinical], VALUE_KEY);
+			var clinical_cases_new = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_NEW_CASES, LABCLINICAL_DE[column]], VALUE_KEY);
+			var clinical_cases_rel = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_RELAPSE, LABCLINICAL_DE[column]], VALUE_KEY);
+			var clinical_cases_uns = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED, LABCLINICAL_DE[column]], VALUE_KEY);
 			var clinical_cases_total = add([clinical_cases_new, clinical_cases_rel, clinical_cases_uns]);
 
 			diagnosisArray[CLINICALLY_DIAGNOSED_ROW][column] = percentageCasesAndTotal(clinical_cases_total, total_cases_type, 0, true);
@@ -3149,7 +3157,7 @@
 				autocompleteSearcher("targetCountry", organisationUnits, doNothing, 2, 200);
 
 				country_selector_open();
-				//DEBUG_AutomaticallyfillInitialForm();
+				DEBUG_AutomaticallyfillInitialForm();
 
 			});
 		
