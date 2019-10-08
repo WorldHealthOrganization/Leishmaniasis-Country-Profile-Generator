@@ -309,23 +309,24 @@
 //
 	/* Monthly distribution table constants */
 	var VL_ROW = 0;
-	var CL_ROW = 1;
-	var VL_PREVIOUS_YEAR_ROW = 2;
+	var VL_PREVIOUS_YEAR_ROW = 1;
+	var CL_ROW = 2;
 	var CL_PREVIOUS_YEAR_ROW = 3;
 	var ACL_ROW = 4;
-	var ZCL_ROW = 5;
-	var ACL_PREVIOUS_YEAR_ROW = 6;
+	var ACL_PREVIOUS_YEAR_ROW = 5;
+	var ZCL_ROW = 6;
 	var ZCL_PREVIOUS_YEAR_ROW = 7;
 
-	var MONTHLY_LABELS = ["VL",
-							"CL",
-							"VL (previous year)",
-							"CL (previous year)",
-							"ACL",
-							"ZCL",
-							"ACL (previous year)",
-							"ZCL (previous year)"
-							];
+	var MONTHLY_LABELS = new Array(8);
+	MONTHLY_LABELS[VL_ROW] = "VL";
+	MONTHLY_LABELS[VL_PREVIOUS_YEAR_ROW] = "VL (previous year)";
+	MONTHLY_LABELS[CL_ROW] = "CL";
+	MONTHLY_LABELS[CL_PREVIOUS_YEAR_ROW] = "CL (previous year)";
+	MONTHLY_LABELS[ACL_ROW] = "ACL";
+	MONTHLY_LABELS[ACL_PREVIOUS_YEAR_ROW] = "ACL (previous year)";
+	MONTHLY_LABELS[ZCL_ROW] = "ZCL";
+	MONTHLY_LABELS[ZCL_PREVIOUS_YEAR_ROW] = "ZCL (previous year)";
+
 	var LINES_BELOW_LABELS_MONTHLY = [true,true,true,true,true,true,true,true];
 
 	var monthlyArray = create_2_dim_array(MONTHLY_LABELS.length, MONTHLY_LABELS, LABELS_ON_COLUMNS);
@@ -2512,7 +2513,7 @@
 			$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(CL_COLUMN-1)).trigger('click');
 
 			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+CL_ROW).trigger('click');
-			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+CL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
+
 			// CL charts
 			$('#'+CHART_PREFIX+BUTTON_PREFIX+"0").trigger('click');
 			$('#'+CHART_PREFIX+BUTTON_PREFIX+"3").trigger('click');
@@ -2524,7 +2525,6 @@
 			$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(VL_COLUMN-1)).trigger('click');
 
 			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+VL_ROW).trigger('click');//.prop('checked', false);
-			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+VL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
 			$('#'+CHART_PREFIX+BUTTON_PREFIX+"2").trigger('click');
 			$('#'+CHART_PREFIX+BUTTON_PREFIX+"5").trigger('click');
 			$('#'+MAP_PREFIX+BUTTON_PREFIX+ VL_INDEX ).trigger('click');
@@ -2537,8 +2537,6 @@
 
 			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+ACL_ROW).trigger('click');
 			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+ZCL_ROW).trigger('click');
-			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+ACL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
-			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+ZCL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
 			
 			$('#'+CHART_PREFIX+BUTTON_PREFIX+"1").trigger('click');
 			$('#'+CHART_PREFIX+BUTTON_PREFIX+"4").trigger('click');
@@ -2548,9 +2546,14 @@
 		}
 
 		// PKDL and MCL always deactivated
-		 $('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(PKDL_COLUMN-1)).trigger('click');
-		 $('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(MCL_COLUMN-1)).trigger('click');
-
+		$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(PKDL_COLUMN-1)).trigger('click');
+		$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(MCL_COLUMN-1)).trigger('click');
+		
+		// Monthly previous year rows, always deactivated by default
+		$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+VL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
+		$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+CL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
+		$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+ACL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
+		$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+ZCL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
 
 		$(':checkbox').button( "refresh" );
 
