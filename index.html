@@ -1504,31 +1504,15 @@
 		});
 	}
 
-	function getNewCases(dimension, column){
-		var params = {
-			dimension: ["dx:"+dimension,"pe:"+ds.year, "B9bBfRcF6jb:aD1KD82UFB1"],
-			filter: ["ou:"+ds.countryID],
-			displayProperty : "NAME",
-			skipMeta:"true"
-		}
-		for (var i=1; i<historicLength; i++){
-			params.dimension[1] +=";"+(ds.year-i);
-		}
-		var builtUrl = buildAPIUrl(ANALYTICS, params);
-		return $.ajax({
-			url: builtUrl
-		}).then(function(data) {
-				fillNewCasesArray(data, column);
-		});
-	}
-
 	/**
+	* gets analytics data from dx for pe ds.year
+	* filter: ou: ds.countryID
 	* thenFunction(data, column)
 	*/
-	function getIncidenceForCharts(indicator, column){
+	function getAnalyticsDataForDX(dx_dimension, column, thenFunction){
 
 		var params = {
-			dimension: ["dx:"+indicator,"pe:"+ds.year],
+			dimension: ["dx:"+dx_dimension,"pe:"+ds.year],
 			filter: ["ou:"+ds.countryID],
 			displayProperty : "NAME",
 			skipMeta:"true"
@@ -1540,7 +1524,7 @@
 		return $.ajax({
 			url: builtUrl
 		}).then(function(data) {
-			fillIncidenceChartArray(data, column);
+			thenFunction(data, column)
 		});
 	}
 
@@ -3544,14 +3528,14 @@
 			generateMapAndLegend(ACL_INDEX),
 			generateMapAndLegend(ZCL_INDEX),
 			get_gho_ntds(),
-			getIncidenceForCharts(INCIDENCE_FOR_CHARTS[VL_INDEX], VL_COLUMN),
-			getIncidenceForCharts(INCIDENCE_FOR_CHARTS[CL_INDEX], CL_COLUMN),
-			getIncidenceForCharts(INCIDENCE_FOR_CHARTS[ACL_INDEX], ACL_COLUMN),
-			getIncidenceForCharts(INCIDENCE_FOR_CHARTS[ZCL_INDEX], ZCL_COLUMN),
-			getNewCases(DE.VL_EPI_Type, VL_COLUMN),
-			getNewCases(DE.CL_EPI_Type, CL_COLUMN),
-			getNewCases(DE.ACL_EPI_Type, ACL_COLUMN),
-			getNewCases(DE.ZCL_EPI_Type, ZCL_COLUMN),
+			getAnalyticsDataForDX(INCIDENCE_FOR_CHARTS[VL_INDEX], VL_COLUMN, fillIncidenceChartArray),
+			getAnalyticsDataForDX(INCIDENCE_FOR_CHARTS[CL_INDEX], CL_COLUMN,fillIncidenceChartArray),
+			getAnalyticsDataForDX(INCIDENCE_FOR_CHARTS[ACL_INDEX], ACL_COLUMN, fillIncidenceChartArray),
+			getAnalyticsDataForDX(INCIDENCE_FOR_CHARTS[ZCL_INDEX], ZCL_COLUMN, fillIncidenceChartArray),
+			getAnalyticsDataForDX(DE.VL_EPI_Type + "." + TYPE_NEW_CASES, VL_COLUMN, fillNewCasesArray),
+			getAnalyticsDataForDX(DE.CL_EPI_Type + "." + TYPE_NEW_CASES, CL_COLUMN, fillNewCasesArray),
+			getAnalyticsDataForDX(DE.ACL_EPI_Type + "." + TYPE_NEW_CASES, ACL_COLUMN, fillNewCasesArray),
+			getAnalyticsDataForDX(DE.ZCL_EPI_Type + "." + TYPE_NEW_CASES, ZCL_COLUMN, fillNewCasesArray),
 			get_monthly_cases_for(CL_MONTHLY, ds.year, DE_MONTHLY.CL_CASES, CL_ROW),
 			get_monthly_cases_for(CL_MONTHLY, ds.year-1, DE_MONTHLY.CL_CASES, CL_PREVIOUS_YEAR_ROW),
 			get_monthly_cases_for(VL_MONTHLY, ds.year, DE_MONTHLY.VL_CASES, VL_ROW),
