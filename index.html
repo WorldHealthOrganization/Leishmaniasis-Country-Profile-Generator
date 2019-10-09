@@ -1332,8 +1332,8 @@
 
 			var shift = ds_indexes.length;
 			for (i = shift; i < shift + p_indexes.length; i++) {
-				pinfo[p_indexes[i-shift]][DE_IDX] = [...result[i].listGrid.rows];
-				de_assigned = de_assigned.concat(result[i].listGrid.rows);
+				pinfo[p_indexes[i-shift]][DE_IDX] = [...result[i+shift].listGrid.rows];
+				de_assigned = de_assigned.concat(result[i+shift].listGrid.rows);
 			}
 			return;
 		});
