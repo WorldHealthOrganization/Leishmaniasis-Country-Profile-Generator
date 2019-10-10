@@ -135,7 +135,7 @@
 	var CL_CHART_LEGEND = "CL ";	
 	var ACL_CHART_LEGEND = "ACL ";
 	var ZCL_CHART_LEGEND = "ZCL ";
-	var TOUTCOME_TABLE_FIRST_COLUMNS = "TREATMENT OUTCOME";
+	var TOUTCOME_TABLE_FIRST_COLUMNS = "INITIAL TREATMENT OUTCOME FOR NEW CASES";
 
 	var CHART_CHECKBOXES_LABELS = ["CL monthly", "AZCL monthly", "VL monthly", "CL yearly", "AZCL yearly", "VL yearly" ];
 
@@ -512,19 +512,19 @@
 	var tamArray = create_2_dim_array(TAM_LABELS.length, TAM_LABELS, LABELS_ON_COLUMNS);
 
 	/* Treatment outcome table */
-	
-	var INITIAL_CURE_RATE_ROW = 0;
-	var FAILURE_RATE_ROW = 1;
-	var CASE_FATALITY_ROW = 2;
-	var PROPORTION_TREATED_CASES_ROW = 3;
+
+	var PROPORTION_TREATED_CASES_ROW = 0;
+	var INITIAL_CURE_RATE_ROW = 1;
+	var FAILURE_RATE_ROW = 2;
+	var CASE_FATALITY_ROW = 3;
 
 	var toutcomeLabels = new Array(4);
-	toutcomeLabels[INITIAL_CURE_RATE_ROW] = "Initial cure rate*(%, # cases initially cured /total cases):";
-	toutcomeLabels[FAILURE_RATE_ROW] = "Failure rate*(%, # patients with treatment failure /total cases):";
-	toutcomeLabels[CASE_FATALITY_ROW] = "Case fatality rate*(%, # patients who died/ total cases):";
-	toutcomeLabels[PROPORTION_TREATED_CASES_ROW] = "Proportion of cases treated*(%, # treated cases/ total cases):";
+	toutcomeLabels[PROPORTION_TREATED_CASES_ROW] = "Proportion of cases treated (%, # treated cases/ total cases):";
+	toutcomeLabels[INITIAL_CURE_RATE_ROW] = "Initial cure rate (%, # cases initially cured /total cases):";
+	toutcomeLabels[FAILURE_RATE_ROW] = "Failure rate (%, # patients with treatment failure /total cases):";
+	toutcomeLabels[CASE_FATALITY_ROW] = "Case fatality rate (%, # patients who died/ total cases):";
 
-	var LINES_BELOW_LABELS_TREAT = [false, false, true, true];
+	var LINES_BELOW_LABELS_TREAT = [true, false, false, true];
 	var toutcomeArray = create_2_dim_array(toutcomeLabels.length, toutcomeLabels, LABELS_ON_COLUMNS);
 	
 	var historicLength = HISTORIC_DEFAULT_VALUE;
@@ -532,10 +532,16 @@
 	var historicNewCases = create_2_dim_array(5,"",LABELS_ON_ROWS);
 
 	var ITxO_DRUG_DE = new Array(5);
-	ITxO_DRUG_DE[VL_COLUMN] = "ossDxe1C4F2";  // VL_LAB_clinical
-	ITxO_DRUG_DE[CL_COLUMN] = "OjY8uiHVetP";  // 
-	ITxO_DRUG_DE[ACL_COLUMN] = "GXyfQMlaXEn"; // 
-	ITxO_DRUG_DE[ZCL_COLUMN] = "GPG5qCJ65uO"; // 
+	ITxO_DRUG_DE[VL_COLUMN] = "ossDxe1C4F2";  // VL_INIT_OUTCOME_Drug_Type
+	ITxO_DRUG_DE[CL_COLUMN] = "OjY8uiHVetP";  // CL_ITxO_Tx-route
+	ITxO_DRUG_DE[ACL_COLUMN] = "GXyfQMlaXEn"; // ACL_ITxO_Tx-drug
+	ITxO_DRUG_DE[ZCL_COLUMN] = "GPG5qCJ65uO"; // ZCL_ITxO_Tx-drug
+
+	var ITx_TREAT_DE = new Array(5);
+	ITx_TREAT_DE[VL_COLUMN] = "PUD4SrCGSZE";  // VL_TREAT_completed
+	ITx_TREAT_DE[CL_COLUMN] = "daJVc4WMhye";  // CL_TREAT_completed
+	ITx_TREAT_DE[ACL_COLUMN] = "Msp9T50iUXO"; // ACL_TREAT_completed
+	ITx_TREAT_DE[ZCL_COLUMN] = "KYuMdxHQTqQ"; // ZCL_TREAT_completed
 
 	// stores all de assigned through DS or P
 	var de_assigned = new Array();
@@ -807,120 +813,171 @@
 
 	/* Treatment Category options*/
 
+	// CASES TREATED
+	// TC = Treatment completion
+	// TS = Treatment stopped
+	// DF = Defaulter
+	// TCU = Treatment completion Unknown
+	// TU = Type Unspecified
+
+	var TC_NEW_AMB = "bnCrrajgtX5";
+	var TC_NEW_PEN = "gRTakQscDJY";
+	var TC_NEW_GLU = "dyYq639mEqT";
+	var TC_NEW_OTH_CL = "pBsYGNsthCC";
+	var TC_NEW_OTH_VL = "UURE2kB91oN";
+	var TC_NEW_SSG = "E8PK0zzPBiH";
+	var TC_NEW_SSG_PARO = "KuHI7iVATCh";
+	var TC_NEW_UNS_CL = "Q1vF8y0bztu";
+	var TC_NEW_UNS_VL = "PlEbdlmw1pO";
+	var TC_TU_AMB = "InmuSdyhb1U";
+	var TC_TU_PEN = "igBVQ4DWBGF";
+	var TC_TU_GLU = "bsQflqktxyc";
+	var TC_TU_OTH_CL = "S63grceYBqo";
+	var TC_TU_OTH_VL = "FYV47V0Rkor";
+	var TC_TU_SSG = "Qfq5NDRnGvp";
+	var TC_TU_SSG_PARO = "kOTjTkSwAep";
+	var TC_TU_UNS_CL = "WZorSYUSKaQ";
+	var TC_TU_UNS_VL = "WnQaCMfmQQD";
+
+	var TS_NEW_AMB = "zxdYzhp3ZNp";
+	var TS_NEW_PEN = "xZZLr3i2yk0";
+	var TS_NEW_GLU = "Ypkqcw5Eb8t";
+	var TS_NEW_OTH_CL = "tBIXAAbO8EY";
+	var TS_NEW_OTH_VL = "DiolMOyz7x5";
+	var TS_NEW_SSG = "ulTYt9LEAPQ";
+	var TS_NEW_SSG_PARO = "ep91WzkXD0L";
+	var TS_NEW_UNS_CL = "H75DmW4bLNM";
+	var TS_NEW_UNS_VL = "V2IHB9QqfXw";
+	var TS_TU_AMB = "Z4kQDoXQnWW";
+	var TS_TU_PEN = "d0SFWP3mLrT";
+	var TS_TU_GLU = "sDlYJToG416";
+	var TS_TU_OTH_CL = "HlXID2ESyIP";
+	var TS_TU_OTH_VL = "kFTjQ5waXAf";
+	var TS_TU_SSG = "E8TkNkpln7Q";
+	var TS_TU_SSG_PARO = "I01unV23BJ4";
+	var TS_TU_UNS_CL = "FQVdkM5VCSx";
+	var TS_TU_UNS_VL = "LWuGJ1pZqQR";
+
+	var DF_NEW_AMB = "ufAKq4qeJtn";
+	var DF_NEW_PEN = "sPeukE0CE5z";
+	var DF_NEW_GLU = "g939SO0KeFv";
+	var DF_NEW_OTH_CL = "Q839QbyCrRg";
+	var DF_NEW_OTH_VL = "odRNeWJqY7H";
+	var DF_NEW_SSG = "mqmiarkbNgw";
+	var DF_NEW_SSG_PARO = "sCgL0i3GYkT";
+	var DF_NEW_UNS_CL = "TqEjzX52SUs";
+	var DF_NEW_UNS_VL = "xeb3fGZnAtp";
+	var DF_TU_AMB = "F6xv8YNVwkf";
+	var DF_TU_PEN = "RwuB6g5iCRT";
+	var DF_TU_GLU = "TnhEhp2J7vu";
+	var DF_TU_OTH_CL = "LFD0LuKGaOp";
+	var DF_TU_OTH_VL = "qNgwJK0XCIa";
+	var DF_TU_SSG = "GMJmpnPmQ9b";
+	var DF_TU_SSG_PARO = "KKHo1JkzVi4";
+	var DF_TU_UNS_CL = "iSYvTFeZWhx";
+	var DF_TU_UNS_VL = "IhmKK2kipPu";
+
+	var TCU_NEW_AMB = "mACKRdtoJ7M";
+	var TCU_NEW_PEN = "h0cVnHCphDk";
+	var TCU_NEW_GLU = "Jxkv5iLdr9f";
+	var TCU_NEW_OTH_CL = "ivx5atBT8Gv";
+	var TCU_NEW_OTH_VL = "ce0VEL7SZtI";
+	var TCU_NEW_SSG = "Y7wlNd4k7T9";
+	var TCU_NEW_SSG_PARO = "KF5q0raRqUN";
+	var TCU_NEW_UNS_CL = "oD7L9CLpzzy";
+	var TCU_NEW_UNS_VL = "HvNKLhGlgbP";
+	var TCU_TU_AMB = "zyUHgk1XHEH";
+	var TCU_TU_PEN = "s7pbfOgI80s";
+	var TCU_TU_GLU = "SEFYcmD9CLX";
+	var TCU_TU_OTH_CL = "Vpe0r40ttGI";
+	var TCU_TU_OTH_VL = "AxYXS02Lbwz";
+	var TCU_TU_SSG = "lYbY1dBQWgE";
+	var TCU_TU_SSG_PARO = "icBCqE7Vqt6";
+	var TCU_TU_UNS_CL = "Tdt8fzM5CDv";
+	var TCU_TU_UNS_VL = "Ac9PMas0qgT";
+
+
+
+	// Outcome
+
 	// CC for drugs Initial Cure Treatment outcome
 	var IC_NEW_AMB = "MfebCxR7NDr"; // VL
-	// var IC_REL_AMB = "hth2R9SJz82";
 	var IC_UNS_AMB = "Da9OoxaeVxn";
 	var IC_NEW_GLU = "wuSFWEdQuZH"; // CL, ACL, ZCL
-	// var IC_REL_GLU = "YDwo3vJzajZ";
 	var IC_UNS_GLU = "edJOdz8AWve";
 	var IC_NEW_PEN = "iHN06Kmhvdx"; // VL
-	// var IC_REL_PEN = "uBGki6PObq9";
 	var IC_UNS_PEN = "SmTniJtU9yc";
 	var IC_NEW_SSG = "Akgp3RvT6l3"; // CL, ACL, ZCL
-	// var IC_REL_SSG = "bpemRtAe7i6";
 	var IC_UNS_SSG = "BjLReGCNxwk";
 	var IC_NEW_SSG_PARO = "S4YOw3gkmFa"; // VL
-	// var IC_REL_SSG_PARO = "Bdib5OzEzQD";
 	var IC_UNS_SSG_PARO = "zGPEo9L7srN";
 	var VL_IC_NEW_OTH = "ODhB7M16KTG"; // VL
-	// var VL_IC_REL_OTH = "BCZEcpKCkz5";
 	var VL_IC_UNS_OTH = "T6LBaVMXq4E";
 	var VL_IC_NEW_UNS = "kT60pxOR9DT"; // VL
-	// var VL_IC_REL_UNS = "ukcVceryxyL";
 	var VL_IC_UNS_UNS = "LAkANoW73LV";	
 	var CL_IC_NEW_OTH = "OLyLq0AkHEQ"; // CL, ACL, ZCL
-	// var CL_IC_REL_OTH = "pI4AXpQTJG1";
 	var CL_IC_UNS_OTH = "EnhXnkfyLWa";
 	var CL_IC_NEW_UNS = "eYp1LtWKuon"; // CL, ACL, ZCL
-	// var CL_IC_REL_UNS = "e0zbymSfSQI";
 	var CL_IC_UNS_UNS = "FVAmnbEI6kn";
 
 	// CC for drugs failure Initial Treatment outcome
 	var FAIL_NEW_AMB = "T2MDkJzCKf7"; // VL
-	// var FAIL_REL_AMB = "W9ZHKO3NeZp";
 	var FAIL_UNS_AMB = "Pr6aEN8PC5M";
 	var FAIL_NEW_GLU = "WJf6H2HVZKN"; // CL, ACL, ZCL
-	// var FAIL_REL_GLU = "oefw5w6qZBo";
 	var FAIL_UNS_GLU = "hggEQ5Xm0cN";
 	var FAIL_NEW_PEN = "aeBFt3rX6NP"; // VL
-	// var FAIL_REL_PEN = "ds0XBIt6PoY";
 	var FAIL_UNS_PEN = "BWqkFDITG0V";
 	var FAIL_NEW_SSG = "dzqOoSKXPKL"; // CL, ACL, ZCL
-	// var FAIL_REL_SSG = "cD3SqlrJPjF";
 	var FAIL_UNS_SSG = "jFmiZOTK9rc";
 	var FAIL_NEW_SSG_PARO = "if1h2SRcku2"; // VL
-	// var FAIL_REL_SSG_PARO = "fZYrDUNI6nm";
 	var FAIL_UNS_SSG_PARO = "azirNffjDgP";
 	var VL_FAIL_NEW_OTH = "WUWQqRMnWDq"; // VL
-	// var VL_FAIL_REL_OTH = "EZox1NNUf3S";
 	var VL_FAIL_UNS_OTH = "yaX1pqDkpQg";
 	var VL_FAIL_NEW_UNS = "IDinKF2U3Ck"; // VL
-	// var VL_FAIL_REL_UNS = "KpStyHyHmxT";
 	var VL_FAIL_UNS_UNS = "bmukoyyu4Pr";	
 	var CL_FAIL_NEW_OTH = "Cl3ZokvTdwK"; // CL, ACL, ZCL
-	// var CL_FAIL_REL_OTH = "V19rqPBT5w2";
 	var CL_FAIL_UNS_OTH = "EJDj412Rxso";
 	var CL_FAIL_NEW_UNS = "SHKozECi3D8"; // CL, ACL, ZCL
-	// var CL_FAIL_REL_UNS = "vnHYporLk7L";
 	var CL_FAIL_UNS_UNS = "ZmlPKopCQ4C";
 
 	// CC for drugs Death Treatment outcome
 	var DEATH_NEW_AMB = "x4cgQg2AcY0"; // VL
-	// var DEATH_REL_AMB = "sQSZHqItqO4";
 	var DEATH_UNS_AMB = "YOmhC4PE87B";
 	var DEATH_NEW_GLU = "FnJi3vH25Hu"; // CL, ACL, ZCL
-	// var DEATH_REL_GLU = "BFVR33un8qM";
 	var DEATH_UNS_GLU = "WEZIdAT6iF7";
 	var DEATH_NEW_PEN = "aA3lP8pEbeb"; // VL
-	// var DEATH_REL_PEN = "dzWFb33oUJc";
 	var DEATH_UNS_PEN = "KAetedUQTtU";
 	var DEATH_NEW_SSG = "kbGdhqu16zE"; // CL, ACL, ZCL
-	// var DEATH_REL_SSG = "kG9XgQPm0ud";
 	var DEATH_UNS_SSG = "v3bRDWs5P7s";
 	var DEATH_NEW_SSG_PARO = "i7wr45ig4ho"; // VL
-	// var DEATH_REL_SSG_PARO = "KKnZxwuRAoe";
 	var DEATH_UNS_SSG_PARO = "FIJebC73iWT";
 	var VL_DEATH_NEW_OTH = "ZVVzyM4NTY2"; // VL
-	// var VL_DEATH_REL_OTH = "LkZNH498Sjt";
 	var VL_DEATH_UNS_OTH = "mdtkHiVSZQP";
 	var VL_DEATH_NEW_UNS = "TaxNA8fHbey"; // VL
-	// var VL_DEATH_REL_UNS = "WSeGCvVl5vq";
 	var VL_DEATH_UNS_UNS = "tpW0Oiuo0Sh";	
 	var CL_DEATH_NEW_OTH = "kT7zue7yO7B"; // CL, ACL, ZCL
-	// var CL_DEATH_REL_OTH = "lDG0cD3tI68";
 	var CL_DEATH_UNS_OTH = "oBUl8XZw0GT";
 	var CL_DEATH_NEW_UNS = "DfIKXg8q1UM"; // CL, ACL, ZCL
-	// var CL_DEATH_REL_UNS = "xpUe5MCINC1";
 	var CL_DEATH_UNS_UNS = "KpxWMjKWw1B";
 
 		// CC for drugs Death Treatment outcome
 	var UNKNOWN_NEW_AMB = "JWZvMCiL7U6"; // VL
-	// var UNKNOWN_REL_AMB = "";
 	var UNKNOWN_UNS_AMB = "cgNGJj40vsO";
 	var UNKNOWN_NEW_GLU = "uCrRCzQ4Fg1"; // CL, ACL, ZCL
-	// var UNKNOWN_REL_GLU = "";
 	var UNKNOWN_UNS_GLU = "cI5mUOK3Fxi";
 	var UNKNOWN_NEW_PEN = "f2rOm5sWd1Z"; // VL
-	// var UNKNOWN_REL_PEN = "";
 	var UNKNOWN_UNS_PEN = "Mf4hgNWWkHN";
 	var UNKNOWN_NEW_SSG = "kGpfaUmV3nJ"; // CL, ACL, ZCL
-	// var UNKNOWN_REL_SSG = "";
 	var UNKNOWN_UNS_SSG = "jmEfXqf4he0";
 	var UNKNOWN_NEW_SSG_PARO = "Z8Ak6CQA6z8"; // VL
-	// var UNKNOWN_REL_SSG_PARO = "";
 	var UNKNOWN_UNS_SSG_PARO = "Dqzo34c7ydC";
 	var VL_UNKNOWN_NEW_OTH = "MdTYGUtqXvy"; // VL
-	// var VL_UNKNOWN_REL_OTH = "";
 	var VL_UNKNOWN_UNS_OTH = "xTFEwFzg8e8";
 	var VL_UNKNOWN_NEW_UNS = "SzuZ0zZuDYi"; // VL
-	// var VL_UNKNOWN_REL_UNS = "";
 	var VL_UNKNOWN_UNS_UNS = "X49CoAZyVYt";	
 	var CL_UNKNOWN_NEW_OTH = "S4OvFzEe6SJ"; // CL, ACL, ZCL
-	// var CL_UNKNOWN_REL_OTH = "";
 	var CL_UNKNOWN_UNS_OTH = "ftIbkUE8cTg";
 	var CL_UNKNOWN_NEW_UNS = "DcUvDhdVhsw"; // CL, ACL, ZCL
-	// var CL_UNKNOWN_REL_UNS = "";
 	var CL_UNKNOWN_UNS_UNS = "DwRc6xeV3LN";
 
 	/* Indicators*/
@@ -1939,35 +1996,100 @@
 								death_new_uns_t, death_uns_uns_t]);
 
 
-			var unknown_new_amb = getValueForKey(dataValues,[CC_KEY, DE_KEY],[UNKNOWN_NEW_AMB, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var unknown_uns_amb = getValueForKey(dataValues,[CC_KEY, DE_KEY],[UNKNOWN_UNS_AMB, ITxO_DRUG_DE[column]], VALUE_KEY);
-			var unknown_new_glu = getValueForKey(dataValues,[CC_KEY, DE_KEY],[UNKNOWN_NEW_GLU, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var unknown_uns_glu = getValueForKey(dataValues,[CC_KEY, DE_KEY],[UNKNOWN_UNS_GLU, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var unknown_new_pen = getValueForKey(dataValues,[CC_KEY, DE_KEY],[UNKNOWN_NEW_PEN, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var unknown_uns_pen = getValueForKey(dataValues,[CC_KEY, DE_KEY],[UNKNOWN_UNS_PEN, ITxO_DRUG_DE[column]], VALUE_KEY);
-			var unknown_new_ssg = getValueForKey(dataValues,[CC_KEY, DE_KEY],[UNKNOWN_NEW_SSG, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var unknown_uns_ssg = getValueForKey(dataValues,[CC_KEY, DE_KEY],[UNKNOWN_UNS_SSG, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var unknown_new_ssg_paro = getValueForKey(dataValues,[CC_KEY, DE_KEY],[UNKNOWN_NEW_SSG_PARO, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var unknown_uns_ssg_paro = getValueForKey(dataValues,[CC_KEY, DE_KEY],[UNKNOWN_UNS_SSG_PARO, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var unknown_new_oth_t = getValueForKey(dataValues,[CC_KEY, DE_KEY],[unknown_new_oth, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var unknown_uns_oth_t = getValueForKey(dataValues,[CC_KEY, DE_KEY],[unknown_uns_oth, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var unknown_new_uns_t = getValueForKey(dataValues,[CC_KEY, DE_KEY],[unknown_new_uns, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var unknown_uns_uns_t = getValueForKey(dataValues,[CC_KEY, DE_KEY],[unknown_uns_uns, ITxO_DRUG_DE[column]], VALUE_KEY);
-			
-			total_unknown = add([unknown_new_amb, unknown_uns_amb,
-								unknown_new_glu, unknown_uns_glu,
-								unknown_new_pen, unknown_uns_pen,
-								unknown_new_ssg, unknown_uns_ssg,
-								unknown_new_ssg_paro, unknown_uns_ssg_paro,
-								unknown_new_oth_t, unknown_uns_oth_t,
-								unknown_new_uns_t, unknown_uns_uns_t]);
+			 var tc_new_amb = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TC_NEW_AMB,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var tc_new_pen = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TC_NEW_PEN,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var tc_new_glu = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TC_NEW_GLU,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var tc_new_oth_cl = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TC_NEW_OTH_CL,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var tc_new_oth_vl = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TC_NEW_OTH_VL,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var tc_new_ssg = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TC_NEW_SSG,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var tc_new_ssg_paro = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TC_NEW_SSG_PARO,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var tc_new_uns_cl = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TC_NEW_UNS_CL,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var tc_new_uns_vl = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TC_NEW_UNS_VL,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var tc_tu_amb = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TC_TU_AMB,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var tc_tu_pen = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TC_TU_PEN,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var tc_tu_glu = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TC_TU_GLU,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var tc_tu_oth_cl = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TC_TU_OTH_CL,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var tc_tu_oth_vl = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TC_TU_OTH_VL,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var tc_tu_ssg = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TC_TU_SSG,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var tc_tu_ssg_paro = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TC_TU_SSG_PARO,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var tc_tu_uns_cl = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TC_TU_UNS_CL,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var tc_tu_uns_vl = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TC_TU_UNS_VL,  ITx_TREAT_DE[column]], VALUE_KEY);
+				
+			 var ts_new_amb = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TS_NEW_AMB,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var ts_new_pen = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TS_NEW_PEN,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var ts_new_glu = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TS_NEW_GLU,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var ts_new_oth_cl = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TS_NEW_OTH_CL,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var ts_new_oth_vl = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TS_NEW_OTH_VL,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var ts_new_ssg = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TS_NEW_SSG,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var ts_new_ssg_paro = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TS_NEW_SSG_PARO,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var ts_new_uns_cl = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TS_NEW_UNS_CL,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var ts_new_uns_vl = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TS_NEW_UNS_VL,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var ts_tu_amb = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TS_TU_AMB,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var ts_tu_pen = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TS_TU_PEN,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var ts_tu_glu = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TS_TU_GLU,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var ts_tu_oth_cl = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TS_TU_OTH_CL,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var ts_tu_oth_vl = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TS_TU_OTH_VL,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var ts_tu_ssg = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TS_TU_SSG,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var ts_tu_ssg_paro = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TS_TU_SSG_PARO,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var ts_tu_uns_cl = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TS_TU_UNS_CL,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var ts_tu_uns_vl = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TS_TU_UNS_VL,  ITx_TREAT_DE[column]], VALUE_KEY);
+				
+			 var df_new_amb = getValueForKey(dataValues,[CC_KEY, DE_KEY],[DF_NEW_AMB,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var df_new_pen = getValueForKey(dataValues,[CC_KEY, DE_KEY],[DF_NEW_PEN,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var df_new_glu = getValueForKey(dataValues,[CC_KEY, DE_KEY],[DF_NEW_GLU,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var df_new_oth_cl = getValueForKey(dataValues,[CC_KEY, DE_KEY],[DF_NEW_OTH_CL,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var df_new_oth_vl = getValueForKey(dataValues,[CC_KEY, DE_KEY],[DF_NEW_OTH_VL,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var df_new_ssg = getValueForKey(dataValues,[CC_KEY, DE_KEY],[DF_NEW_SSG,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var df_new_ssg_paro = getValueForKey(dataValues,[CC_KEY, DE_KEY],[DF_NEW_SSG_PARO,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var df_new_uns_cl = getValueForKey(dataValues,[CC_KEY, DE_KEY],[DF_NEW_UNS_CL,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var df_new_uns_vl = getValueForKey(dataValues,[CC_KEY, DE_KEY],[DF_NEW_UNS_VL,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var df_tu_amb = getValueForKey(dataValues,[CC_KEY, DE_KEY],[DF_TU_AMB,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var df_tu_pen = getValueForKey(dataValues,[CC_KEY, DE_KEY],[DF_TU_PEN,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var df_tu_glu = getValueForKey(dataValues,[CC_KEY, DE_KEY],[DF_TU_GLU,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var df_tu_oth_cl = getValueForKey(dataValues,[CC_KEY, DE_KEY],[DF_TU_OTH_CL,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var df_tu_oth_vl = getValueForKey(dataValues,[CC_KEY, DE_KEY],[DF_TU_OTH_VL,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var df_tu_ssg = getValueForKey(dataValues,[CC_KEY, DE_KEY],[DF_TU_SSG,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var df_tu_ssg_paro = getValueForKey(dataValues,[CC_KEY, DE_KEY],[DF_TU_SSG_PARO,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var df_tu_uns_cl = getValueForKey(dataValues,[CC_KEY, DE_KEY],[DF_TU_UNS_CL,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var df_tu_uns_vl = getValueForKey(dataValues,[CC_KEY, DE_KEY],[DF_TU_UNS_VL,  ITx_TREAT_DE[column]], VALUE_KEY);
+				
+			 var tcu_new_amb = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TCU_NEW_AMB,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var tcu_new_pen = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TCU_NEW_PEN,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var tcu_new_glu = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TCU_NEW_GLU,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var tcu_new_oth_cl = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TCU_NEW_OTH_CL,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var tcu_new_oth_vl = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TCU_NEW_OTH_VL,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var tcu_new_ssg = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TCU_NEW_SSG,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var tcu_new_ssg_paro = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TCU_NEW_SSG_PARO,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var tcu_new_uns_cl = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TCU_NEW_UNS_CL,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var tcu_new_uns_vl = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TCU_NEW_UNS_VL,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var tcu_tu_amb = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TCU_TU_AMB,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var tcu_tu_pen = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TCU_TU_PEN,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var tcu_tu_glu = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TCU_TU_GLU,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var tcu_tu_oth_cl = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TCU_TU_OTH_CL,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var tcu_tu_oth_vl = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TCU_TU_OTH_VL,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var tcu_tu_ssg = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TCU_TU_SSG,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var tcu_tu_ssg_paro = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TCU_TU_SSG_PARO,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var tcu_tu_uns_cl = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TCU_TU_UNS_CL,  ITx_TREAT_DE[column]], VALUE_KEY);
+			 var tcu_tu_uns_vl = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TCU_TU_UNS_VL,  ITx_TREAT_DE[column]], VALUE_KEY);
 
-			var total = add([total_ic, total_fail, total_death, total_unknown]);
 
+
+
+			total_treated = add([ tc_new_amb, tc_tu_amb, ts_new_amb, ts_tu_amb, df_new_amb, df_tu_amb, tcu_new_amb, tcu_tu_amb,
+				 tc_new_pen, tc_tu_pen, ts_new_pen, ts_tu_pen, df_new_pen, df_tu_pen, tcu_new_pen, tcu_tu_pen,
+				 tc_new_glu, tc_tu_glu, ts_new_glu, ts_tu_glu, df_new_glu, df_tu_glu, tcu_new_glu, tcu_tu_glu,
+				 tc_new_oth_cl, tc_tu_oth_cl, ts_new_oth_cl, ts_tu_oth_cl, df_new_oth_cl, df_tu_oth_cl, tcu_new_oth_cl, tcu_tu_oth_cl,
+				 tc_new_oth_vl, tc_tu_oth_vl, ts_new_oth_vl, ts_tu_oth_vl, df_new_oth_vl, df_tu_oth_vl, tcu_new_oth_vl, tcu_tu_oth_vl,
+				 tc_new_ssg, tc_tu_ssg, ts_new_ssg, ts_tu_ssg, df_new_ssg, df_tu_ssg, tcu_new_ssg, tcu_tu_ssg,
+				 tc_new_ssg_paro, tc_tu_ssg_paro, ts_new_ssg_paro, ts_tu_ssg_paro, df_new_ssg_paro, df_tu_ssg_paro, tcu_new_ssg_paro, tcu_tu_ssg_paro,
+				 tc_new_uns_cl, tc_tu_uns_cl, ts_new_uns_cl, ts_tu_uns_cl, df_new_uns_cl, df_tu_uns_cl, tcu_new_uns_cl, tcu_tu_uns_cl,
+				 tc_new_uns_vl, tc_tu_uns_vl, ts_new_uns_vl, ts_tu_uns_vl, df_new_uns_vl, df_tu_uns_vl, tcu_new_uns_vl, tcu_tu_uns_vl ]);
+
+
+			toutcomeArray[PROPORTION_TREATED_CASES_ROW][column] = percentageCasesAndTotal(total_treated, total_cases_type, 0, true);
 			toutcomeArray[INITIAL_CURE_RATE_ROW][column] = percentageCasesAndTotal(total_ic, total_cases_type, 0, true);
 			toutcomeArray[FAILURE_RATE_ROW][column] = percentageCasesAndTotal(total_fail, total_cases_type, 0, true);
 			toutcomeArray[CASE_FATALITY_ROW][column] = percentageCasesAndTotal(total_death, total_cases_type, 0, true);
-			toutcomeArray[PROPORTION_TREATED_CASES_ROW][column] = percentageCasesAndTotal(total, total_cases_type, 0, true);
 
 		}
 
