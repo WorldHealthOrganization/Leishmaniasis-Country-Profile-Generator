@@ -187,7 +187,7 @@ th {
     padding: 5px 0 0 0;
     float: left;
     margin-right: 10px;
-	min-width: 200px;
+	  min-width: 200px;
   }
 
   #sortable1 li, #sortable2 li, #sortable3 li {
@@ -204,7 +204,7 @@ th {
 .Content
 {
   display:inline-block;
-
+  max-width: 33%;
 }
 
 /* maps slider */
