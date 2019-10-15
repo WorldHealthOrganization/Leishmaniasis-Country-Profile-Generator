@@ -112,22 +112,26 @@
 
 	/* config subnational level */
 
-	var NATIONAL_LEVEL = 3;
+	var WIDP_OU_SHIFT = 3;
+	var NATIONAL_LEVEL = 0;
 	var SUBLEVEL1 = 1;
 	var SUBLEVEL2 = 2;
 	var SUBLEVEL3 = 3;
-	var LEVEL_CONFIG_LABELS = new Array(3);
-	var LEVEL_REPORT_LABELS = new Array(3);
-	var ENDEMIC_SUBN_LEVEL_LABELS = new Array(3);
-	LEVEL_CONFIG_LABELS[SUBLEVEL1-1] = "1st sub-national administrative level";
-	LEVEL_CONFIG_LABELS[SUBLEVEL2-1] = "2nd sub-national administrative level";
-	LEVEL_CONFIG_LABELS[SUBLEVEL3-1] = "3rd sub-national administrative level";
-	LEVEL_REPORT_LABELS[SUBLEVEL1-1] = "Number of 1st sub-national administrative level divisions, name:";
-	LEVEL_REPORT_LABELS[SUBLEVEL2-1] = "Number of 2nd sub-national administrative level divisions, name:";
-	LEVEL_REPORT_LABELS[SUBLEVEL3-1] = "Number of 3rd sub-national administrative level divisions, name:";
-	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL1-1] = "Number of endemic 1st sub-national administrative level divisions (n):";
-	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL2-1] = "Number of endemic 2nd sub-national administrative level divisions (n):";
-	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL3-1] = "Number of endemic 3rd sub-national administrative level divisions (n):";
+	var LEVEL_CONFIG_LABELS = new Array(4);
+	var LEVEL_REPORT_LABELS = new Array(4);
+	var ENDEMIC_SUBN_LEVEL_LABELS = new Array(4);
+	LEVEL_CONFIG_LABELS[NATIONAL_LEVEL] = "National level";
+	LEVEL_CONFIG_LABELS[SUBLEVEL1] = "1st sub-national administrative level";
+	LEVEL_CONFIG_LABELS[SUBLEVEL2] = "2nd sub-national administrative level";
+	LEVEL_CONFIG_LABELS[SUBLEVEL3] = "3rd sub-national administrative level";
+	LEVEL_REPORT_LABELS[NATIONAL_LEVEL] = "National level, name:";
+	LEVEL_REPORT_LABELS[SUBLEVEL1] = "Number of 1st sub-national administrative level divisions, name:";
+	LEVEL_REPORT_LABELS[SUBLEVEL2] = "Number of 2nd sub-national administrative level divisions, name:";
+	LEVEL_REPORT_LABELS[SUBLEVEL3] = "Number of 3rd sub-national administrative level divisions, name:";
+	ENDEMIC_SUBN_LEVEL_LABELS[NATIONAL_LEVEL] = "Endemic divisions. National level (n):";
+	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL1] = "Number of endemic 1st sub-national administrative level divisions (n):";
+	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL2] = "Number of endemic 2nd sub-national administrative level divisions (n):";
+	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL3] = "Number of endemic 3rd sub-national administrative level divisions (n):";
 
 	/* Texts on report */
 	var PUBLISHED_TEXT = "Published in ";
@@ -274,7 +278,7 @@
 						"Gender distribution (%F):",
 						"Age group distribution (%, <5/5-14/>14):",
 						"Incidence rate (cases/10 000 population in endemic areas):",
-						ENDEMIC_SUBN_LEVEL_LABELS[defaultSubnationalLevel-1],
+						ENDEMIC_SUBN_LEVEL_LABELS[defaultSubnationalLevel],
 						"Population at risk (%, n/total):",
 						"Was there any outbreak?",
 						"Number of new foci:"
@@ -376,7 +380,7 @@
 
 	var initalMapDiv = new Array(4);
 	var mapLegends = new Array(4);
-	var map_levels = [NATIONAL_LEVEL, NATIONAL_LEVEL + SUBLEVEL1];
+	var map_levels = [NATIONAL_LEVEL + WIDP_OU_SHIFT, NATIONAL_LEVEL + WIDP_OU_SHIFT + SUBLEVEL1];
 	var defaultSubnationalLevel = SUBLEVEL1;
 	var map_opacity = 80;
 	var map_height = 315;
@@ -1152,7 +1156,7 @@
 			}
 		}
 		    
-		htmlObject.append(html);
+		htmlObject.html(html);
 	}
 
 	function generateMapConfigurationList(htmlObject, labels, prefix){
@@ -1163,7 +1167,7 @@
 			html+=labels[i];
 			html+='</option>';
 		}
-		htmlObject.append(html);
+		htmlObject.html(html);
 	}
 
 	function setTextUnderTables(elementId, idprefi, labels, labelsDesc, firstText){
@@ -1191,17 +1195,27 @@
  	 **********                    	    FUNCTIONS CALLING THE API         	           	       **********
 	 ****************************************************************************************************/
 
-	function getFootnotes(){
-		var params = {
-			skipPaging : true
-		} 
-		return $.when(getParents(ds.countryID)).then(function(data){
-			var orgUnitArray = [];
-			if (typeof data.organisationUnits !== 'undefined' ) {
-				var orgUnitArray = data.organisationUnits[0].path.replace(/^\/|\/$/, "").split("/");
-			}
-			return getAndFillEventsFor(FOOTNOTES, orgUnitArray, params);
-		});
+	function getFootnotes(subNationalLevel){
+
+		if (subNationalLevel == NATIONAL_LEVEL){
+			// means the app has been relaunched
+			return;
+		} else {
+			var params = {
+				skipPaging : true
+			} 
+			return $.when(getParents(ds.countryID)).then(function(data){
+				var orgUnitArray = [];
+				if (typeof data.organisationUnits !== 'undefined' ) {
+					var orgUnitArray = data.organisationUnits[0].path.replace(/^\/|\/$/, "").split("/");
+				}
+				storedFootnotes = [];
+				activeFootnotesPage1 = [];
+				activeFootnotesPage2 = [];
+				
+				return getAndFillEventsFor(FOOTNOTES, orgUnitArray, params);
+			});
+		}
 	}
 
 	function getAndFillEventsFor(program, orgUnitArray, params){
@@ -1587,10 +1601,10 @@
 
 	function getPopulationAtRiskFor(indicator, column, subNationalLevel){
 
-		var absolute_level = NATIONAL_LEVEL + subNationalLevel
+		var absolute_level =  WIDP_OU_SHIFT + subNationalLevel
 
 		var params = {
-			dimension: ["dx:"+indicator,"pe:"+ds.year, "ou:"+ds.countryID+";LEVEL-4"], //TODO: adapt to each country
+			dimension: ["dx:"+indicator,"pe:"+ds.year, "ou:"+ds.countryID+";LEVEL-"+absolute_level], //TODO: adapt to each country
 			displayProperty : "NAME",
 			skipMeta:"true"
 		}
@@ -2212,7 +2226,7 @@
 													" / " +
 													getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_LifeExpBirth_Male, CC_DEFAULT], VALUE_KEY)	;
 
-		setOptionSelectMenu("subnationalLevelSelector", defaultSubnationalLevel-1);
+		setOptionSelectMenu("subnationalLevelSelector", defaultSubnationalLevel);
 		return updateNumberOfDivisions(defaultSubnationalLevel); // so it waits to have the information
 	}
 
@@ -2223,17 +2237,21 @@
 					get_subnational_endemicity_for(SUBN_ENDEMCTY, ds.year, subNationalLevel, SUB_ENDEMICITY.ACL, ACL_COLUMN),
 					get_subnational_endemicity_for(SUBN_ENDEMCTY, ds.year, subNationalLevel, SUB_ENDEMICITY.ZCL, ZCL_COLUMN),
 					get_subnational_endemicity_for(SUBN_ENDEMCTY, ds.year, subNationalLevel, SUB_ENDEMICITY.CL, CL_COLUMN),
-					get_subnational_endemicity_for(SUBN_ENDEMCTY, ds.year, subNationalLevel, SUB_ENDEMICITY.VL, VL_COLUMN)
-				).done(function(result){
-			var numberOfDivisions = result.organisationUnits.length;
-			var aDivisionName = result.organisationUnits[0].name;
-			generalInformationArray[CIG_ROW_DIVIS][0] = LEVEL_REPORT_LABELS[subNationalLevel-1];
-			generalInformationArray[CIG_ROW_DIVIS][1] = numberOfDivisions + ", " + aDivisionName;
+					get_subnational_endemicity_for(SUBN_ENDEMCTY, ds.year, subNationalLevel, SUB_ENDEMICITY.VL, VL_COLUMN))	
+				.done(function(result){
+					var numberOfDivisions = result.organisationUnits.length;
+					var aDivisionName = result.organisationUnits[0].name;
+					generalInformationArray[CIG_ROW_DIVIS][0] = LEVEL_REPORT_LABELS[subNationalLevel];
+					generalInformationArray[CIG_ROW_DIVIS][1] = numberOfDivisions + ", " + aDivisionName;
 
-			// updates endemicity text at epi table
-			array[THIRD_LEVEL_ROW][0] = ENDEMIC_SUBN_LEVEL_LABELS[subNationalLevel-1];
+					// updates endemicity text at epi table
+					array[THIRD_LEVEL_ROW][0] = ENDEMIC_SUBN_LEVEL_LABELS[subNationalLevel];
 
-		});
+				}).fail(function(result, aaaaa,bbbb,cccc,ddd,eee,ffff,ggg,hhh){
+					console.log("ERRROR");
+					console.log(result);
+					return true;
+				});
 
 	}
 
@@ -2689,7 +2707,7 @@
 
 		}
 
-		$("#"+htmlElementID).append(html);
+		$("#"+htmlElementID).html(html);
 	}
 
 	/****************************************************************************************************
@@ -3205,13 +3223,13 @@
 		}).change();
 
 		$("#subnationalLevelSelector").on('selectmenuchange', function() {
-			var subNationaSelectedLevel = parseInt($("#subnationalLevelSelector").val()) + 1;
+			var subNationaSelectedLevel = parseInt($("#subnationalLevelSelector").val());
 
 			var get_pops_at_risk = $.when(
-				getPopulationAtRiskFor(POP_AT_RISK[VL_INDEX], VL_COLUMN, defaultSubnationalLevel),
-				getPopulationAtRiskFor(POP_AT_RISK[CL_INDEX], CL_COLUMN, defaultSubnationalLevel),
-				getPopulationAtRiskFor(POP_AT_RISK[ACL_INDEX], ACL_COLUMN, defaultSubnationalLevel),
-				getPopulationAtRiskFor(POP_AT_RISK[ZCL_INDEX], ZCL_COLUMN, defaultSubnationalLevel)
+				getPopulationAtRiskFor(POP_AT_RISK[VL_INDEX], VL_COLUMN, subNationaSelectedLevel),
+				getPopulationAtRiskFor(POP_AT_RISK[CL_INDEX], CL_COLUMN, subNationaSelectedLevel),
+				getPopulationAtRiskFor(POP_AT_RISK[ACL_INDEX], ACL_COLUMN, subNationaSelectedLevel),
+				getPopulationAtRiskFor(POP_AT_RISK[ZCL_INDEX], ZCL_COLUMN, subNationaSelectedLevel)
 				)
 			.then( function(){return fillArray_IncidenceRow();} ); // recalculates EPI table incidence
 
@@ -3237,7 +3255,7 @@
 			var update_maps;
 			// recalculates maps to selected subnational level
 			if ($("#maps_to_selectedSubLevel").prop('checked')){
-				update_map_levels_var(map_levels[0], NATIONAL_LEVEL + subNationaSelectedLevel);
+				update_map_levels_var(map_levels[0], WIDP_OU_SHIFT + subNationaSelectedLevel);
 				var mapStyle = MAP_STYLE[$('#mapStyleSelector').val()];
 				update_maps = $.when(
 					generateMap(VL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity),
@@ -3666,7 +3684,7 @@
 			get_monthly_cases_for(CL_MONTHLY, ds.year-1, DE_MONTHLY.ACL_CASES, ACL_PREVIOUS_YEAR_ROW),
 			get_monthly_cases_for(CL_MONTHLY, ds.year, DE_MONTHLY.ZCL_CASES, ZCL_ROW),
 			get_monthly_cases_for(CL_MONTHLY, ds.year-1, DE_MONTHLY.ZCL_CASES, ZCL_PREVIOUS_YEAR_ROW),
-			getFootnotes()).done(function(cgi,i1,i2,i3,i4,nc1,nc2,nc3,nc4,m1,m2,m3,m4,m5,m6,ls1,ls2,ls3,ls4,f1,tm1,le1,ft1){
+			getFootnotes(defaultSubnationalLevel)).done(function(cgi,i1,i2,i3,i4,nc1,nc2,nc3,nc4,m1,m2,m3,m4,m5,m6,ls1,ls2,ls3,ls4,f1,tm1,le1,ft1){
 			// the code here will be executed when all four ajax requests resolve.
 			// a1, a2, a3 and a4 are lists of length 3 containing the response text,
 			// status, and jqXHR object for each of the four ajax calls respectively.
@@ -3704,8 +3722,17 @@
 				document.getElementById("country_profile_and_panel").style.display = "block";
 
 		}).fail(function(data) {
-			console.log ("ERROR. WHEN");
-			console.log (data);
+
+			if (defaultSubnationalLevel == 1){
+				// try againg against level 0
+				defaultSubnationalLevel = 0;
+				startPreparingReport();
+			} else {
+	
+				console.log ("ERROR. WHEN");
+				console.log (data);
+			}
+
 		});
 
 	}
@@ -3756,6 +3783,7 @@
 					<li><a href="#tabs-1">General</a></li>
 					<li><a href="#tabs-2">Maps</a></li>
 					<li><a href="#tabs-3">Footnotes</a></li>
+					<li><a href="#tabs-4">Manual</a></li>
 				</ul>
 				<div id="tabs-1">		
 					<fieldset id="leish_detail_checkboxes"></fieldset>
@@ -3856,6 +3884,10 @@
 					</button>
 					<div id="newFootnoteText" style="display:none"></div>
 
+				</div>
+				<div id="tabs-4">
+				Download here the LCPG manual: 
+                        <a href="files/user_manual_2019_10_15.pdf"><img src="img/icons/pdf.png" border=0></a>
 				</div>
 			</div>
 			<hr>
