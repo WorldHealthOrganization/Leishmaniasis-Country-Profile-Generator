@@ -2576,11 +2576,11 @@
 				addition = addition + +number;
 				counter++;
 			} else {
-				error = number;
+				error = number || WHEN_UNDEFINED;
 			}
 		}
 		if (error.length != 0 && counter == 0){
-			return error || willWHEN_UNDEFINED;
+			return error;
 		} else {
 			return addition;
 		}
@@ -3362,7 +3362,7 @@
 				autocompleteSearcher("targetCountry", organisationUnits, doNothing, 2, 200);
 
 				country_selector_open();
-				DEBUG_AutomaticallyfillInitialForm();
+				//DEBUG_AutomaticallyfillInitialForm();
 
 			});
 		
