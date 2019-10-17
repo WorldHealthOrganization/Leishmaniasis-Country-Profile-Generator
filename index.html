@@ -2778,8 +2778,8 @@
 
 
 
-	/* 	Generates an any-lines-number line graph. 
-		htmlElementID: the id of the canvas/html element where put the graph
+	/* 	Generates an any-lines-number line Chart. 
+		htmlElementID: the id of the canvas/html element where put the Chart
 		x_labels: The labels for the x-axis  
 		dataLabelArray: an array with the label of each data line
 		dataArray: the data
@@ -2886,8 +2886,7 @@
 						type: 'linear',
 						position: 'right',
 						ticks: {
-							max: 2,
-							min: 0
+							beginAtZero:true
 						},
 						scaleLabel:{
 							display: true,
@@ -3148,7 +3147,7 @@
 			
 		});
 		
-		// Listener graph buttons
+		// Listener chart buttons
 		$(":checkbox."+CHART_PREFIX).change(function() {
 			var index = Number(this.id.slice(this.id.length-1, this.id.length));
 			var startingid = this.id.slice(0, -1-BUTTON_PREFIX.length);
@@ -3484,7 +3483,7 @@
 
 		generateCheckboxes($("#leish_detail_checkboxes"), COLUMNS_LABELS, "Leishmaniasis types to show:", LEISH_COLUMN_DETAIL_PREFIX, -1);
 		generateCheckboxes($("#monthlyCheckboxes"), MONTHLY_LABELS, "Leishmaniasis types to show in monthly table:", MONTHLY_TABLE_NAME, -1);
-		generateCheckboxes($("#chartCheckboxes"), CHART_CHECKBOXES_LABELS, "Graphs to show", CHART_PREFIX, 2);
+		generateCheckboxes($("#chartCheckboxes"), CHART_CHECKBOXES_LABELS, "Charts to show", CHART_PREFIX, 2);
 		generateCheckboxes($("#mapCheckboxes"), MAP_CHECKBOXES_LABELS, "Maps to show", MAP_PREFIX, -1);
 
 		addListenersToCheckboxes();
@@ -3781,20 +3780,30 @@
 			<div id="tabs">
 				<ul>
 					<li><a href="#tabs-1">General</a></li>
-					<li><a href="#tabs-2">Maps</a></li>
-					<li><a href="#tabs-3">Footnotes</a></li>
-					<li><a href="#tabs-4">Manual</a></li>
+					<li><a href="#tabs-2">Charts</a></li>
+					<li><a href="#tabs-3">Maps</a></li>
+					<li><a href="#tabs-4">Footnotes</a></li>
+					<li><a href="#tabs-5">Manual</a></li>
 				</ul>
 				<div id="tabs-1">		
 					<fieldset id="leish_detail_checkboxes"></fieldset>
 					<fieldset id="monthlyCheckboxes"></fieldset>
-					<fieldset id="chartCheckboxes"></fieldset>
 					<p><select name="subnationalLevelSelector" id="subnationalLevelSelector"></select>
 						<input id="maps_to_selectedSubLevel" type="checkbox" checked="checked" />
 						<label for="maps_to_selectedSubLevel"> recalculate maps to this level</label>
 					</p>
 				</div>
-				<div id="tabs-2">		
+				<div id="tabs-2">	
+					<fieldset id="chartCheckboxes"></fieldset>
+					<fieldset id="chartConfiguration"><legend>Configure chart</legend>
+						<select disabled name="chartSelector" id="chartSelector">
+							<option disabled selected value>Select a chart</option>
+						</select>
+
+						<button disabled id="updateChartButton" class="ui-button ui-widget ui-corner-all">Update Chart</button>
+					</fieldset>
+				</div>
+				<div id="tabs-3">		
 					<fieldset id="mapCheckboxes"></fieldset>
 					<fieldset id="mapConfiguration"><legend>Configure map</legend>
 						<div>
@@ -3861,7 +3870,7 @@
 
 					</fieldset>
 				</div>
-				<div id="tabs-3">
+				<div id="tabs-4">
 					<div class="FixedHeightContainer">
 						<div class="Content">
 							<h6 class="subHeader">Stored footnotes</h6>
@@ -3885,7 +3894,7 @@
 					<div id="newFootnoteText" style="display:none"></div>
 
 				</div>
-				<div id="tabs-4">
+				<div id="tabs-5">
 				Download here the LCPG manual: 
                         <a href="files/user_manual_2019_10_15.pdf"><img src="img/icons/pdf.png" border=0></a>
 				</div>
