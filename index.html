@@ -222,10 +222,10 @@
 	var CIG_ROW_DIVIS = 6;
 
 	var CGI_LABELS = [	"Total population:",
-						"Gender (%, F/M):",
+						"Gender F/M (%):",
 						"GDP (PPP int $):",
 						"Income status:",
-						"Age group <15/> 14 years, %: ",
+						"Age group <15 / ≥ 15 years (%): ",
 						"Life expectancy at birth in years (F/M):",
 						"Number of 2nd sub-national administrative level<br>divisions, name:"
 						];
@@ -891,6 +891,12 @@
 	TREAT_COMPLETED[ACL_INDEX] = "uSRDXhpcEjS"; // NTD_LSH_ACL_TREAT_completed_I
 	TREAT_COMPLETED[ZCL_INDEX] = "ZtbetBov4Nk"; // NTD_LSH_ZCL_TREAT_completed_I
 
+	var SCREEN_PASSIVE = new Array(4);
+	SCREEN_PASSIVE[VL_INDEX] = "ECAJUz3nff5"; // NTD_LSH_VL_SCREEN_passive_I
+	SCREEN_PASSIVE[CL_INDEX] = "zo5BQlapP45"; // NTD_LSH_CL_SCREEN_passive_I
+	SCREEN_PASSIVE[ACL_INDEX] = "vq1FX8vBEi1"; // NTD_LSH_ACL_SCREEN_passive_I
+	SCREEN_PASSIVE[ZCL_INDEX] = "kknHr7KtRTs"; // NTD_LSH_ZCL_SCREEN_passive_I
+
 	var INCIDENCE_FOR_MAPS = new Array(4);
 	INCIDENCE_FOR_MAPS[VL_INDEX] = "k8OBrohsSSg"; //  VL_EPI_INC_PopData_LSH_10000
 	INCIDENCE_FOR_MAPS[CL_INDEX] = "Yw3FULKBFgt"; // CL_EPI_INC_PopData_LSH_10000
@@ -986,6 +992,7 @@
 	var pop_at_risk_values = Array(6);
 	var new_and_usnp_cases = Array(5);
 	var total_treated = Array(5);
+	var screen_passive = Array(5);
 
 	var editingElement;
 
@@ -1477,9 +1484,9 @@
 	* gets analytics data from dx for pe ds.year
 	* filter: ou: ds.countryID
 	* yearsInThePast: number of previous years to include
-	* thenFunction(data, column)
+	* thenFunction(data, thenFParams)
 	*/
-	function getAnalyticsDataForDX(dx_dimension, column, yearsInThePast, thenFunction){
+	function getAnalyticsDataForDX(dx_dimension, yearsInThePast, thenFunction, thenFParams){
 		var dx_dimension_treated = "";
 		if (Array.isArray(dx_dimension)){
 			for (var i = 0; i<dx_dimension.length; i++){
@@ -1504,7 +1511,7 @@
 		return $.ajax({
 			url: builtUrl
 		}).then(function(data) {
-			thenFunction(data, column)
+			thenFunction(data, thenFParams)
 		});
 	}
 
@@ -1542,39 +1549,28 @@
 		
 	}	 
 
-	function fillNewCasesArray(data, column){
+	function fillNewCasesArray(data, params){
+		var column = params[0];
 		historicNewCases[column] = getAnalyticValueForKey(data, YEARLY_MODE);
 	}	
-		
-	function fillTreatmentCompletedArray(data, column){
-
-		dx_header = getHeaderIndex(data.headers, "dx"); 
-		value_header = getHeaderIndex(data.headers, "value"); 
+				
+	function fillIndicatorArray(data, extraFParams){
+		var arrayReference = extraFParams[0];
+		var arrayName = extraFParams[1];
+		var dx_header = getHeaderIndex(data.headers, "dx"); 
+		var value_header = getHeaderIndex(data.headers, "value"); 
 
 		for (var i = 0; i<data.rows.length; i++){
-
 			var id = data.rows[i][dx_header];
-			var index = TREAT_COMPLETED.indexOf(id);
-			total_treated[index] = parseInt(data.rows[i][value_header]);
+			var index = arrayReference.indexOf(id);
+			arrayName[index] = parseInt(data.rows[i][value_header]);
 		}
 
 	}
 
-	function fillNewAndUnspCasesArray(data, column){
 
-		dx_header = getHeaderIndex(data.headers, "dx"); 
-		value_header = getHeaderIndex(data.headers, "value"); 
-
-		for (var i = 0; i<data.rows.length; i++){
-
-			var id = data.rows[i][dx_header];
-			var index = NEW_AND_UNSP_CASES.indexOf(id);
-			new_and_usnp_cases[index] = parseInt(data.rows[i][value_header]);
-		}
-
-	}
-
-	function fillIncidenceChartArray(data, column){
+	function fillIncidenceChartArray(data, params){
+		var column = params[0];
 		historicIncidenceChart[column] = getAnalyticValueForKey(data, YEARLY_MODE);
 	}
 
@@ -1662,7 +1658,7 @@
 		var uns_female = getValueForKey(dataValues, [CC_KEY, DE_KEY],[UNS_FEMALE, GENDER_DE[column]], VALUE_KEY);
 		var female = add([new_female, uns_female]);
 
-		array[SEX_ROW][column] = percentageText(female, add([male, female, unknown]), 0, true);
+		array[SEX_ROW][column] = percentageText(female, add([male, female, unknown]), 0, false);
 		
 		//age distribution 
 		var new_under_5 = getValueForKey(dataValues, [CC_KEY, DE_KEY],[NEW_UNDER_5, AGE_DE[column]], VALUE_KEY);
@@ -1704,7 +1700,7 @@
 		var total_origin_cases = add([origin_autoc, origin_imported, origin_unknown]);
 		array[IMPORTED_ROW][column] = origin_imported +
 									", " +
-									percentageText(origin_imported, total_origin_cases, 0, true);
+									percentageText(origin_imported, total_origin_cases, 0, false);
 
 		// Data to retrive depending on Leish type
 		switch(epiDE){
@@ -1740,7 +1736,7 @@
 			var female = getValueForKey(dataValues, [CC_KEY, DE_KEY],[FEMALE, GENDER_DE[column]], VALUE_KEY);
 			var unknown_sex = getValueForKey(dataValues, [CC_KEY, DE_KEY],[UNKNOWN_SEX, GENDER_DE[column]], VALUE_KEY);
 			var total_sex_cases = add([male, female, unknown_sex]);
-			array[SEX_ROW][column] = percentageText(female, total_sex_cases, 0, true);
+			array[SEX_ROW][column] = percentageText(female, total_sex_cases, 0, false);
 
 			var age_5 = getValueForKey(dataValues, [CC_KEY, DE_KEY],[AGE_5, AGE_DE[column]], VALUE_KEY);
 			var age_5_14 = getValueForKey(dataValues, [CC_KEY, DE_KEY],[AGE_5_14, AGE_DE[column]], VALUE_KEY);
@@ -1767,9 +1763,8 @@
 			diagnosisArray[SCREENED_PASSIVELY_ROW][column] = WHEN_NON_APPLICABLE;
 		} else {
 			var screen_active = getValueForKey(dataValues, DE_KEY, DE_SCREEN_ACTIVE[column] , VALUE_KEY);
-			var screen_passive = getValueForKey(dataValues, DE_KEY, DE_SCREEN_PASSIVE[column] , VALUE_KEY);
 			diagnosisArray[SCREENED_ACTIVELY_ROW][column] = screen_active;
-			diagnosisArray[SCREENED_PASSIVELY_ROW][column] = screen_passive;
+			diagnosisArray[SCREENED_PASSIVELY_ROW][column] = screen_passive[column-1];
 		}
 		
 
@@ -2029,7 +2024,7 @@
 		}
 		console.log( "popf " + popf);
 		console.log( "popm " + popm);
-		generalInformationArray[CIG_ROW_SEX][1] = (percentageText(popf, totalPopulation, 1, true) || WHEN_NO_DATA) + " / " + (percentageText(popm, totalPopulation, 1, true) || WHEN_NO_DATA);
+		generalInformationArray[CIG_ROW_SEX][1] = (percentageText(popf, totalPopulation, 1, false) || WHEN_NO_DATA) + " / " + (percentageText(popm, totalPopulation, 1, false) || WHEN_NO_DATA);
 
 		// gets GDP
 		generalInformationArray[CIG_ROW_GDP][1] = getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_WB_GDP_PPP_current, CC_DEFAULT], VALUE_KEY);
@@ -2062,7 +2057,7 @@
 		}
 		console.log( "pop_under15 " + pop_under15);
 		console.log( "pop_over15 " + pop_over15);
-		generalInformationArray[CIG_ROW_AGEG][1] = (percentageText(pop_under15, totalPopulation, 1, true) || WHEN_NO_DATA) + " / " + (percentageText(pop_over15, totalPopulation, 1, true)  || WHEN_NO_DATA);
+		generalInformationArray[CIG_ROW_AGEG][1] = (percentageText(pop_under15, totalPopulation, 1, false) || WHEN_NO_DATA) + " / " + (percentageText(pop_over15, totalPopulation, 1, false)  || WHEN_NO_DATA);
 
 		generalInformationArray[CIG_ROW_LIFE][1] = getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_LifeExpBirth_Female, CC_DEFAULT], VALUE_KEY) +  
 													" / " +
@@ -3228,7 +3223,7 @@
 				autocompleteSearcher("targetCountry", organisationUnits, doNothing, 2, 200);
 
 				country_selector_open();
-				DEBUG_AutomaticallyfillInitialForm();
+				//DEBUG_AutomaticallyfillInitialForm();
 
 			});
 		
@@ -3502,14 +3497,15 @@
 			.then( function(){return getPopulationAtRiskFor(POP_AT_RISK[ZCL_INDEX], ZCL_COLUMN, defaultSubnationalLevel);} );
 
 		var epi_incidence_async = $.when(
-			getAnalyticsDataForDX(NEW_AND_UNSP_CASES, VL_COLUMN, 0, fillNewAndUnspCasesArray),
-			getAnalyticsDataForDX(TREAT_COMPLETED, VL_COLUMN, 0, fillTreatmentCompletedArray),
+			getAnalyticsDataForDX(NEW_AND_UNSP_CASES, 0, fillIndicatorArray, [NEW_AND_UNSP_CASES, new_and_usnp_cases]),
+			getAnalyticsDataForDX(SCREEN_PASSIVE, 0, fillIndicatorArray, [SCREEN_PASSIVE, screen_passive]),
+			getAnalyticsDataForDX(TREAT_COMPLETED, 0, fillIndicatorArray, [TREAT_COMPLETED, total_treated]),
 			get_cl_cases(), // gets cl cases who is needed for EPI incidence
 			get_vl_cases(), 
 			get_azcl_cases(),	
 			get_pops_at_risk) // gets popAtRisks who is needed for EPI incidence
 			//.then(function(){ return fillArray_IncidenceRow(VL_COLUMN); });
-			.then( function(nc, tc, data_cl, data_vl, data_azcl){
+			.then( function(nc, sp, tc, data_cl, data_vl, data_azcl){
 				fillArray(data_cl.dataValues, CL_COLUMN, DE.CL_EPI_Type); 
 				fillArray(data_cl.dataValues, MCL_COLUMN, DE.MCL_EPI_Type, DE.MCL_GEN_EPID_cases); 
 
@@ -3533,14 +3529,14 @@
 			generateMapAndLegend(ACL_INDEX),
 			generateMapAndLegend(ZCL_INDEX),
 			get_gho_ntds(),
-			getAnalyticsDataForDX(INCIDENCE_FOR_CHARTS[VL_INDEX], VL_COLUMN, historicLength, fillIncidenceChartArray),
-			getAnalyticsDataForDX(INCIDENCE_FOR_CHARTS[CL_INDEX], CL_COLUMN, historicLength, fillIncidenceChartArray),
-			getAnalyticsDataForDX(INCIDENCE_FOR_CHARTS[ACL_INDEX], ACL_COLUMN, historicLength, fillIncidenceChartArray),
-			getAnalyticsDataForDX(INCIDENCE_FOR_CHARTS[ZCL_INDEX], ZCL_COLUMN, historicLength, fillIncidenceChartArray),
-			getAnalyticsDataForDX(DE.VL_EPI_Type + "." + TYPE_NEW_CASES, VL_COLUMN, historicLength, fillNewCasesArray),
-			getAnalyticsDataForDX(DE.CL_EPI_Type + "." + TYPE_NEW_CASES, CL_COLUMN, historicLength, fillNewCasesArray),
-			getAnalyticsDataForDX(DE.ACL_EPI_Type + "." + TYPE_NEW_CASES, ACL_COLUMN, historicLength, fillNewCasesArray),
-			getAnalyticsDataForDX(DE.ZCL_EPI_Type + "." + TYPE_NEW_CASES, ZCL_COLUMN, historicLength, fillNewCasesArray),
+			getAnalyticsDataForDX(INCIDENCE_FOR_CHARTS[VL_INDEX], historicLength, fillIncidenceChartArray, [VL_COLUMN]),
+			getAnalyticsDataForDX(INCIDENCE_FOR_CHARTS[CL_INDEX], historicLength, fillIncidenceChartArray, [CL_COLUMN]),
+			getAnalyticsDataForDX(INCIDENCE_FOR_CHARTS[ACL_INDEX], historicLength, fillIncidenceChartArray, [ACL_COLUMN]),
+			getAnalyticsDataForDX(INCIDENCE_FOR_CHARTS[ZCL_INDEX], historicLength, fillIncidenceChartArray, [ZCL_COLUMN]),
+			getAnalyticsDataForDX(DE.VL_EPI_Type + "." + TYPE_NEW_CASES, historicLength, fillNewCasesArray, [VL_COLUMN]),
+			getAnalyticsDataForDX(DE.CL_EPI_Type + "." + TYPE_NEW_CASES, historicLength, fillNewCasesArray, [CL_COLUMN]),
+			getAnalyticsDataForDX(DE.ACL_EPI_Type + "." + TYPE_NEW_CASES, historicLength, fillNewCasesArray, [ACL_COLUMN]),
+			getAnalyticsDataForDX(DE.ZCL_EPI_Type + "." + TYPE_NEW_CASES, historicLength, fillNewCasesArray, [ZCL_COLUMN]),
 			get_monthly_cases_for(CL_MONTHLY, ds.year, DE_MONTHLY.CL_CASES, CL_ROW),
 			get_monthly_cases_for(CL_MONTHLY, ds.year-1, DE_MONTHLY.CL_CASES, CL_PREVIOUS_YEAR_ROW),
 			get_monthly_cases_for(VL_MONTHLY, ds.year, DE_MONTHLY.VL_CASES, VL_ROW),
