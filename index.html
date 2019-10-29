@@ -85,6 +85,7 @@
 -->
 
 <script type="text/javascript">
+	/*jshint esversion: 6 */
 
 	/****************************************************************************************************
  	 **********                      	       CONSTANTS            	              	       **********
@@ -187,7 +188,7 @@
 		soft_blue: 'rgba(51, 153, 255, 0.2)',
 		violet :'rgba(153, 0, 255, 1)',
 		soft_violet :'rgba(153, 0, 255, 0.2)'
-	}
+	};
 
 	CL_CASES_CHART_TITLE = "Number of new CL cases reported by month in ";
 	VL_CASES_CHART_TITLE = "Number of new (primary) VL cases reported by month in ";
@@ -206,7 +207,7 @@
 	var DATASID = {
 			LEFT: "left",
 			RIGHT: "right"
-	}
+	};
 
 
 	/* Country General Information Texts */
@@ -548,9 +549,9 @@
 	ITx_TREAT_DE[ZCL_COLUMN] = "KYuMdxHQTqQ"; // ZCL_TREAT_completed
 
 	// stores all de assigned through DS or P
-	var de_assigned = new Array();
+	var de_assigned = [];
 	// stores all category option combinations assigned through DE assigned through DS 
-	var coc_assigned = new Array();
+	var coc_assigned = [];
 	var dsinfo = new Array(8); // key: UID of dataset. Contains its name and whether the DS is assigned to the OU.
 	var pinfo = new Array(4); // key: UID of program. Contains its name and whether the P is assigned to the OU.
 	var NAME = 0;
@@ -662,7 +663,7 @@
 		GEN_UN_WPP_Pop_Tot_1000 : "WKJu1WytXzH",
 		GEN_UN_WPP_LifeExpBirth_Male : "PVTbouvgSzJ",
 		GEN_WB_IncomeGroup : "Oov1cYM9y6o"
-	}
+	};
 
 	var CGI_MALE = 0;
 	var CGI_FEMALE = 1;
@@ -763,9 +764,6 @@
 	var NEW_MALE = "GpQZH8hC7jY";
 	var NEW_FEMALE = "TtoYCIVcBA3";
 	var NEW_UNKNOWN = "FaYhAlKLX16";
-	var REL_MALE = "UG7PsogfDYz";
-	var REL_FEMALE = "OmkgX8Kkurn";
-	var REL_UNKNOWN = "Ng311XPZTbv";
 	var UNS_MALE = "aWWYWv6buzp";
 	var UNS_FEMALE = "wGED4K5Bs37";
 	var UNS_UNKNOWN = "zkKbIIarKWM";
@@ -783,10 +781,6 @@
 	var NEW_5_14 = "mTyLqDjpQ5b";
 	var NEW_OVER_14 = "DDliBAHqwGV";
 	var NEW_AGE_UNKNOWN = "dVuOzmU4xbI";
-	var REL_UNDER_5 = "NlAMTGlJ7b3";
-	var REL_5_14 = "a1GEE4dBKZ8";
-	var REL_OVER_14 = "xxrYh49wmnD";
-	var REL_AGE_UNKNOWN = "zuuSkk9CiNB";
 	var UNS_UNDER_5 = "rZwYGlqR8GG";
 	var UNS_5_14 = "P6R9XEaqQbz";
 	var UNS_OVER_14 = "UQMTeRPY2U0";
@@ -808,12 +802,6 @@
 	var POSITIVE_NEW = "jRcT6HVKb2t";
 	var POSITIVE_RELAPSE = "QKqVJ13mGZI";
 	var POSITIVE_UNSP = "YXktM46YiXo";
-	var NEGATIVE_NEW = "SsY20ch0Ri4";
-	var NEGATIVE_RELAPSE = "Mw5NBmlJmJF";
-	var NEGATIVE_UNSP = "pMU7m3rxXDc";
-	var INCONCL_NEW = "RfRabx6yhF6";
-	var INCONCL_RELAPSE = "KhEAlYVy3NQ";
-	var INCONCL_UNSP = "CdVlOzconBD";
 
 	/* Treatment Category options*/
 
@@ -879,17 +867,8 @@
 	var CL_DEATH_NEW_UNS = "DfIKXg8q1UM"; // CL, ACL, ZCL
 	var CL_DEATH_UNS_UNS = "KpxWMjKWw1B";
 
-		// CC for drugs Death Treatment outcome
-	var UNKNOWN_NEW_AMB = "JWZvMCiL7U6"; // VL
-	var UNKNOWN_UNS_AMB = "cgNGJj40vsO";
-	var UNKNOWN_NEW_GLU = "uCrRCzQ4Fg1"; // CL, ACL, ZCL
-	var UNKNOWN_UNS_GLU = "cI5mUOK3Fxi";
-	var UNKNOWN_NEW_PEN = "f2rOm5sWd1Z"; // VL
-	var UNKNOWN_UNS_PEN = "Mf4hgNWWkHN";
-	var UNKNOWN_NEW_SSG = "kGpfaUmV3nJ"; // CL, ACL, ZCL
-	var UNKNOWN_UNS_SSG = "jmEfXqf4he0";
-	var UNKNOWN_NEW_SSG_PARO = "Z8Ak6CQA6z8"; // VL
-	var UNKNOWN_UNS_SSG_PARO = "Dqzo34c7ydC";
+	// CC for drugs Death Treatment outcome
+
 	var VL_UNKNOWN_NEW_OTH = "MdTYGUtqXvy"; // VL
 	var VL_UNKNOWN_UNS_OTH = "xTFEwFzg8e8";
 	var VL_UNKNOWN_NEW_UNS = "SzuZ0zZuDYi"; // VL
@@ -1078,8 +1057,8 @@
 	function generateCheckboxes(htmlObject, labels, title, prefix, newLineOn){
 		var html = '<legend>'+title+'</legend>';
 		for (var i=0; i<labels.length; i++){
-			html+='<input id="' + prefix + BUTTON_PREFIX + i + '" type="checkbox" class="' + prefix + '" checked="checked" />'
-			html+='<label for="' + prefix + BUTTON_PREFIX + i + '">' + labels[i] + '</label>'
+			html+='<input id="' + prefix + BUTTON_PREFIX + i + '" type="checkbox" class="' + prefix + '" checked="checked" />';
+			html+='<label for="' + prefix + BUTTON_PREFIX + i + '">' + labels[i] + '</label>';
 			if(i===newLineOn){
 				html+='<br>';
 			}
@@ -1132,11 +1111,11 @@
 		} else {
 			var params = {
 				skipPaging : true
-			} 
+			}; 
 			return $.when(getParents(ds.countryID)).then(function(data){
 				var orgUnitArray = [];
 				if (typeof data.organisationUnits !== 'undefined' ) {
-					var orgUnitArray = data.organisationUnits[0].path.replace(/^\/|\/$/, "").split("/");
+					orgUnitArray = data.organisationUnits[0].path.replace(/^\/|\/$/, "").split("/");
 				}
 				storedFootnotes = [];
 				activeFootnotesPage1 = [];
@@ -1167,7 +1146,7 @@
 					if (orgUnitArray.length <= 1) {
 						return;
 					} else {
-						return getAndFillEventsFor(program, orgUnitArray.slice(1), params)
+						return getAndFillEventsFor(program, orgUnitArray.slice(1), params);
 					}
 				});
 	}
@@ -1176,7 +1155,7 @@
 		var params = {
 			fields: "path",
 			paging: false
-		}
+		};
 
 		var builtUrl = buildAPIUrl(ORG_UNITS, params);
 		builtUrl += "&filter=id:eq:"+id;
@@ -1249,7 +1228,7 @@
 		
 
 		var itemsOnRow = [];
-		for(var i=0; i<levels.length; i++){$
+		for(var i=0; i<levels.length; i++){
 			itemsOnRow.push({id: "LEVEL-"+levels[i]});
 		}
 		itemsOnRow.push({id: orgUnitId});
@@ -1304,7 +1283,7 @@
 				ds_indexes.push(uid);
 			}
 		}
-		for (var uid in pinfo) {
+		for (uid in pinfo) {
 			if (pinfo[uid][ASSG]){
 				promises.push(getDEusedByProgram(uid));
 				p_indexes.push(uid);
@@ -1344,7 +1323,7 @@
 		var params = {
 			var: "datasetuid:" + dsuid,
 			paging: false
-		}
+		};
 
 		return $.when(getv3(SQLVIEWS + "/" + SQL_COC_DS + "/data", params))
 		.done(function(result){
@@ -1357,7 +1336,7 @@
 		var params = {
 			var: "datasetuid:" + dsuid,
 			paging: false
-		}
+		};
 
 		return $.when(getv3(SQLVIEWS + "/" + SQL_DE_DS + "/data", params))
 		.done(function(result){
@@ -1369,7 +1348,7 @@
 		var params = {
 			var: "programuid:" + puid,
 			paging: false
-		}
+		};
 
 		return $.when(getv3(SQLVIEWS + "/" +SQL_DE_P + "/data", params))
 		.done(function(result){
@@ -1384,7 +1363,7 @@
 			dataSet: GI,
 			period: ds.year,
 			orgUnit: ds.countryID
-		}
+		};
 
 		builtUrl = buildAPIUrl(DATAVALUESETS, params);
 		return $.ajax({
@@ -1400,7 +1379,7 @@
 			dataSet: GHO_NTDS,
 			period: ds.year,
 			orgUnit: ds.countryID
-		}
+		};
 
 		builtUrl = buildAPIUrl(DATAVALUESETS, params);
 		return $.ajax({
@@ -1450,8 +1429,7 @@
 			dataSet: CL_DETAILED,
 			period: ds.year,
 			orgUnit: ds.countryID
-
-		}
+		};
 
 		builtUrl = buildAPIUrl(DATAVALUESETS, params);
 		return $.ajax({
@@ -1468,7 +1446,7 @@
 			dataSet: AZCL_DETAILED,
 			period: ds.year,
 			orgUnit: ds.countryID
-		}
+		};
 
 		builtUrl = buildAPIUrl(DATAVALUESETS, params);
 		return $.ajax({
@@ -1481,12 +1459,11 @@
 
 	/* getting vl cases from API */
 	function get_vl_cases() {
-
 		var params = {
 			dataSet: VL_DETAILED,
 			period: ds.year,
 			orgUnit: ds.countryID
-		}
+		};
 
 		builtUrl = buildAPIUrl(DATAVALUESETS, params);
 		return $.ajax({
@@ -1513,13 +1490,13 @@
 			dx_dimension_treated = dx_dimension;
 		}
 
-
 		var params = {
 			dimension: ["dx:"+dx_dimension_treated,"pe:"+ds.year],
 			filter: ["ou:"+ds.countryID],
 			displayProperty : "NAME",
 			skipMeta:"true"
-		}
+		};
+
 		for (var i=1; i<=yearsInThePast; i++){
 			params.dimension[1] +=";"+(ds.year-i);
 		}
@@ -1539,7 +1516,7 @@
 			dimension: ["dx:"+indicator,"pe:"+ds.year, "ou:"+ds.countryID+";LEVEL-"+absolute_level], //TODO: adapt to each country
 			displayProperty : "NAME",
 			skipMeta:"true"
-		}
+		};
 
 		var builtUrl = buildAPIUrl(ANALYTICS, params);
 		return $.ajax({
@@ -1725,9 +1702,9 @@
 			getValueForKey(dataValues,[CC_KEY, DE_KEY],[ORIGIN_UNKNOWN_UNS, IMPORTED_DE[column]], VALUE_KEY)
 		]);
 		var total_origin_cases = add([origin_autoc, origin_imported, origin_unknown]);
-		array[IMPORTED_ROW][column] = origin_imported 
-									+ ", "
-									+	percentageText(origin_imported, total_origin_cases, 0, true);
+		array[IMPORTED_ROW][column] = origin_imported +
+									", " +
+									percentageText(origin_imported, total_origin_cases, 0, true);
 
 		// Data to retrive depending on Leish type
 		switch(epiDE){
@@ -2297,8 +2274,8 @@
 		}
 		if (typeof keyName === 'string') {
 			// checks if DE or COD is assigned to one DS or P
-			if ((keyName == DE_KEY && de_assigned.filter(obj => { return obj[0] === keyValue}).length == 0)
-			|| (keyName == CC_KEY && coc_assigned.filter(obj => { return obj[0] === keyValue}).length == 0))
+			if ((keyName == DE_KEY && de_assigned.filter(obj => { return obj[0] === keyValue}).length == 0) ||
+			 	(keyName == CC_KEY && coc_assigned.filter(obj => { return obj[0] === keyValue}).length == 0))
 			{
 				return WHEN_NON_APPLICABLE;
 			} else {
@@ -2312,10 +2289,10 @@
 			}
 		} else if (keyName.length > 1 && keyValue.length > 1) {
 			// checks if DE is assigned
-			if ((keyName[0] == DE_KEY && de_assigned.filter(obj => { return obj[0] === keyValue[0]}).length == 0) 
-			|| (keyName[1] == DE_KEY && de_assigned.filter(obj => { return obj[0] === keyValue[1]}).length == 0)
-			|| (keyName[0] == CC_KEY && coc_assigned.filter(obj => { return obj[0] === keyValue[0]}).length == 0) 
-			|| (keyName[1] == CC_KEY && coc_assigned.filter(obj => { return obj[0] === keyValue[1]}).length == 0))
+			if ((keyName[0] == DE_KEY && de_assigned.filter(obj => { return obj[0] === keyValue[0]}).length == 0) || 
+				(keyName[1] == DE_KEY && de_assigned.filter(obj => { return obj[0] === keyValue[1]}).length == 0) || 
+				(keyName[0] == CC_KEY && coc_assigned.filter(obj => { return obj[0] === keyValue[0]}).length == 0) || 
+				(keyName[1] == CC_KEY && coc_assigned.filter(obj => { return obj[0] === keyValue[1]}).length == 0))
 			{
 				return WHEN_NON_APPLICABLE;
 			} else {
@@ -2460,7 +2437,7 @@
 		var error = "";
 		for (var number of arrayOfNumbers) {
 			if (typeof number !== "undefined" && number != WHEN_UNDEFINED && number != WHEN_NON_APPLICABLE){
-				addition = addition + +number;
+				addition = addition + Number(number);
 				counter++;
 			} else {
 				error = number || WHEN_UNDEFINED;
@@ -2479,7 +2456,7 @@
 		mode : the place for labels in array. Options : LABELS_ON_COLUMNS or LABELS_ON_ROWS
 	*/
 	function  create_2_dim_array(rowsNum, rowsTitles, mode) {
-		var array = []
+		var array = [];
 		
 		if(mode === LABELS_ON_ROWS) {
 			array[0] = [];
@@ -2857,18 +2834,18 @@
 	}
 
 	function fillNotaBene(){
-		var text = "Data source: Ministry of Health, "
-					+ ds.countryName +
+		var text = "Data source: Ministry of Health, " +
+					ds.countryName +
 					"<br>WHO " + ds.year + ". All rights reserved.";
 		$('#notaBene div').html(text);
 		
 	}
 
 	function fillNotaBeneMaps(){
-		var text = "The boundaries and names shown and the designations used on this map do not imply the expression of any opinion whatsoever "
-					+ "on the part of the World Health Organization concerning the legal status of any country, territory, city or area or of "
-					+ "its authorities, or concerning the delimitation of its frontiers or boundaries. Dotted and dashed lines on maps represent "
-					+ "approximate border lines for which there may not yet be full agreement. <br>Map production: WHO/HTM/NTD/IDM";
+		var text = "The boundaries and names shown and the designations used on this map do not imply the expression of any opinion whatsoever " +
+					"on the part of the World Health Organization concerning the legal status of any country, territory, city or area or of " +
+					"its authorities, or concerning the delimitation of its frontiers or boundaries. Dotted and dashed lines on maps represent " +
+					"approximate border lines for which there may not yet be full agreement. <br>Map production: WHO/HTM/NTD/IDM";
 		$('#notaBeneMaps div').html(text);
 		
 	}
@@ -2887,7 +2864,7 @@
 		if($("#newFootnoteText").html()){
 			var liClass = "ui-state-default";
 			var html='';
-			html+='<li class="'+liClass+' '+CLASS_EDITABLE_ELEMENT+'">'
+			html+='<li class="'+liClass+' '+CLASS_EDITABLE_ELEMENT+'">';
 			html+= $("#newFootnoteText").html();
 			html+= '</li>';
 			document.getElementById(SORTABLE_LIST_1_NAME).innerHTML += html;
@@ -2911,7 +2888,6 @@
 		var elements = $("#sortable2 li");
         var html = '';
 		for (var i=0; i<elements.length; i++){
-		//	zone = getFootnotesZoneObject("#footNoteNumber"+(i+1));
 			html+='<div class="footnote"><span class="superindex">'+(i+1)+'</span><span class="'+CLASS_EDITABLE_ELEMENT+'">'
 			html+= elements[i].innerHTML;
 			html+= '</span></div>';
@@ -2922,7 +2898,6 @@
     	html = '';
 		var base = i;
 		for (var i=0; i<elements.length; i++){
-		//	zone = getFootnotesZoneObject("#footNoteNumber"+(i+1));
 			html+='<div class="footnote"><span class="superindex">'+(i+base+1)+'</span><span class="'+CLASS_EDITABLE_ELEMENT+'">'
 			html+= elements[i].innerHTML;
 			html+= '</span></div>';
@@ -2930,28 +2905,6 @@
 		footnotesZone2.append(html);
 	}
 
-	function getFootnotesZoneObject(footNote){
-		if ($(footNote).length<=0){
-			return 1;
-		}
-
-		console.log("footNote.offset().top"+$(footNote).offset().top);
-		console.log("$(footnotes1).offset().top"+$("#footnotes1").offset().top);
-
-		if($(".page-break").length){
-			console.log($(".page-break"));
-		} else {
-			console.log("no pages breaks");
-
-		}
-
-		if($(footNote).offset().top<$("#footnotes1").offset().top){
-			return 0;
-		} else {
-			return 1;
-		}
-
-	}
 
 	/****************************************************************************************************
 	 **********                            COUNTRY-SELECTOR                                    **********
@@ -3138,7 +3091,7 @@
 
 			var update_epi_and_cgi_tables = $.when(
 					get_pops_at_risk,
-					updateNumberOfDivisions(subNationaSelectedLevel),
+					updateNumberOfDivisions(subNationaSelectedLevel)
 			).done(function(result){
 				writeTable(CGI_TABLE_NAME, "Body", generalInformationArray, LINES_BELOW_LABELS_CGI);
 				writeTable(EPI_TABLE_NAME, "Body", array, LINES_BELOW_LABELS_EPI);
@@ -3201,7 +3154,7 @@
     function fillOrgUnits(data, length, start){
         var orgUnit;
         for(var i=0;i<length;i++){
-            orgUnit = new Object();
+            orgUnit = {};
             orgUnit.value = data[i].id;
             orgUnit.label = data[i].displayName;
             organisationUnits.push(orgUnit);
@@ -3212,11 +3165,10 @@
 	* Generates a list of years from next year until 1900 and stores in generatedYears
 	*/
 	function generateYears(){
-		var years = [];
 		var year;
 		for (i = new Date().getFullYear() + 1; i > 1900; i--)
 		{
-			year = new Object();
+			year = {};
 			year.value = i;
 			year.label = i;
 			generatedYears.push(year);
@@ -3266,13 +3218,6 @@
 				e.preventDefault();
 				return false;
 		});
-
-
-
-		var thisYear = parseInt(getCurrentDate(true, false, false));
-		
-
-
 
 		$.when(getNumberOfDivisions(3, "id,displayName"), generateYears())
 			.done(function(nbOfDivisions){
