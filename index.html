@@ -1587,7 +1587,7 @@
 		var incidence, incidence_text;
 		for (var i = VL_INDEX; i<= ZCL_INDEX ; i++) {
 			// array[row][col], col = index + 1
-			incidence = percentageText(array[NEW_ROW][i+1] * 100, pop_at_risk_values[i], 2, false); // incd = 10000 * cases / pop_at_risk. 2 decimal places
+			incidence = percentageText(new_and_usnp_cases[i] * 100, pop_at_risk_values[i], 2, false); // incd = 10000 * cases / pop_at_risk. 2 decimal places
 			incidence_text = (!isNaN(incidence) || typeof incidence === 'string' ) ? incidence : WHEN_NO_DATA; // shows No data if denominator = 0 or no data
 			array[INCD_ROW][i+1] = incidence_text;
 		}
@@ -3533,10 +3533,10 @@
 			getAnalyticsDataForDX(INCIDENCE_FOR_CHARTS[CL_INDEX], historicLength, fillIncidenceChartArray, [CL_COLUMN]),
 			getAnalyticsDataForDX(INCIDENCE_FOR_CHARTS[ACL_INDEX], historicLength, fillIncidenceChartArray, [ACL_COLUMN]),
 			getAnalyticsDataForDX(INCIDENCE_FOR_CHARTS[ZCL_INDEX], historicLength, fillIncidenceChartArray, [ZCL_COLUMN]),
-			getAnalyticsDataForDX(DE.VL_EPI_Type + "." + TYPE_NEW_CASES, historicLength, fillNewCasesArray, [VL_COLUMN]),
-			getAnalyticsDataForDX(DE.CL_EPI_Type + "." + TYPE_NEW_CASES, historicLength, fillNewCasesArray, [CL_COLUMN]),
-			getAnalyticsDataForDX(DE.ACL_EPI_Type + "." + TYPE_NEW_CASES, historicLength, fillNewCasesArray, [ACL_COLUMN]),
-			getAnalyticsDataForDX(DE.ZCL_EPI_Type + "." + TYPE_NEW_CASES, historicLength, fillNewCasesArray, [ZCL_COLUMN]),
+			getAnalyticsDataForDX(NEW_AND_UNSP_CASES[VL_INDEX], historicLength, fillNewCasesArray, [VL_COLUMN]),
+			getAnalyticsDataForDX(NEW_AND_UNSP_CASES[CL_INDEX], historicLength, fillNewCasesArray, [CL_COLUMN]),
+			getAnalyticsDataForDX(NEW_AND_UNSP_CASES[ACL_INDEX], historicLength, fillNewCasesArray, [ACL_COLUMN]),
+			getAnalyticsDataForDX(NEW_AND_UNSP_CASES[ZCL_INDEX], historicLength, fillNewCasesArray, [ZCL_COLUMN]),
 			get_monthly_cases_for(CL_MONTHLY, ds.year, DE_MONTHLY.CL_CASES, CL_ROW),
 			get_monthly_cases_for(CL_MONTHLY, ds.year-1, DE_MONTHLY.CL_CASES, CL_PREVIOUS_YEAR_ROW),
 			get_monthly_cases_for(VL_MONTHLY, ds.year, DE_MONTHLY.VL_CASES, VL_ROW),
@@ -3758,7 +3758,7 @@
 				</div>
 				<div id="tabs-5">
 				Download here the LCPG manual: 
-                        <a href="files/user_manual_2019_10_29.pdf" target="_blank"><img src="img/icons/pdf.png" border=0></a>
+                        <a href="files/user_manual_2019_10_30.pdf" target="_blank"><img src="img/icons/pdf.png" border=0></a>
 				</div>
 			</div>
 			<hr>
