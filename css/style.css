@@ -78,6 +78,30 @@ img.center {
     margin: 0 auto;
 }
 
+.download_manual {
+  font-size: 11px;
+  color: grey;
+  font-weight: italic;
+}
+
+img.resize {
+  height: 36px;
+  width: auto;
+}
+
+/*autocomplete list menu*/
+
+.ui-autocomplete > li > div {
+  display: block;
+  padding: 3px 20px;
+  clear: both;
+  font-weight: normal;
+  font-size: 13px;
+  line-height: 1.75;
+  color: #333333;
+  white-space: nowrap;
+}
+
 .center_text{
 	text-align: center;
 }
@@ -321,6 +345,7 @@ input {
       max-width: 300px;
       padding: 10px;
       background-color: white;
+      font-size:12px;
     }
     
     /* Full-width input fields */
