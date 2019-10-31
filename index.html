@@ -1120,43 +1120,53 @@
 				skipPaging : true
 			}; 
 			return $.when(getParents(ds.countryID)).then(function(data){
-				var orgUnitArray = [];
+				var orgUnits = "";
 				if (typeof data.organisationUnits !== 'undefined' ) {
-					orgUnitArray = data.organisationUnits[0].path.replace(/^\/|\/$/, "").split("/");
+					orgUnits = data.organisationUnits[0].path.replace(/^\/|\/$/, "").replace(/\//g, ";");
 				}
 				storedFootnotes = [];
 				activeFootnotesPage1 = [];
 				activeFootnotesPage2 = [];
 				
-				return getAndFillEventsFor(FOOTNOTES, orgUnitArray, params);
+				var dimensions = [];
+				dimensions.push([RG_footnote_page]);
+				dimensions.push([RG_footnote_text]);
+				dimensions.push([RG_footnote_active]);
+				dimensions.push(["ou",orgUnits]);
+
+				var filters = [];
+
+				extraParams = "&ouMode=SELECTED&startDate=2010-01-01&endDate=2030-12-31&page=1&pageSize=10000";
+
+
+				return getQueryEvents(FOOTNOTES, dimensions, filters, OUTPUT_TYPE.EVENT, extraParams);
 			});
 		}
 	}
 
-	function getAndFillEventsFor(program, orgUnitArray, params){
-		return $.when(getEventsFor(program, orgUnitArray[0], params), orgUnitArray).then(function(eventRes, orgUnitArray){
-					for (var i = 0; i<eventRes[0].events.length; i++) {
-						var event = eventRes[0].events[i];
-						var  footnote = getValueForKey(event.dataValues, DE_KEY, RG_footnote_text, VALUE_KEY);
-						if (getValueForKey(event.dataValues, DE_KEY, RG_footnote_active, VALUE_KEY).localeCompare("true")==0) {
-							var page = getValueForKey(event.dataValues, DE_KEY, RG_footnote_page, VALUE_KEY);
-							if (page.localeCompare("2")==0) {
-								activeFootnotesPage2.push(footnote);
-							} else {
-								activeFootnotesPage1.push(footnote);
-							}
-						} else {
-							storedFootnotes.push(footnote);
-						}
-					}
-					
-					if (orgUnitArray.length <= 1) {
-						return;
-					} else {
-						return getAndFillEventsFor(program, orgUnitArray.slice(1), params);
-					}
-				});
+	function fillFootNotes(data){
+		var pageIndex = getHeaderIndex(data.headers, RG_footnote_page);
+		var fnIndex = getHeaderIndex(data.headers, RG_footnote_text);
+		var activeIndex = getHeaderIndex(data.headers, RG_footnote_active);
+
+		var page, active, fnText;
+		for (var i = 0; i<data.rows.length; i++) {
+			active = data.rows[i][activeIndex];
+			fnText = data.rows[i][fnIndex];
+
+			if (!!parseInt(active)){ // !! converts int to boolean
+				page = data.rows[i][pageIndex];
+				if (page.localeCompare("2")==0) {
+					activeFootnotesPage2.push(fnText);
+				} else {
+					activeFootnotesPage1.push(fnText);
+				}
+			} else {
+				storedFootnotes.push(fnText);
+			}
+		}
 	}
+
 
 	function getParents(id){
 		var params = {
@@ -2873,7 +2883,7 @@
 	}
 
 
-	function fillFootnotes(){
+	function writeFootnotes(){
 		var footnotesZone1 = $("#footnotes1");
 		var footnotesZone2 = $("#footnotes2");
 
@@ -3200,11 +3210,11 @@
 
 		// New footnote arrives 
 		$( "#sortable2" ).on( "sortupdate", function( event, ui ) {
-			fillFootnotes();
+			writeFootnotes();
 		} );	
 		// New footnote arrives 
 		$( "#sortable3" ).on( "sortupdate", function( event, ui ) {
-			fillFootnotes();
+			writeFootnotes();
 		} );
 
 		//TODO: fix contextmenu
@@ -3545,7 +3555,8 @@
 			get_monthly_cases_for(CL_MONTHLY, ds.year-1, DE_MONTHLY.ACL_CASES, ACL_PREVIOUS_YEAR_ROW),
 			get_monthly_cases_for(CL_MONTHLY, ds.year, DE_MONTHLY.ZCL_CASES, ZCL_ROW),
 			get_monthly_cases_for(CL_MONTHLY, ds.year-1, DE_MONTHLY.ZCL_CASES, ZCL_PREVIOUS_YEAR_ROW),
-			getFootnotes(defaultSubnationalLevel)).done(function(cgi,i1,i2,i3,i4,nc1,nc2,nc3,nc4,m1,m2,m3,m4,m5,m6,ls1,ls2,ls3,ls4,f1,tm1,le1,ft1){
+			getFootnotes(defaultSubnationalLevel)).done(function(epi,l1,l2,l3,l4,gho,dx1,dx2,dx3,dx4,dx5,dx6,dx7,dx8,
+																m1,m2,m3,m4,m5,m6,m7,m8,fndata){
 			// the code here will be executed when all four ajax requests resolve.
 			// a1, a2, a3 and a4 are lists of length 3 containing the response text,
 			// status, and jqXHR object for each of the four ajax calls respectively.
@@ -3562,10 +3573,11 @@
 				generate_cl_vl_new_monthly_charts();
 				generate_cl_vl_new_and_incidence_yearly_charts();
 
+				fillFootNotes(fndata);
 				fillHTMLListWithArray(SORTABLE_LIST_1_NAME, storedFootnotes, 'ui-state-default '+CLASS_EDITABLE_ELEMENT);
 				fillHTMLListWithArray(SORTABLE_LIST_2_NAME, activeFootnotesPage1, 'ui-state-highlight '+CLASS_EDITABLE_ELEMENT);
 				fillHTMLListWithArray(SORTABLE_LIST_3_NAME, activeFootnotesPage2, 'ui-state-highlight '+CLASS_EDITABLE_ELEMENT);
-				fillFootnotes();
+				writeFootnotes();
 
 				hideNoRelevantContent();
 				
