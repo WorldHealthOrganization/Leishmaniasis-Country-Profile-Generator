@@ -1111,37 +1111,33 @@
 	 ****************************************************************************************************/
 
 	function getFootnotes(subNationalLevel){
+	
+		var params = {
+			skipPaging : true
+		}; 
+		return $.when(getParents(ds.countryID)).then(function(data){
+			var orgUnits = "";
+			if (typeof data.organisationUnits !== 'undefined' ) {
+				orgUnits = data.organisationUnits[0].path.replace(/^\/|\/$/, "").replace(/\//g, ";");
+			}
+			storedFootnotes = [];
+			activeFootnotesPage1 = [];
+			activeFootnotesPage2 = [];
+			
+			var dimensions = [];
+			dimensions.push([RG_footnote_page]);
+			dimensions.push([RG_footnote_text]);
+			dimensions.push([RG_footnote_active]);
+			dimensions.push(["ou",orgUnits]);
 
-		if (subNationalLevel == NATIONAL_LEVEL){
-			// means the app has been relaunched
-			return;
-		} else {
-			var params = {
-				skipPaging : true
-			}; 
-			return $.when(getParents(ds.countryID)).then(function(data){
-				var orgUnits = "";
-				if (typeof data.organisationUnits !== 'undefined' ) {
-					orgUnits = data.organisationUnits[0].path.replace(/^\/|\/$/, "").replace(/\//g, ";");
-				}
-				storedFootnotes = [];
-				activeFootnotesPage1 = [];
-				activeFootnotesPage2 = [];
-				
-				var dimensions = [];
-				dimensions.push([RG_footnote_page]);
-				dimensions.push([RG_footnote_text]);
-				dimensions.push([RG_footnote_active]);
-				dimensions.push(["ou",orgUnits]);
+			var filters = [];
 
-				var filters = [];
-
-				extraParams = "&ouMode=SELECTED&startDate=2010-01-01&endDate=2030-12-31&page=1&pageSize=10000";
+			extraParams = "&ouMode=SELECTED&startDate=2010-01-01&endDate=2030-12-31&page=1&pageSize=10000";
 
 
-				return getQueryEvents(FOOTNOTES, dimensions, filters, OUTPUT_TYPE.EVENT, extraParams);
-			});
-		}
+			return getQueryEvents(FOOTNOTES, dimensions, filters, OUTPUT_TYPE.EVENT, extraParams);
+		});
+		
 	}
 
 	function fillFootNotes(data){
