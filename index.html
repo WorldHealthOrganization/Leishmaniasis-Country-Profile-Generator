@@ -60,7 +60,8 @@
  <script type="text/javascript" src ="js/largestRemainderRound.js"></script>
 <script type="text/javascript" src ="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js">//TODO:use the cdn officiel</script>
 <script type="text/javascript" src="../../../dhis-web-visualizer/chart.js"></script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.js"></script>
+<script type="text/javascript" src="js/Chart-2.7.3.js"></script>
+<!--<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.js"></script>-->
 
 <script type="text/javascript" src="../../../dhis-web-commons/javascripts/dhis2/dhis2.util.js"></script>
 <script type="text/javascript" src="../../../dhis-web-mapping/extjs/ext-all.js"></script>
@@ -1011,13 +1012,14 @@
 	var SORTABLE_LIST_2_NAME = "sortable2";
 	var SORTABLE_LIST_3_NAME = "sortable3";
 
-	var newCLCasesChartID = "chart0";	
-	var newAZCLCasesChartID = "chart1";
-	var newVLCasesChartID = "chart2";
+	var NEW_CASES_CL_CHART_ID = "chart0";	
+	var NEW_CASES_AZCL_CHART_ID = "chart1";
+	var NEW_CASES_VL_CHART_ID = "chart2";
+	var HIST_INCD_CL_CHART_ID = "chart3";
+	var HIST_INCD_AZCL_CHART_ID = "chart4";
+	var HIST_INCD_VL_CHART_ID = "chart5";
 
-	var newCLAndHistoricIncidenceID = "chart3";
-	var newAZCLAndHistoricIncidenceID = "chart4";
-	var newVLAndHistoricIncidenceID = "chart5";
+	var charts_array = [];
 
 	/* HTML elements */
 
@@ -1030,6 +1032,7 @@
 	var TOUTCOME_TABLE_NAME = "toutcomeTable";
 
 	var BUTTON_PREFIX = '_BUTTON_';
+	var DIV_FOR_CHART_PREFIX = "divForChart";
 	var CHART_PREFIX = "chart";
 	var LEGENDSET_PREFIX = "legendSet";
 	var LEGEND_PREFIX = "legend";
@@ -1046,6 +1049,9 @@
 
 
 	var dialog, editor;
+
+	var minCases, maxCases, minIncd, maxIncd;
+	var defaultMinCases, defaultMaxCases, defaultMinIncd, defaultMaxIncd;
 
 	var ds = {};
 
@@ -1111,7 +1117,7 @@
 	 ****************************************************************************************************/
 
 	function getFootnotes(subNationalLevel){
-	
+
 		var params = {
 			skipPaging : true
 		}; 
@@ -2608,14 +2614,14 @@
 		var acl_previous_year = monthlyArray[ACL_PREVIOUS_YEAR_ROW].slice(1,monthlyArray[ACL_PREVIOUS_YEAR_ROW].length);
 		var zcl_previous_year = monthlyArray[ZCL_PREVIOUS_YEAR_ROW].slice(1,monthlyArray[ZCL_PREVIOUS_YEAR_ROW].length);
 		var dataarrays = [acl_current_year, acl_previous_year, zcl_current_year, zcl_previous_year];
-		lineChart(newAZCLCasesChartID, CL_CASES_CHART_TITLE + yearsText, MONTHS_ABBREV, CL_CASES_CHART_Y_TITLE, labels, dataarrays, colors, true);
+		lineChart(NEW_CASES_AZCL_CHART_ID, CL_CASES_CHART_TITLE + yearsText, MONTHS_ABBREV, CL_CASES_CHART_Y_TITLE, labels, dataarrays, colors, true);
 
 		colors = [COLORS.blue, COLORS.blue];
 		labels = [CL_CHART_LEGEND + ds.year, CL_CHART_LEGEND + (ds.year-1)];
 		var cl_current_year = monthlyArray[CL_ROW].slice(1,monthlyArray[CL_ROW].length);
 		var cl_previous_year = monthlyArray[CL_PREVIOUS_YEAR_ROW].slice(1,monthlyArray[CL_PREVIOUS_YEAR_ROW].length);
 		var dataarrays = [cl_current_year, cl_previous_year];
-		lineChart(newCLCasesChartID, CL_CASES_CHART_TITLE + yearsText, MONTHS_ABBREV, CL_CASES_CHART_Y_TITLE, labels, dataarrays, colors, true);
+		lineChart(NEW_CASES_CL_CHART_ID, CL_CASES_CHART_TITLE + yearsText, MONTHS_ABBREV, CL_CASES_CHART_Y_TITLE, labels, dataarrays, colors, true);
 
 		var vl_current_year = monthlyArray[VL_ROW].slice(1,monthlyArray[VL_ROW].length);
 		var vl_previous_year = monthlyArray[VL_PREVIOUS_YEAR_ROW].slice(1,monthlyArray[VL_PREVIOUS_YEAR_ROW].length);
@@ -2623,7 +2629,7 @@
 		var vl_colors = [COLORS.violet, COLORS.violet];
 		var vl_labels = [VL_CHART_LEGEND + ds.year, VL_CHART_LEGEND + (ds.year-1)];
 
-		lineChart(newVLCasesChartID, VL_CASES_CHART_TITLE + yearsText, MONTHS_ABBREV, VL_CASES_CHART_Y_TITLE, vl_labels, vl_data_arrays, vl_colors, true);
+		lineChart(NEW_CASES_VL_CHART_ID, VL_CASES_CHART_TITLE + yearsText, MONTHS_ABBREV, VL_CASES_CHART_Y_TITLE, vl_labels, vl_data_arrays, vl_colors, true);
 
 	}
 
@@ -2636,7 +2642,7 @@
 		var dataArray = [historicIncidenceChart[ACL_COLUMN], historicIncidenceChart[ZCL_COLUMN], historicNewCases[ACL_COLUMN], historicNewCases[ZCL_COLUMN]];
 		var colorArray = [COLORS.blue, COLORS.green, COLORS.soft_blue, COLORS.soft_green];
 		var dataChartIDs= [DATASID.RIGHT, DATASID.RIGHT, DATASID.LEFT, DATASID.LEFT];
-		lineBarChart(newAZCLAndHistoricIncidenceID, CL_INCIDENCE_CHART_TITLE, dataLabelArray, CL_INCIDENCE_CHART_Y1_TITLE, CL_INCIDENCE_CHART_Y2_TITLE, charType, dataArray, colorArray, dataChartIDs);
+		lineBarChart(HIST_INCD_AZCL_CHART_ID, CL_INCIDENCE_CHART_TITLE, dataLabelArray, CL_INCIDENCE_CHART_Y1_TITLE, CL_INCIDENCE_CHART_Y2_TITLE, charType, dataArray, colorArray, dataChartIDs);
 
 
 
@@ -2645,7 +2651,7 @@
 		dataArray = [historicIncidenceChart[VL_COLUMN], historicNewCases[VL_COLUMN]];
 		colorArray = [COLORS.violet, COLORS.soft_violet];
 		dataChartIDs= [DATASID.RIGHT, DATASID.LEFT];
-		lineBarChart(newVLAndHistoricIncidenceID, VL_INCIDENCE_CHART_TITLE, dataLabelArray, VL_INCIDENCE_CHART_Y1_TITLE, VL_INCIDENCE_CHART_Y2_TITLE, charType, dataArray, colorArray, dataChartIDs);
+		lineBarChart(HIST_INCD_VL_CHART_ID, VL_INCIDENCE_CHART_TITLE, dataLabelArray, VL_INCIDENCE_CHART_Y1_TITLE, VL_INCIDENCE_CHART_Y2_TITLE, charType, dataArray, colorArray, dataChartIDs);
 
 
 		dataLabelArray = [CL_CHART_INCIDENCE_LEGEND, CL_CHART_CASES_LEGEND];
@@ -2653,7 +2659,7 @@
 		dataArray = [historicIncidenceChart[CL_COLUMN], historicNewCases[CL_COLUMN]];
 		colorArray = [COLORS.blue, COLORS.green];
 		dataChartIDs= [DATASID.RIGHT, DATASID.LEFT];
-		lineBarChart(newCLAndHistoricIncidenceID, CL_INCIDENCE_CHART_TITLE, dataLabelArray, CL_INCIDENCE_CHART_Y1_TITLE, CL_INCIDENCE_CHART_Y2_TITLE, charType, dataArray, colorArray, dataChartIDs);
+		lineBarChart(HIST_INCD_CL_CHART_ID, CL_INCIDENCE_CHART_TITLE, dataLabelArray, CL_INCIDENCE_CHART_Y1_TITLE, CL_INCIDENCE_CHART_Y2_TITLE, charType, dataArray, colorArray, dataChartIDs);
 
 	}
 
@@ -2693,7 +2699,7 @@
 		}
 		
 		var ctx = document.getElementById(htmlElementID);
-		var myChart = new Chart(ctx, {
+		charts_array[htmlElementID] = new Chart(ctx, {
 		type: 'line',
 		data: {
 			labels: x_labels,
@@ -2745,7 +2751,7 @@
 
 
 		var ctx = document.getElementById(htmlElementID);
-		var myChart = new Chart(ctx, {
+		charts_array[htmlElementID] = new Chart(ctx, {
 			type: 'bar',
 			data: {
 				labels: yearLabels,
@@ -2784,6 +2790,21 @@
 		});
 	}
 
+	function updateScale(chart, minCases, maxCases, minIncd, maxIncd) {
+
+		charts_array[chart].options.scales.yAxes[0].ticks = {
+				min: minCases,
+				max: maxCases,
+			};
+		if (charts_array[chart].options.scales.yAxes.length > 1) {
+			charts_array[chart].options.scales.yAxes[1].ticks = {
+				min: minIncd,
+				max: maxIncd,
+			};
+		}
+		charts_array[chart].update();
+	}
+
 	/****************************************************************************************************
 	 **********                               MAPS functions                                 **********
 	 ****************************************************************************************************/
@@ -2803,7 +2824,7 @@
 
 	function updateLegend(event) {
 		event.preventDefault();
-		var legend_index =  $('#legendSelector').val();
+		var legend_index =   parseInt($('#legendSelector').val()) -1 ; //first option is the "select text"
 		var position_index =  $('#positionLegendSelector').val();
 
 		moveLegend(legend_index, $('#'+MAP_PREFIX+ legend_index).find(LEGEND_POSITIONS[position_index]), LEGEND_TO_REPORT);
@@ -2816,10 +2837,55 @@
 
 	function updateMap(event) {
 		event.preventDefault();
-		var selected_map_index =  $('#mapSelector').val();
+		var selected_map_index =  parseInt($('#mapSelector').val()) - 1 ; //first option is the "select text"
 		var mapStyle = MAP_STYLE[$('#mapStyleSelector').val()];
 		// TODO: adapt to Maps
 		generateMap(selected_map_index, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity);
+		cleanUpdateMapForm();
+	}
+
+	function updateChart(event){
+		event.preventDefault();
+		if($("#chartPreview").html()){
+			var min_value = 0;
+			var id_num = $("#chartPreview").children()[0].id.split("chart").pop();
+			minCases = Number($("#minCases").val());
+			maxCases = Number($("#maxCases").val());				
+			minIncd = Number($("#minIncd").val());
+			maxIncd = Number($("#maxIncd").val());
+			updateScale(CHART_PREFIX+id_num, minCases, maxCases, minIncd, maxIncd);
+			$("#chartPreview").contents().appendTo("#"+DIV_FOR_CHART_PREFIX+id_num);
+
+		}
+		cleanUpdateChartForm();
+	
+	}
+
+	function cancelUpdateChart(event){
+		if($("#chartPreview").html()){
+			var min_value = 0;
+			var id_num = $("#chartPreview").children()[0].id.split("chart").pop();
+			updateScale(CHART_PREFIX+id_num, defaultMinCases, defaultMaxCases, defaultMinIncd, defaultMaxIncd);
+			$("#chartPreview").contents().appendTo("#"+DIV_FOR_CHART_PREFIX+id_num);
+		}	
+		cleanUpdateChartForm();
+	}
+
+	function cleanUpdateChartForm(){
+		$("#minIncd").val(null);
+		$("#maxIncd").val(null);
+		$("#minCases").val(null);
+		$("#maxCases").val(null);
+		$( "#chartSelector" ).val(0);
+		$( "#chartSelector" ).selectmenu( 'refresh', true);
+		setButtonDisabledTo("updateChartButton",true);
+		setButtonDisabledTo("cancelChartButton",true);
+	}
+
+	function cleanUpdateMapForm(){
+		setButtonDisabledTo("updateMapButton", true);
+		$( "#mapSelector" ).val(0);
+		$( "#mapSelector" ).selectmenu( 'refresh', true);
 	}
 	
 	function generateMapAndLegend(index){
@@ -3007,30 +3073,47 @@
 		// Listener chart buttons
 		$(":checkbox."+CHART_PREFIX).change(function() {
 			var index = Number(this.id.slice(this.id.length-1, this.id.length));
+			var chartSelectorIndex = index + 1;
 			var startingid = this.id.slice(0, -1-BUTTON_PREFIX.length);
+
+			// enables or disables the updatedMapButton
+			var selected_chart = parseInt($('#chartSelector').val()) - 1 ; //first option is the "select text"
+			if(selected_chart==index){
+				var checked = $("#"+CHART_PREFIX+BUTTON_PREFIX+index).prop('checked');			
+				cleanUpdateChartForm();
+			}
+
+			// enables or disables the options of the list
+			$("#"+CHART_PREFIX+index).toggle();
+			var changeOption = $('#' + startingid + OPTION_PREFIX + chartSelectorIndex);
+			changeOption.prop('disabled', function(_, attr){ return !attr});
+
 			var theCanvas = $('#'+startingid+index);
 			theCanvas.toggleClass('sameLine');
 			theCanvas.toggleClass('notShown');
-			
+
+			$( "#chartSelector" ).selectmenu( 'refresh', true);
 		});
 
 		//Listener for maps
 		$(":checkbox."+MAP_PREFIX).change(function() {
 			var index = Number(this.id.slice(this.id.length-1, this.id.length));
+			var mapSelectorIndex = index + 1;
 			var startingid = this.id.slice(0, -1-BUTTON_PREFIX.length);
+
+			// enables or disables the updatedMapButton
+			var selected_map =  parseInt($('#mapSelector').val()) - 1 ; //first option is the "select text"
+			if(selected_map==index){
+				var checked = $("#"+MAP_PREFIX+BUTTON_PREFIX+index).prop('checked');			
+				cleanUpdateMapForm();
+			}
 
 			// enables or disables the options of the list
 			$("#"+MAP_PREFIX+index).toggle();
-			var changeOption = $('#' + startingid + OPTION_PREFIX + index);
+			var changeOption = $('#' + startingid + OPTION_PREFIX + mapSelectorIndex);
 			changeOption.prop('disabled', function(_, attr){ return !attr});
 			$( "#mapSelector" ).selectmenu( 'refresh', true);
 
-			// enables or disables the updatedMapButton
-			var selected_map = $("#mapSelector").val();
-			if(selected_map==index){
-				var checked = $("#"+MAP_PREFIX+BUTTON_PREFIX+index).prop('checked');			
-				setButtonDisabledTo("updateMapButton", !checked);
-			}
 			updateMapsTitle();
 
 		});
@@ -3054,12 +3137,60 @@
 		});
 
 		// enables the updatedMapButton
-		 $('#mapSelector').on('selectmenuchange', function() {
+		$('#mapSelector').on('selectmenuchange', function() {
 			setButtonDisabledTo("updateMapButton", false);
 		}).change();
 
+		// enables the updatedChartButton
+		$('#chartSelector').on('selectmenuchange', function() {
+			setButtonDisabledTo("updateChartButton",false);
+			setButtonDisabledTo("cancelChartButton",false);
+			var selected_chart = parseInt($('#chartSelector').val()) - 1
+			if($("#chartPreview").html()){
+				var id_num = $("#chartPreview").children()[0].id.split("chart").pop();
+				$("#chartPreview").contents().appendTo("#"+DIV_FOR_CHART_PREFIX+id_num);
+			}
+			$("#"+DIV_FOR_CHART_PREFIX+selected_chart).contents().appendTo("#chartPreview");
+			
+			// retrieves current values from chart
+			if (typeof  charts_array[CHART_PREFIX+selected_chart].scales.right != 'undefined'){
+
+				defaultMinCases = charts_array[CHART_PREFIX+selected_chart].scales.left.min;
+				defaultMaxCases = charts_array[CHART_PREFIX+selected_chart].scales.left.max;
+				defaultMinIncd = charts_array[CHART_PREFIX+selected_chart].scales.right.min;
+				defaultMaxIncd = charts_array[CHART_PREFIX+selected_chart].scales.right.max;
+				
+				$("#minIncd").val(defaultMinIncd);
+				$("#maxIncd").val(defaultMaxIncd);
+			} else {
+				defaultMinCases = charts_array[CHART_PREFIX+selected_chart].scales["y-axis-0"].min;
+				defaultMaxCases = charts_array[CHART_PREFIX+selected_chart].scales["y-axis-0"].max;
+			
+			}
+			$("#minCases").val(defaultMinCases);
+			$("#maxCases").val(defaultMaxCases);
+		
+		}).change();
+
+		$(".chartParams").change(function(){
+			
+			if($("#chartPreview").html()){
+				var min_value = 0;
+				var id_num = $("#chartPreview").children()[0].id.split("chart").pop();
+				minCases = Number($("#minCases").val());
+				maxCases = Number($("#maxCases").val());				
+				minIncd = Number($("#minIncd").val());
+				maxIncd = Number($("#maxIncd").val());
+				updateScale(CHART_PREFIX+id_num, minCases, maxCases, minIncd, maxIncd);
+			}
+		});
+
+	
+
+
+
 		 $('#legendSelector').on('selectmenuchange', function() {
-			var selected_legend = $("#legendSelector").val();
+			var selected_legend = parseInt($("#legendSelector").val()) - 1 ; // fisrt option is the "select text"
 			setButtonDisabledTo("updateLegendButton", false);
 
 
@@ -3203,7 +3334,9 @@
 		
 		$( "#updateLegendButton" ).on( 'click', event, updateLegend);
 		$( "#updateMapButton" ).on( 'click', event, updateMap);
-
+		$( "#updateChartButton" ).on( 'click', event, updateChart);
+		$( "#cancelChartButton" ).on( 'click', event, cancelUpdateChart);
+		
 		// New footnote arrives 
 		$( "#sortable2" ).on( "sortupdate", function( event, ui ) {
 			writeFootnotes();
@@ -3349,22 +3482,31 @@
 
 		// maps jqueryui    
 		$( "#mapSelector" ).selectmenu();
+		$( "#chartSelector" ).selectmenu();
 		$( "#legendSelector" ).selectmenu();
 		$( "#positionLegendSelector" ).selectmenu();
 		$( "#subnationalLevelSelector" ).selectmenu();
 		$( "#mapStyleSelector" ).selectmenu();
 		$( "#updateMapButton").button();
+		$( "#updateChartButton").button();
+		$( "#cancelChartButton").button();
 		$( "#updateLegendButton").button();
 		$( ".radioButton" ).checkboxradio();
 
 
 
 		setButtonDisabledTo("updateMapButton", true);
+		setButtonDisabledTo("updateChartButton", true);
+		setButtonDisabledTo("cancelChartButton", true);
 		setButtonDisabledTo("updateLegendButton", true);
 		setOptionSelectMenu("positionLegendSelector", BOTTOM_RIGHT);
 
-		generateMapConfigurationList($("#mapSelector"), MAP_CHECKBOXES_LABELS, MAP_PREFIX);
-		generateMapConfigurationList($("#legendSelector"), MAP_CHECKBOXES_LABELS, LEGENDSET_PREFIX);
+		var mapOptions =  ["Select map"].concat(MAP_CHECKBOXES_LABELS);
+		var chartOptions = ["Select chart"].concat(CHART_CHECKBOXES_LABELS);
+		var legendOptions = ["Select legend"].concat(MAP_CHECKBOXES_LABELS);
+		generateMapConfigurationList($("#mapSelector"), mapOptions, MAP_PREFIX);
+		generateMapConfigurationList($("#chartSelector"), chartOptions, CHART_PREFIX);
+		generateMapConfigurationList($("#legendSelector"), legendOptions, LEGENDSET_PREFIX);
 		generateMapConfigurationList($("#positionLegendSelector"), LEGEND_POSITION_LABELS, LEGEND_PREFIX);
 		generateMapConfigurationList($("#mapStyleSelector"), MAP_STYLE_LABELS, MAP_STYLE_PREFIX);
 
@@ -3633,6 +3775,7 @@
    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400" />
    <link rel="stylesheet" href="css/style.css" type="text/css" />
 
+
    <!-- <link rel="stylesheet" href="../../../dhis-web-commons/javascripts/ext/resources/css/ext-plugin-gray.css" type="text/css" />-->
    <!---<link rel="stylesheet" href="../../../dhis-web-mapping/extjs/resources/css/ext-all-gray.css" type="text/css" />-->
 
@@ -3667,11 +3810,33 @@
 				<div id="tabs-2">	
 					<fieldset id="chartCheckboxes"></fieldset>
 					<fieldset id="chartConfiguration"><legend>Configure chart</legend>
-						<select disabled name="chartSelector" id="chartSelector">
-							<option disabled selected value>Select a chart</option>
-						</select>
-
-						<button disabled id="updateChartButton" class="ui-button ui-widget ui-corner-all">Update Chart</button>
+						<table id="chartConfigTable">
+							<tr>
+								<td colspan="3"><select name="chartSelector" id="chartSelector">
+								<option disabled selected value>Select a chart</option>
+								</select></td>
+							</tr>
+							<tr>
+								<td></td>
+								<td>min value</td>
+								<td>max value</td>
+							</tr>
+							<tr>
+								<td>Cases: </td>
+								<td><input type="number" class="chartParams" step="10" id="minCases"  min="0"  /></td>
+								<td><input type="number" class="chartParams" step="10" id="maxCases"  min="0" /></td>
+							</tr>
+							<tr>
+								<td>Incd: </td>
+								<td><input type="number" class="chartParams" step=".1" id="minIncd"  min="0"  /></td>
+								<td><input type="number" class="chartParams" step=".1" id="maxIncd"  min="0" /></td>
+							</tr>
+							<tr>
+								<td colspan="3"><button disabled id="updateChartButton" class="ui-button ui-widget ui-corner-all">Update Chart</button>
+								<button id="cancelChartButton" class="ui-button ui-widget ui-corner-all">Cancel</button></td>
+							</tr>
+						</table>
+						<div id ="chartPreview"></div>
 					</fieldset>
 				</div>
 				<div id="tabs-3">		
@@ -3822,14 +3987,14 @@
 		</div>
 
 		<div>
-			<canvas class="sameLine draggable chart" id="chart0" width="425" height="260" ></canvas>
-			<canvas class="sameLine draggable chart" id="chart1" width="425" height="260" ></canvas>
-			<canvas class="sameLine draggable chart" id="chart2" width="425" height="260" ></canvas>
+			<div id="divForChart0"><canvas class="sameLine draggable chart" id="chart0" width="425" height="260" ></canvas></div>
+			<div id="divForChart1"><canvas class="sameLine draggable chart" id="chart1" width="425" height="260" ></canvas></div>
+			<div id="divForChart2"><canvas class="sameLine draggable chart" id="chart2" width="425" height="260" ></canvas></div>
 		</div>
 		<div>
-			<canvas class="sameLine draggable chart" id="chart3" width="425" height="260" ></canvas>
-			<canvas class="sameLine draggable chart" id="chart4" width="425" height="260" ></canvas>
-			<canvas class="sameLine draggable chart" id="chart5" width="425" height="260" ></canvas>
+			<div id="divForChart3"><canvas class="sameLine draggable chart" id="chart3" width="425" height="260" ></canvas></div>
+			<div id="divForChart4"><canvas class="sameLine draggable chart" id="chart4" width="425" height="260" ></canvas></div>
+			<div id="divForChart5"><canvas class="sameLine draggable chart" id="chart5" width="425" height="260" ></canvas></div>
 		</div>
 
 		<div class="section">
@@ -3914,37 +4079,21 @@
 		<form action="javascript:checkMetadataAssignedToThisCountry()" class="form-container">
 	  
 		  <h2><div class="formTitle">Generate <br> Country Profile </div></h2>
-	  
-	  
-		  <label for="yearField"><b>Year</b></label>
-		  <input id="yearField" type="text" placeholder="Enter and select country name" name="yearField" required>
-	  
-	  
+		  
 		  <label for="targetCountry"><b>Country</b></label>
 		  <input  id="targetCountry" type="text" placeholder="Enter and select country name" name="targetCountry" required>
+	  
+		  <label for="yearField"><b>Year</b></label>
+		  <input id="yearField" type="text" placeholder="Enter and select year" name="yearField" required>
 							
 		  <div id= "metadataFeedback"></div>
 		  <button type="submit" class="btn">Start preparing CP</button>
 		  <br><br>
 		  <div class="download_manual">Download here the LCPG manual: 
-				  <a href="files/user_manual_2019_10_30.pdf" target="_blank"><img class="resize" src="img/icons/pdf.png" border=0></a></div>
+				<a href="files/user_manual_2019_10_30.pdf" target="_blank"><img class="resize" src="img/icons/pdf.png" border=0></a>
 		  </div>
-
 		</form>
+		<div id="footer"> LCPG v0.17 - 2019.11.04 </div>
 	</div>
-
-	<!--
-	<div id="dialog-country-selector" title="Select country and year">
-		<div id="country-selector" ></div>
-			Year: 
-		<input id="yearField">
-										
-		<div class="ui-widget">
-			<label for="targetCountry">Country: </label>
-			<input id="targetCountry">
-		</div>
-								
-	</div>
--->
 </body>
 </html>
