@@ -123,17 +123,17 @@
 	var LEVEL_REPORT_LABELS = new Array(4);
 	var ENDEMIC_SUBN_LEVEL_LABELS = new Array(4);
 	LEVEL_CONFIG_LABELS[NATIONAL_LEVEL] = "National level";
-	LEVEL_CONFIG_LABELS[SUBLEVEL1] = "1st sub-national administrative level";
-	LEVEL_CONFIG_LABELS[SUBLEVEL2] = "2nd sub-national administrative level";
-	LEVEL_CONFIG_LABELS[SUBLEVEL3] = "3rd sub-national administrative level";
+	LEVEL_CONFIG_LABELS[SUBLEVEL1] = "1<sup>st</sup> sub-national administrative level";
+	LEVEL_CONFIG_LABELS[SUBLEVEL2] = "2<sup>nd</sup> sub-national administrative level";
+	LEVEL_CONFIG_LABELS[SUBLEVEL3] = "3<sup>rd</sup> sub-national administrative level";
 	LEVEL_REPORT_LABELS[NATIONAL_LEVEL] = "National level, name:";
-	LEVEL_REPORT_LABELS[SUBLEVEL1] = "Number of 1st sub-national administrative level divisions, name:";
-	LEVEL_REPORT_LABELS[SUBLEVEL2] = "Number of 2nd sub-national administrative level divisions, name:";
-	LEVEL_REPORT_LABELS[SUBLEVEL3] = "Number of 3rd sub-national administrative level divisions, name:";
-	ENDEMIC_SUBN_LEVEL_LABELS[NATIONAL_LEVEL] = "Endemic divisions. National level (n):";
-	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL1] = "Number of endemic 1st sub-national administrative level divisions (n):";
-	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL2] = "Number of endemic 2nd sub-national administrative level divisions (n):";
-	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL3] = "Number of endemic 3rd sub-national administrative level divisions (n):";
+	LEVEL_REPORT_LABELS[SUBLEVEL1] = "Number of 1<sup>st</sup> sub-national administrative level divisions, name:";
+	LEVEL_REPORT_LABELS[SUBLEVEL2] = "Number of 2<sup>nd</sup> sub-national administrative level divisions, name:";
+	LEVEL_REPORT_LABELS[SUBLEVEL3] = "Number of 3<sup>rd</sup> sub-national administrative level divisions, name:";
+	ENDEMIC_SUBN_LEVEL_LABELS[NATIONAL_LEVEL] = "Endemic divisions. National level:";
+	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL1] = "Number of endemic 1<sup>st</sup> sub-national administrative level divisions:";
+	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL2] = "Number of endemic 2<sup>nd</sup> sub-national administrative level divisions:";
+	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL3] = "Number of endemic 3<sup>rd</sup> sub-national administrative level divisions:";
 
 	/* Texts on report */
 	var PUBLISHED_TEXT = "Published in ";
@@ -226,9 +226,9 @@
 						"Gender F/M (%):",
 						"GDP (PPP int $):",
 						"Income status:",
-						"Age group <15 / ≥ 15 years (%): ",
-						"Life expectancy at birth in years (F/M):",
-						"Number of 2nd sub-national administrative level<br>divisions, name:"
+						"Population, age group <15 / ≥ 15 years (%): ",
+						"Life expectancy at birth (F/M, years):",
+						LEVEL_REPORT_LABELS[SUBLEVEL2]
 						];
 
 	var LINES_BELOW_LABELS_CGI = [true,true,true,false,true,true,true];
@@ -274,14 +274,14 @@
 
 	var rowTitles = [	"Endemicity status:",
 						"Number of new cases (incidence):",
-						"Number of relapse cases:",
+						"Number of relapses:",
 						"Total number of cases:",
 						"Imported cases (#, %):",
-						"Gender distribution (%F):",
-						"Age group distribution (%, <5/5-14/>14):",
-						"Incidence rate (cases/10 000 population in endemic areas):",
+						"Gender distribution (% F):",
+						"Age group distribution (%, <5 / 5-14 / >14):",
+						"Incidence rate (cases/10,000 population in endemic areas):",
 						ENDEMIC_SUBN_LEVEL_LABELS[defaultSubnationalLevel],
-						"Population at risk (%, n/total):",
+						"Population at risk (%, # at risk / total population):",
 						"Was there any outbreak?",
 						"Number of new foci:"
 						];
@@ -469,8 +469,8 @@
 
 	var diagnosisLabels = [	"Number of people screened actively for:",
 							"Number of people screened passively for:",
-							"VL cases diagnosed by RDT<sup>*</sup><br>(%, RDT+ / new VL cases):",
-							"Proportion of positive RDT<sup>*</sup><br>(%, RDT+ / total RDT):",
+							"VL cases diagnosed by RDT<br>(%, # RDT+ / new VL cases):",
+							"Proportion of positive RDT<br>(%, # RDT+ / total RDT):",
 							"Cases diagnosed by direct exam<br>(parasitology) (%, # slides + / total cases):",
 							"Proportion of positive slides<br>(%, # slides + / total slides):",
 							"Cases diagnosed clinically<br>(%, # clinical cases / total cases): ",
@@ -501,7 +501,6 @@
 										"human immunodeficiency virus"
 										];
 
-	var DIAG_ASTERISK_RDT_COMMENT = "<span><sup>*</sup> These indicators apply only for primary VL cases</span>";
 	var PUT_NA_TEXT = true;
 
 	var LINES_BELOW_LABELS_DIAG = [false,true,false,true,false,false,true,true];
@@ -525,10 +524,10 @@
 	var CASE_FATALITY_ROW = 3;
 
 	var toutcomeLabels = new Array(4);
-	toutcomeLabels[PROPORTION_TREATED_CASES_ROW] = "Proportion of cases treated (%, # treated cases/ new cases):";
+	toutcomeLabels[PROPORTION_TREATED_CASES_ROW] = "Cases that completed treatment (%, # completed treatment / new cases):";
 	toutcomeLabels[INITIAL_CURE_RATE_ROW] = "Initial cure rate (%, # cases initially cured / new cases):";
-	toutcomeLabels[FAILURE_RATE_ROW] = "Failure rate (%, # patients with treatment failure / new cases):";
-	toutcomeLabels[CASE_FATALITY_ROW] = "Case fatality rate (%, # patients who died / new cases):";
+	toutcomeLabels[FAILURE_RATE_ROW] = "Failure rate (%, # cases with treatment failure / new cases):";
+	toutcomeLabels[CASE_FATALITY_ROW] = "Case fatality rate (%, # cases who died / new cases):";
 
 	var LINES_BELOW_LABELS_TREAT = [true, false, false, true];
 	var toutcomeArray = create_2_dim_array(toutcomeLabels.length, toutcomeLabels, LABELS_ON_COLUMNS);
@@ -1059,7 +1058,7 @@
  	 **********                    	     STATIC CONTENT FUNCTIONS         	           	       **********
 	 ****************************************************************************************************/
 	function fillTableHead(tableName, extName, firstColumn, headObjects){
-		var html = '<th>'+firstColumn+'</th>';
+		var html = '<th class="align_to_left titlesBlue">'+firstColumn+'</th>';
 		
 		for (var i=0; i<headObjects.length;i++){
 			html +='<th class="'+CLASS_EDITABLE_ELEMENT+'">'+headObjects[i]+'</th>';
@@ -1420,7 +1419,7 @@
 		return $.when(getAggregateEvents(program, dimensions, NULL_VALUE, filters, NULL_AGGR_TYPE, SKIP_PAGING, SKIP_META, OUTPUT_TYPE.EVENT))
 			.done(function(result){
 				var data = getAnalyticValueForKey(result, YEARLY_MODE);
-				array[THIRD_LEVEL_ROW][column] =  data[0] || WHEN_NO_DATA ;
+				array[THIRD_LEVEL_ROW][column] =  formatIntValue((data[0] || WHEN_NO_DATA), SAME, LOCALE_FORMAT);
 			});
 	}
 	
@@ -1592,7 +1591,8 @@
 		pop_at_risk_values[index] = parseInt(sumValueForHeader(data, headerIndex));
 		percentage =  percentageText(pop_at_risk_values[index], totalPopulation, 0, true);
 
-		array[RISK_ROW][column] = percentage + " " + pop_at_risk_values[index] + " / " + (totalPopulation || WHEN_NO_DATA);
+		array[RISK_ROW][column] = percentage + ", " + formatIntValue(pop_at_risk_values[index], SAME, LOCALE_FORMAT) 
+											+ " / " + formatIntValue((totalPopulation || WHEN_NO_DATA), SAME, LOCALE_FORMAT);
 	}
 
 	function fillArray_IncidenceRow(){
@@ -1653,9 +1653,9 @@
 		var unspecified = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED,epiDE], VALUE_KEY);
 		var total_cases_type = add([new_cases, relapse, unspecified]);
 		
-		array[NEW_ROW][column] = new_cases;
-		array[RELAPSE_ROW][column] = relapse;
-		array[TOTAL_ROW][column] = total_cases_type;
+		array[NEW_ROW][column] = formatIntValue(new_cases, SAME, LOCALE_FORMAT);
+		array[RELAPSE_ROW][column] = formatIntValue(relapse, SAME, LOCALE_FORMAT);
+		array[TOTAL_ROW][column] = formatIntValue(total_cases_type, SAME, LOCALE_FORMAT);
 
 		// sex distribution 
 		var new_unknown = getValueForKey(dataValues, [CC_KEY, DE_KEY],[NEW_UNKNOWN, GENDER_DE[column]], VALUE_KEY);
@@ -1712,7 +1712,7 @@
 		var total_origin_cases = add([origin_autoc, origin_imported, origin_unknown]);
 		array[IMPORTED_ROW][column] = origin_imported +
 									", " +
-									percentageText(origin_imported, total_origin_cases, 0, false);
+									percentageText(origin_imported, total_origin_cases, 0, true);
 
 		// Data to retrive depending on Leish type
 		switch(epiDE){
@@ -1739,9 +1739,9 @@
 
 		if (column == PKDL_COLUMN || column == MCL_COLUMN){
 			var cases = getValueForKey(dataValues, DE_KEY, epiPKDLMCLCases, VALUE_KEY);
-			array[NEW_ROW][column] = cases;
+			array[NEW_ROW][column] = formatIntValue(new_cases, SAME, LOCALE_FORMAT);
 			array[RELAPSE_ROW][column] = WHEN_NON_APPLICABLE;
-			array[TOTAL_ROW][column] = cases;
+			array[TOTAL_ROW][column] = array[NEW_ROW][column];
 			array[IMPORTED_ROW][column] = WHEN_NON_APPLICABLE; 
 
 			var male = getValueForKey(dataValues, [CC_KEY, DE_KEY],[MALE, GENDER_DE[column]], VALUE_KEY);
@@ -1775,8 +1775,8 @@
 			diagnosisArray[SCREENED_PASSIVELY_ROW][column] = WHEN_NON_APPLICABLE;
 		} else {
 			var screen_active = getValueForKey(dataValues, DE_KEY, DE_SCREEN_ACTIVE[column] , VALUE_KEY);
-			diagnosisArray[SCREENED_ACTIVELY_ROW][column] = screen_active;
-			diagnosisArray[SCREENED_PASSIVELY_ROW][column] = screen_passive[column-1];
+			diagnosisArray[SCREENED_ACTIVELY_ROW][column] = formatIntValue(screen_active, SAME, LOCALE_FORMAT);
+			diagnosisArray[SCREENED_PASSIVELY_ROW][column] = formatIntValue(screen_passive[column-1], SAME, LOCALE_FORMAT);
 		}
 		
 
@@ -2026,7 +2026,7 @@
 		// gets population in miles, transforms it in units and adds local separators
 		var popIn1000 = getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_Pop_Tot_1000, CC_DEFAULT], VALUE_KEY);
 		totalPopulation = parseInt(popIn1000) * 1000 ;
-		generalInformationArray[CIG_ROW_POP][1] = (totalPopulation || WHEN_NO_DATA).toLocaleString();
+		generalInformationArray[CIG_ROW_POP][1] = formatIntValue((totalPopulation || WHEN_NO_DATA), SAME, LOCALE_FORMAT);
 
 		// gets all population age slices and adds its by sex 
 		var popm = 0, popf = 0;
@@ -2039,8 +2039,10 @@
 		generalInformationArray[CIG_ROW_SEX][1] = (percentageText(popf, totalPopulation, 1, false) || WHEN_NO_DATA) + " / " + (percentageText(popm, totalPopulation, 1, false) || WHEN_NO_DATA);
 
 		// gets GDP
-		generalInformationArray[CIG_ROW_GDP][1] = getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_WB_GDP_PPP_current, CC_DEFAULT], VALUE_KEY);
-		
+		generalInformationArray[CIG_ROW_GDP][1] = formatIntValue(
+													getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_WB_GDP_PPP_current, CC_DEFAULT], VALUE_KEY), 
+													ROUND, LOCALE_FORMAT);
+
 		// gets income group codes to show code rather than a number
 		var ressource = "dataElements/"+DE_CGI.GEN_WB_IncomeGroup;
 		var fields = "optionSet[options[name,code]]";
@@ -2069,11 +2071,16 @@
 		}
 		console.log( "pop_under15 " + pop_under15);
 		console.log( "pop_over15 " + pop_over15);
-		generalInformationArray[CIG_ROW_AGEG][1] = (percentageText(pop_under15, totalPopulation, 1, false) || WHEN_NO_DATA) + " / " + (percentageText(pop_over15, totalPopulation, 1, false)  || WHEN_NO_DATA);
+		generalInformationArray[CIG_ROW_AGEG][1] = (percentageText(pop_under15, totalPopulation, 0, false) || WHEN_NO_DATA) + " / " + (percentageText(pop_over15, totalPopulation, 0, false)  || WHEN_NO_DATA);
 
-		generalInformationArray[CIG_ROW_LIFE][1] = getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_LifeExpBirth_Female, CC_DEFAULT], VALUE_KEY) +  
+		generalInformationArray[CIG_ROW_LIFE][1] = formatIntValue(
+														getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_LifeExpBirth_Female, CC_DEFAULT], VALUE_KEY), 
+														ROUND, INTEGER_FORMAT)  
 													" / " +
-													getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_LifeExpBirth_Male, CC_DEFAULT], VALUE_KEY)	;
+													formatIntValue(
+														getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_LifeExpBirth_Male, CC_DEFAULT], VALUE_KEY),
+														ROUND, INTEGER_FORMAT)  
+
 
 		setOptionSelectMenu("subnationalLevelSelector", defaultSubnationalLevel);
 		return updateNumberOfDivisions(defaultSubnationalLevel); // so it waits to have the information
@@ -2089,9 +2096,9 @@
 					get_subnational_endemicity_for(SUBN_ENDEMCTY, ds.year, subNationalLevel, SUB_ENDEMICITY.VL, VL_COLUMN))	
 				.done(function(result){
 					var numberOfDivisions = result.organisationUnits.length;
-					var aDivisionName = result.organisationUnits[0].name;
+					ds.divisionName = result.organisationUnits[0].name;
 					generalInformationArray[CIG_ROW_DIVIS][0] = LEVEL_REPORT_LABELS[subNationalLevel];
-					generalInformationArray[CIG_ROW_DIVIS][1] = numberOfDivisions + ", " + aDivisionName;
+					generalInformationArray[CIG_ROW_DIVIS][1] = numberOfDivisions + ", " + ds.divisionName;
 
 					// updates endemicity text at epi table
 					array[THIRD_LEVEL_ROW][0] = ENDEMIC_SUBN_LEVEL_LABELS[subNationalLevel];
@@ -2376,20 +2383,18 @@
 				return cases1 || cases2 || cases3 || WHEN_UNDEFINED;
 			}
 			else if (cases1 + cases2 + cases3 != total){
-				return 	"(" + 
-							percentageText(cases1, total, 0, false) + ", " +
-							percentageText(cases2, total, 0, false) + ", " +
-							percentageText(cases3, total, 0, false) + ")" + ". WARN. Original values do not add up to total.";
+				return 	percentageText(cases1, total, 0, false) + ", " +
+						percentageText(cases2, total, 0, false) + ", " +
+						percentageText(cases3, total, 0, false) + ". WARN. Original values do not add up to total.";
 			}
 			else {
 
 				var dataset = [cases1/total*100, cases2/total*100, cases3/total*100];
 				var percentages100 = largestRemainderRound(dataset, 100);
 				
-				return 	"(" + 
-							percentageText(percentages100[0], 100, 0, false) + ", " +
-							percentageText(percentages100[1], 100, 0, false) + ", " +
-							percentageText(percentages100[2], 100, 0, false) + ")";
+				return 	percentageText(percentages100[0], 100, 0, false) + ", " +
+						percentageText(percentages100[1], 100, 0, false) + ", " +
+						percentageText(percentages100[2], 100, 0, false);
 
 			}
 		}
@@ -2415,7 +2420,8 @@
 		}
 		else {
 			return 	percentageText(numerator, denominator, precision, percentageSymbol) + "  (" +
-			numerator + " / " + denominator + ")";
+					formatIntValue(numerator, SAME, LOCALE_FORMAT) + "/" + 
+					formatIntValue(denominator, SAME, LOCALE_FORMAT) + ")";
 		}
 	}
 
@@ -2542,7 +2548,6 @@
 		var text = [];
 		var separator = " and ";
 
-
 		if ($('#'+MAP_PREFIX+BUTTON_PREFIX+ ZCL_INDEX ).prop( "checked")){
 			text.push(COLUMNS_LABELS[ZCL_INDEX]);
 			text.push(separator);
@@ -2566,7 +2571,9 @@
 		text.pop();
 		text = text.reverse();
 
-		$('#mapsTitle').html(text.join(""));
+		$('#mapsTitleDis').html(text.join(""));
+		$('#mapsTitleLvl').html(ds.divisionName + " level");
+		$('#mapsTitleYear').html("(" + ds.year + ")");
  
 	}
 
@@ -3532,7 +3539,7 @@
 								DIAG_LEGEND_LABELS, 
 								DIAG_LEGEND_LABELS_DESC, 
 								PUT_NA_TEXT);
-		setTextUnderTables("textUnderDiagTable2", TEXT_UNDER_DIAG2, DIAG_LEGEND_LABELS_2, DIAG_LEGEND_LABELS_DESC_2, DIAG_ASTERISK_RDT_COMMENT);
+		setTextUnderTables("textUnderDiagTable2", TEXT_UNDER_DIAG2, DIAG_LEGEND_LABELS_2, DIAG_LEGEND_LABELS_DESC_2);
 		
 		text_values = [
 			"WHO Global",
@@ -3622,7 +3629,7 @@
 		
 		
 		fillTableHead(EPI_TABLE_NAME, "Head", '', COLUMNS_LABELS);
-		fillTableHead(MONTHLY_TABLE_NAME, "Head", '', MONTHS_ABBREV);
+		fillTableHead(MONTHLY_TABLE_NAME, "Head", ds.year, MONTHS_ABBREV);
 		fillTableHead(DIAG_TABLE_NAME, "Head", '', COLUMNS_LABELS);
 		fillTableHead(TOUTCOME_TABLE_NAME, "Head", TOUTCOME_TABLE_FIRST_COLUMNS, COLUMNS_LABELS.slice(0,4));
 
@@ -3986,7 +3993,7 @@
 		</div>
 
 		<div class="section">
-			<h4 class="editableElement footnotable" >Monthly distribution of new cases January-December</h4>
+			<h4 class="editableElement footnotable" >Monthly distribution of new cases (January-December)</h4>
 
 			<table id="monthlyTable" class="display" cellspacing="0" width="100%">
 					<thead>
@@ -4016,7 +4023,7 @@
 		<div class="pagebreak"></div>
 
 		<div class="section">
-			<h4 class="editableElement footnotable" >Distribution of <span style="color:red" id ="mapsTitle"></span> cases per 10 000 population</h4>
+			<h4 class="editableElement footnotable" >Disease distribution of new <span style="color:red" id ="mapsTitleDis"></span> cases at <span style="color:red" id ="mapsTitleLvl"></span> per 10,000 population <span id ="mapsTitleYear"></span></h4>
 			<div class="sameLine map"> <div id="map0" class="sameLine draggable"></div></div>
 			<div class="sameLine map"><div id="map1" class="sameLine draggable"></div></div>
 			<div class="sameLine map"><div id="map2" class="sameLine draggable"></div></div>
@@ -4104,7 +4111,7 @@
 				<a class="usermanual" target="_blank"><img class="resize" src="img/icons/pdf.png" border=0></a>
 		  </div>
 		</form>
-		<div id="footer"> LCPG v0.18 - 2019.11.04 </div>
+		<div id="footer"> LCPG v0.19 - 2019.11.05 </div>
 	</div>
 </body>
 </html>

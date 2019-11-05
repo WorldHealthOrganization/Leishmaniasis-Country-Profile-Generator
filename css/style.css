@@ -42,6 +42,10 @@ h4 {
   color: #029ADE;
 }
 
+.titlesBlue {
+  color: #029ADE;
+}
+
 h6 {
 	margin: 0px;
 }
@@ -106,8 +110,11 @@ img.resize {
 .center_text{
 	text-align: center;
 }
+.align_to_left{
+	text-align: left !important;
+}
 .align_to_right{
-	text-align:right;
+	text-align: right !important;
 }
 
 /* Organize content of div in equal-sized colons*/
@@ -184,7 +191,7 @@ th {
   border: none;
 }
 
-
+/*
 .twoColumns {
     column-count:2;
     -moz-column-count:2;
@@ -192,7 +199,7 @@ th {
     break-inside: avoid-column;
     -webkit-column-break-inside: avoid;
     width:900px;
-}
+}*/
 
 #tabs {
 	height:fit-content;
@@ -291,20 +298,14 @@ div.col {
 	font-size:12px;
 }
 
-#notaBene{
-	width: 200px;
-	height: 35px;	
-}
-#notaBeneMaps{
-	width: 864px;
-	height: 65px;
-}
 .notasBene{
 	font-size:10px;
 	padding: 4px;
 	border-style: solid;
-    border-width: thin;
-	margin: 0px 0px 10px 10px;
+  border-width: thin;
+  margin: 1px 10px 10px 10px;
+  width: fit-content;
+
 }
 
 #footer
