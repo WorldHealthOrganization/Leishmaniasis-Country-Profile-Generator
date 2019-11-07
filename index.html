@@ -656,11 +656,10 @@
 	};
 
 	var DE_CGI = {
-		GEN_UN_WPP_LifeExpBirth : "xy0cDgvrg5W",
 		GEN_WB_GDP_PPP_current : "w3XqypgTDEE",
-		GEN_UN_WPP_LifeExpBirth_Female : "tvvwAxsuRme",
+		GEN_UN_WPP_LifeExpBirth_Female : "P0Auj9njqhb",
 		GEN_UN_WPP_Pop_Tot_1000 : "WKJu1WytXzH",
-		GEN_UN_WPP_LifeExpBirth_Male : "PVTbouvgSzJ",
+		GEN_UN_WPP_LifeExpBirth_Male : "VLqzKAFFsh7",
 		GEN_WB_IncomeGroup : "Oov1cYM9y6o"
 	};
 
@@ -1977,7 +1976,7 @@
 		
 		generalInformationArray[CIG_ROW_LIFE][1] = formatIntValue(
 														getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_LifeExpBirth_Female, CC_DEFAULT], VALUE_KEY), 
-														ROUND, INTEGER_FORMAT)  
+														ROUND, INTEGER_FORMAT)  +
 													" / " +
 													formatIntValue(
 														getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_LifeExpBirth_Male, CC_DEFAULT], VALUE_KEY),
@@ -3272,7 +3271,7 @@
 				autocompleteSearcher("targetCountry", organisationUnits, doNothing, 2, 200);
 
 				country_selector_open();
-				DEBUG_AutomaticallyfillInitialForm();
+				//DEBUG_AutomaticallyfillInitialForm();
 
 			});
 		
@@ -4015,7 +4014,7 @@
 				<a class="usermanual" target="_blank"><img class="resize" src="img/icons/pdf.png" border=0></a>
 		  </div>
 		</form>
-		<div id="footer"> LCPG v0.19 - 2019.11.05 </div>
+		<div id="footer"> LCPG v0.20 - 2019.11.07 </div>
 	</div>
 </body>
 </html>
