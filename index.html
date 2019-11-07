@@ -658,7 +658,6 @@
 	var DE_CGI = {
 		GEN_UN_WPP_LifeExpBirth : "xy0cDgvrg5W",
 		GEN_WB_GDP_PPP_current : "w3XqypgTDEE",
-		GEN_UN_WPP_Pop_Tot_AgeSex_1000 : "uLpIADOetw7",
 		GEN_UN_WPP_LifeExpBirth_Female : "tvvwAxsuRme",
 		GEN_UN_WPP_Pop_Tot_1000 : "WKJu1WytXzH",
 		GEN_UN_WPP_LifeExpBirth_Male : "PVTbouvgSzJ",
@@ -668,93 +667,6 @@
 	var CGI_MALE = 0;
 	var CGI_FEMALE = 1;
 	var CGI_GENDER_UNKNOWN = 2;
-
-	var Y_UNDER_5 = 0;
-	var Y05_09 = 1;
-	var Y10_14 = 2;
-	var Y15_19 = 3;
-	var Y20_24 = 4;
-	var Y25_29 = 5;
-	var Y30_34 = 6;
-	var Y35_39 = 7;
-	var Y40_44 = 8;
-	var Y45_49 = 9;
-	var Y50_54 = 10;
-	var Y55_59 = 11;
-	var Y60_64 = 12;
-	var Y65_69 = 13;
-	var Y70_74 = 14;
-	var Y75_79 = 15;
-	var Y80_84 = 16;
-	var Y85_89 = 17;
-	var Y90_94 = 18;
-	var Y95_99 = 19;
-	var Y100_AND_OVER = 20;
-
-	var CC_CGI = create_2_dim_array(21, "", LABELS_ON_ROWS);
-	CC_CGI[Y20_24][CGI_FEMALE] = "SobJ4FGuBRA";
-	CC_CGI[Y10_14][CGI_FEMALE] = "oic7kU2uVtJ";
-	CC_CGI[Y65_69][CGI_GENDER_UNKNOWN] = "K3xHNQJ7dfA";
-	CC_CGI[Y90_94][CGI_FEMALE] = "kH3O17Sezfp";
-	CC_CGI[Y100_AND_OVER][CGI_FEMALE] = "gkeN62eQlSA";
-	CC_CGI[Y_UNDER_5][CGI_MALE] = "gWsMlGpOSzY";
-	CC_CGI[Y45_49][CGI_FEMALE] = "irBgvZTT9zq";
-	CC_CGI[Y80_84][CGI_FEMALE] = "BO8BiFA6WZo";
-	CC_CGI[Y85_89][CGI_MALE] = "avCYQARWeei";
-	CC_CGI[Y35_39][CGI_GENDER_UNKNOWN] = "JhZibEej5Ip";
-	CC_CGI[Y30_34][CGI_GENDER_UNKNOWN] = "r9jCuRLjAyg";
-	CC_CGI[Y15_19][CGI_GENDER_UNKNOWN] = "i0GLBPlRTrP";
-	CC_CGI[Y65_69][CGI_MALE] = "a2dH289sMou";
-	CC_CGI[Y70_74][CGI_GENDER_UNKNOWN] = "vq2MeIzidDv";
-	CC_CGI[Y80_84][CGI_MALE] = "BpI46BM32FB";
-	CC_CGI[Y85_89][CGI_FEMALE] = "hI8wdaiRHaS";
-	CC_CGI[Y15_19][CGI_FEMALE] = "adEelGXyPIn";
-	CC_CGI[Y05_09][CGI_GENDER_UNKNOWN] = "zsA0z1yxCyw";
-	CC_CGI[Y40_44][CGI_MALE] = "XucrdYEMOE7";
-	CC_CGI[Y60_64][CGI_MALE] = "Ss3gp5wAYOQ";
-	CC_CGI[Y70_74][CGI_FEMALE] = "Gh29gSpSYPp";
-	CC_CGI[Y_UNDER_5][CGI_FEMALE] = "o7NkWl5xFuS";
-	CC_CGI[Y45_49][CGI_GENDER_UNKNOWN] = "mx2Vqi1H3Hb";
-	CC_CGI[Y40_44][CGI_FEMALE] = "i6rBoDsk4LE";
-	CC_CGI[Y85_89][CGI_GENDER_UNKNOWN] = "ZMMTWSNKy8h";
-	CC_CGI[Y25_29][CGI_FEMALE] = "qdWOgC6bbBi";
-	CC_CGI[Y25_29][CGI_MALE] = "AJkBK9XBytM";
-	CC_CGI[Y45_49][CGI_MALE] = "BvCWyIwIqa8";
-	CC_CGI[Y100_AND_OVER][CGI_MALE] = "ttAEJltz1yh";
-	CC_CGI[Y15_19][CGI_MALE] = "xdAhLef7xG4";
-	CC_CGI[Y70_74][CGI_MALE] = "C0VIpje6ADR";
-	CC_CGI[Y60_64][CGI_GENDER_UNKNOWN] = "C9VfB7rurrS";
-	CC_CGI[Y90_94][CGI_MALE] = "PKDfpYDkyoy";
-	CC_CGI[Y05_09][CGI_MALE] = "lptUC1gVg8o";
-	CC_CGI[Y60_64][CGI_FEMALE] = "RJDdLqVGxu8";
-	CC_CGI[Y30_34][CGI_FEMALE] = "IVFKF7NzjJa";
-	CC_CGI[Y20_24][CGI_GENDER_UNKNOWN] = "zUaD2dW8jgR";
-	CC_CGI[Y35_39][CGI_FEMALE] = "Jkrg1KI25AV";
-	CC_CGI[Y50_54][CGI_MALE] = "RwwDYedBcDl";
-	CC_CGI[Y40_44][CGI_GENDER_UNKNOWN] = "qIa4UJxA58c";
-	CC_CGI[Y55_59][CGI_MALE] = "xaMRyDOevEu";
-	CC_CGI[Y95_99][CGI_GENDER_UNKNOWN] = "lRj2b3lwwiu";
-	CC_CGI[Y75_79][CGI_FEMALE] = "zvECz1sg3sj";
-	CC_CGI[Y65_69][CGI_FEMALE] = "ECle1XHoHZ2";
-	CC_CGI[Y100_AND_OVER][CGI_GENDER_UNKNOWN] = "URAmCjBqRHW";
-	CC_CGI[Y90_94][CGI_GENDER_UNKNOWN] = "eC3COFF4SAx";
-	CC_CGI[Y25_29][CGI_GENDER_UNKNOWN] = "BPDXuG96jbx";
-	CC_CGI[Y50_54][CGI_GENDER_UNKNOWN] = "VtRt5eBh10B";
-	CC_CGI[Y55_59][CGI_FEMALE] = "nJEkgZS74Tt";
-	CC_CGI[Y75_79][CGI_MALE] = "MKDYDGdryXB";
-	CC_CGI[Y50_54][CGI_FEMALE] = "B2cV93OdJpI";
-	CC_CGI[Y95_99][CGI_FEMALE] = "nHBTtdVMe7l";
-	CC_CGI[Y05_09][CGI_FEMALE] = "xodN5e1QCp6";
-	CC_CGI[Y10_14][CGI_MALE] = "o8dMMqNDCtr";
-	CC_CGI[Y_UNDER_5][CGI_GENDER_UNKNOWN] = "Bmz5QDlUZbl";
-	CC_CGI[Y80_84][CGI_GENDER_UNKNOWN] = "zx6ELNiPAq3";
-	CC_CGI[Y30_34][CGI_MALE] = "xsUkVS0PK0u";
-	CC_CGI[Y10_14][CGI_GENDER_UNKNOWN] = "YF8UKbqPrBb";
-	CC_CGI[Y35_39][CGI_MALE] = "VwZsMBUBdR1";
-	CC_CGI[Y75_79][CGI_GENDER_UNKNOWN] = "COVvK2lp01u";
-	CC_CGI[Y55_59][CGI_GENDER_UNKNOWN] = "kmnHzx1ulIk";
-	CC_CGI[Y95_99][CGI_MALE] = "kXo51Sydk1t";
-	CC_CGI[Y20_24][CGI_MALE] = "ZYAx6PjJ2ZM";
 
 	var CC_DEFAULT = "Xr12mI7VPn3";
 	var TYPE_NEW_CASES = "psVSPLclyFj";
@@ -879,6 +791,16 @@
 	var CL_UNKNOWN_UNS_UNS = "DwRc6xeV3LN";
 
 	/* Indicators*/
+	var UN_WPP = new Array(4);
+	var POP_AGE_U15 = 0;
+	var POP_AGE_OVER15 =  1;
+	var POP_GENDER_FEMALE = 2;
+	var POP_GENDER_MALE = 3;
+	UN_WPP[POP_AGE_U15] = "hB6weZHPrQs";
+	UN_WPP[POP_AGE_OVER15] = "fcvWkgE2D81";
+	UN_WPP[POP_GENDER_FEMALE] = "YqYnthOMpKZ";
+	UN_WPP[POP_GENDER_MALE] = "l8oBc9hn1OH";
+
 	var NEW_AND_UNSP_CASES = new Array(4);
 	NEW_AND_UNSP_CASES[VL_INDEX] = "TAi5pNjuxmq"; // NTD_LSH_VL_EPI_NewCases_I
 	NEW_AND_UNSP_CASES[CL_INDEX] = "CeO5dTNMbPp"; // NTD_LSH_CL_EPI_NewCases_I
@@ -989,6 +911,7 @@
 	var builtUrl;
 
 	var totalPopulation;
+	var un_wpp_data = Array(4);
 	var pop_at_risk_values = Array(6);
 	var new_and_usnp_cases = Array(5);
 	var total_treated = Array(5);
@@ -1640,6 +1563,15 @@
 			array[COUNTRY_ENDEMICITY_ROW][i+1] = endemicity_text;
 		}
 	}
+	
+	function fillUN_WPP(){
+
+		generalInformationArray[CIG_ROW_SEX][1] = (percentageText(un_wpp_data[POP_GENDER_FEMALE], 100, 1, false) || WHEN_NO_DATA) + " / " + (percentageText(un_wpp_data[POP_GENDER_FEMALE], 100, 1, false) || WHEN_NO_DATA);
+		generalInformationArray[CIG_ROW_AGEG][1] = (percentageText(un_wpp_data[POP_AGE_U15], 100, 0, false) || WHEN_NO_DATA) + " / " + (percentageText(un_wpp_data[POP_AGE_OVER15], 100, 0, false)  || WHEN_NO_DATA);
+	
+	}
+
+
 	/*
 		column :
 		epiDE : Epidemiology Data getElement
@@ -2028,16 +1960,6 @@
 		totalPopulation = parseInt(popIn1000) * 1000 ;
 		generalInformationArray[CIG_ROW_POP][1] = formatIntValue((totalPopulation || WHEN_NO_DATA), SAME, LOCALE_FORMAT);
 
-		// gets all population age slices and adds its by sex 
-		var popm = 0, popf = 0;
-		for (var i = Y_UNDER_5; i<= Y100_AND_OVER; i++ ) {
-			popf = add([popf, getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_Pop_Tot_AgeSex_1000, CC_CGI[i][CGI_FEMALE]], VALUE_KEY)]);
-			popm = add([popm, getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_Pop_Tot_AgeSex_1000, CC_CGI[i][CGI_MALE]], VALUE_KEY)]);
-		}
-		console.log( "popf " + popf);
-		console.log( "popm " + popm);
-		generalInformationArray[CIG_ROW_SEX][1] = (percentageText(popf, totalPopulation, 1, false) || WHEN_NO_DATA) + " / " + (percentageText(popm, totalPopulation, 1, false) || WHEN_NO_DATA);
-
 		// gets GDP
 		generalInformationArray[CIG_ROW_GDP][1] = formatIntValue(
 													getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_WB_GDP_PPP_current, CC_DEFAULT], VALUE_KEY), 
@@ -2053,33 +1975,13 @@
 			generalInformationArray[CIG_ROW_INCOME][1] = incomeName;
 		});
 		
-		// calculates 
-		var pop_under15 = 0, pop_over15 = 0;
-		for (var i = Y_UNDER_5; i<= Y10_14; i++ ) {
-			pop_under15 = add([pop_under15, 
-					getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_Pop_Tot_AgeSex_1000, CC_CGI[i][CGI_FEMALE]], VALUE_KEY),
-					getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_Pop_Tot_AgeSex_1000, CC_CGI[i][CGI_MALE]], VALUE_KEY),
-					getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_Pop_Tot_AgeSex_1000, CC_CGI[i][CGI_GENDER_UNKNOWN]], VALUE_KEY),
-							]);
-		}
-		for (var i = Y15_19; i<= Y100_AND_OVER; i++ ) {
-			pop_over15 = add([pop_over15, 
-					getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_Pop_Tot_AgeSex_1000, CC_CGI[i][CGI_FEMALE]], VALUE_KEY),
-					getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_Pop_Tot_AgeSex_1000, CC_CGI[i][CGI_MALE]], VALUE_KEY),
-					getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_Pop_Tot_AgeSex_1000, CC_CGI[i][CGI_GENDER_UNKNOWN]], VALUE_KEY),
-							]);
-		}
-		console.log( "pop_under15 " + pop_under15);
-		console.log( "pop_over15 " + pop_over15);
-		generalInformationArray[CIG_ROW_AGEG][1] = (percentageText(pop_under15, totalPopulation, 0, false) || WHEN_NO_DATA) + " / " + (percentageText(pop_over15, totalPopulation, 0, false)  || WHEN_NO_DATA);
-
 		generalInformationArray[CIG_ROW_LIFE][1] = formatIntValue(
 														getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_LifeExpBirth_Female, CC_DEFAULT], VALUE_KEY), 
 														ROUND, INTEGER_FORMAT)  
 													" / " +
 													formatIntValue(
 														getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_LifeExpBirth_Male, CC_DEFAULT], VALUE_KEY),
-														ROUND, INTEGER_FORMAT)  
+														ROUND, INTEGER_FORMAT)  ;
 
 
 		setOptionSelectMenu("subnationalLevelSelector", defaultSubnationalLevel);
@@ -3370,7 +3272,7 @@
 				autocompleteSearcher("targetCountry", organisationUnits, doNothing, 2, 200);
 
 				country_selector_open();
-				//DEBUG_AutomaticallyfillInitialForm();
+				DEBUG_AutomaticallyfillInitialForm();
 
 			});
 		
@@ -3657,6 +3559,7 @@
 			.then( function(){return getPopulationAtRiskFor(POP_AT_RISK[ZCL_INDEX], ZCL_COLUMN, defaultSubnationalLevel);} );
 
 		var epi_incidence_async = $.when(
+			getAnalyticsDataForDX(UN_WPP, 0, fillIndicatorArray, [UN_WPP, un_wpp_data]),
 			getAnalyticsDataForDX(NEW_AND_UNSP_CASES, 0, fillIndicatorArray, [NEW_AND_UNSP_CASES, new_and_usnp_cases]),
 			getAnalyticsDataForDX(SCREEN_PASSIVE, 0, fillIndicatorArray, [SCREEN_PASSIVE, screen_passive]),
 			getAnalyticsDataForDX(TREAT_COMPLETED, 0, fillIndicatorArray, [TREAT_COMPLETED, total_treated]),
@@ -3665,7 +3568,8 @@
 			get_azcl_cases(),	
 			get_pops_at_risk) // gets popAtRisks who is needed for EPI incidence
 			//.then(function(){ return fillArray_IncidenceRow(VL_COLUMN); });
-			.then( function(nc, sp, tc, data_cl, data_vl, data_azcl){
+			.then( function(un, nc, sp, tc, data_cl, data_vl, data_azcl){
+				fillUN_WPP();
 				fillArray(data_cl.dataValues, CL_COLUMN, DE.CL_EPI_Type); 
 				fillArray(data_cl.dataValues, MCL_COLUMN, DE.MCL_EPI_Type, DE.MCL_GEN_EPID_cases); 
 
