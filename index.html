@@ -98,7 +98,7 @@
 	var WHEN_DIV_0 = "-";
 	var ERROR = "Error!";
 
-	var HISTORIC_DEFAULT_VALUE = 15;
+	var HISTORIC_DEFAULT_VALUE = 16; // includes current year
 
 	var BOTTOM_LINE_CLASS = "bottom_line";
 
@@ -1416,10 +1416,10 @@
 	/**
 	* gets analytics data from dx for pe ds.year
 	* filter: ou: ds.countryID
-	* yearsInThePast: number of previous years to include
+	* yearsToInclude: number of years to include starting by the current year
 	* thenFunction(data, thenFParams)
 	*/
-	function getAnalyticsDataForDX(dx_dimension, yearsInThePast, thenFunction, thenFParams){
+	function getAnalyticsDataForDX(dx_dimension, yearsToInclude, thenFunction, thenFParams){
 		var dx_dimension_treated = "";
 		if (Array.isArray(dx_dimension)){
 			for (var i = 0; i<dx_dimension.length; i++){
@@ -1437,7 +1437,7 @@
 			skipMeta:"true"
 		};
 
-		for (var i=1; i<=yearsInThePast; i++){
+		for (var i=0; i<yearsToInclude; i++){
 			params.dimension[1] +=";"+(ds.year-i);
 		}
 		var builtUrl = buildAPIUrl(ANALYTICS, params);
@@ -2158,7 +2158,7 @@
 				dxColumn = j;
 			}
 		}
-		var returnValues = new Array(historicLength);
+		var returnValues = new Array(historicLength); 
 
 		switch(mode){
 			case YEARLY_MODE:
@@ -3558,10 +3558,10 @@
 			.then( function(){return getPopulationAtRiskFor(POP_AT_RISK[ZCL_INDEX], ZCL_COLUMN, defaultSubnationalLevel);} );
 
 		var epi_incidence_async = $.when(
-			getAnalyticsDataForDX(UN_WPP, 0, fillIndicatorArray, [UN_WPP, un_wpp_data]),
-			getAnalyticsDataForDX(NEW_AND_UNSP_CASES, 0, fillIndicatorArray, [NEW_AND_UNSP_CASES, new_and_usnp_cases]),
-			getAnalyticsDataForDX(SCREEN_PASSIVE, 0, fillIndicatorArray, [SCREEN_PASSIVE, screen_passive]),
-			getAnalyticsDataForDX(TREAT_COMPLETED, 0, fillIndicatorArray, [TREAT_COMPLETED, total_treated]),
+			getAnalyticsDataForDX(UN_WPP, 1, fillIndicatorArray, [UN_WPP, un_wpp_data]),
+			getAnalyticsDataForDX(NEW_AND_UNSP_CASES, 1, fillIndicatorArray, [NEW_AND_UNSP_CASES, new_and_usnp_cases]),
+			getAnalyticsDataForDX(SCREEN_PASSIVE, 1, fillIndicatorArray, [SCREEN_PASSIVE, screen_passive]),
+			getAnalyticsDataForDX(TREAT_COMPLETED, 1, fillIndicatorArray, [TREAT_COMPLETED, total_treated]),
 			get_cl_cases(), // gets cl cases who is needed for EPI incidence
 			get_vl_cases(), 
 			get_azcl_cases(),	
@@ -4014,7 +4014,7 @@
 				<a class="usermanual" target="_blank"><img class="resize" src="img/icons/pdf.png" border=0></a>
 		  </div>
 		</form>
-		<div id="footer"> LCPG v0.20 - 2019.11.07 </div>
+		<div id="footer"> LCPG v0.21 - 2019.11.08 </div>
 	</div>
 </body>
 </html>
