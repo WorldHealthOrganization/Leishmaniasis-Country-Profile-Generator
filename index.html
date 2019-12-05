@@ -143,7 +143,7 @@
 	var ZCL_CHART_LEGEND = "ZCL ";
 	var TOUTCOME_TABLE_FIRST_COLUMNS = "INITIAL TREATMENT OUTCOME FOR NEW CASES";
 
-	var CHART_CHECKBOXES_LABELS = ["CL monthly", "AZCL monthly", "VL monthly", "CL yearly", "AZCL yearly", "VL yearly" ];
+	var CHART_CHECKBOXES_LABELS = ["VL monthly", "CL monthly", "AZCL monthly", "VL yearly", "CL yearly", "AZCL yearly"];
 
 	var TWO_VALUES_SEPARATOR = " / ";
 
@@ -2671,9 +2671,12 @@
 				scales: {
 					yAxes: [{
 						id: DATASID.LEFT,
-						stacked: true,
 						type: 'linear',
 						position: 'left',
+						stacked: true,
+						ticks: {
+							beginAtZero:true
+						},
 						scaleLabel:{
 							display: true,
 							labelString: y1Title
@@ -2689,7 +2692,10 @@
 							display: true,
 							labelString: y2Title
 						}
-					}]
+					}],
+					xAxes: [{
+                            stacked: true
+                        }],
 				},
 				title:{
 						display: true,
@@ -3273,7 +3279,7 @@
 				autocompleteSearcher("targetCountry", organisationUnits, doNothing, 2, 200);
 
 				country_selector_open();
-				//DEBUG_AutomaticallyfillInitialForm();
+			//	DEBUG_AutomaticallyfillInitialForm();
 
 			});
 		
