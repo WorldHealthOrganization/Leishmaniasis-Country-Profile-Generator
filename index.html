@@ -1496,7 +1496,7 @@
 		for (var i = 0; i<data.rows.length; i++){
 			var id = data.rows[i][dx_header];
 			var index = arrayReference.indexOf(id);
-			arrayName[index] = parseInt(data.rows[i][value_header]);
+			arrayName[index] = parseFloat(data.rows[i][value_header]);
 		}
 
 	}
@@ -1565,7 +1565,7 @@
 	
 	function fillUN_WPP(){
 
-		generalInformationArray[CIG_ROW_SEX][1] = (percentageText(un_wpp_data[POP_GENDER_FEMALE], 100, 1, false) || WHEN_NO_DATA) + " / " + (percentageText(un_wpp_data[POP_GENDER_FEMALE], 100, 1, false) || WHEN_NO_DATA);
+		generalInformationArray[CIG_ROW_SEX][1] = (percentageText(un_wpp_data[POP_GENDER_FEMALE], 100, 1, false) || WHEN_NO_DATA) + " / " + (percentageText(un_wpp_data[POP_GENDER_MALE], 100, 1, false) || WHEN_NO_DATA);
 		generalInformationArray[CIG_ROW_AGEG][1] = (percentageText(un_wpp_data[POP_AGE_U15], 100, 0, false) || WHEN_NO_DATA) + " / " + (percentageText(un_wpp_data[POP_AGE_OVER15], 100, 0, false)  || WHEN_NO_DATA);
 	
 	}
@@ -3273,7 +3273,7 @@
 				autocompleteSearcher("targetCountry", organisationUnits, doNothing, 2, 200);
 
 				country_selector_open();
-				DEBUG_AutomaticallyfillInitialForm();
+				//DEBUG_AutomaticallyfillInitialForm();
 
 			});
 		
