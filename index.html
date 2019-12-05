@@ -1016,9 +1016,9 @@
 
 		var html = '';
 
-		if (firstText === true){
+		if (firstText == true){
 			html +='<span class="' + CLASS_EDITABLE_ELEMENT + '">N/A not applicable</span>';
-		} else if (firstText === false){
+		} else if (firstText == false){
 			html +='';
 		} else {
 			html +=firstText;
@@ -3279,7 +3279,7 @@
 				autocompleteSearcher("targetCountry", organisationUnits, doNothing, 2, 200);
 
 				country_selector_open();
-			//	DEBUG_AutomaticallyfillInitialForm();
+				DEBUG_AutomaticallyfillInitialForm();
 
 			});
 		
@@ -3447,8 +3447,8 @@
 		setTextUnderTables("textUnderDiagTable1", TEXT_UNDER_DIAG1, 
 								DIAG_LEGEND_LABELS, 
 								DIAG_LEGEND_LABELS_DESC, 
-								PUT_NA_TEXT);
-		setTextUnderTables("textUnderDiagTable2", TEXT_UNDER_DIAG2, DIAG_LEGEND_LABELS_2, DIAG_LEGEND_LABELS_DESC_2);
+								false);
+		setTextUnderTables("textUnderDiagTable2", TEXT_UNDER_DIAG2, DIAG_LEGEND_LABELS_2, DIAG_LEGEND_LABELS_DESC_2, PUT_NA_TEXT);
 		
 		text_values = [
 			"WHO Global",
