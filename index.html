@@ -1669,8 +1669,8 @@
 		/* only PKDL and MCL TODO: place that if that's true */
 
 		if (column == PKDL_COLUMN || column == MCL_COLUMN){
-			var cases = getValueForKey(dataValues, DE_KEY, epiPKDLMCLCases, VALUE_KEY);
-			array[NEW_ROW][column] = formatIntValue(new_cases, SAME, LOCALE_FORMAT);
+			var pkdl_cases = getValueForKey(dataValues, DE_KEY, epiPKDLMCLCases, VALUE_KEY);
+			array[NEW_ROW][column] = formatIntValue(pkdl_cases, SAME, LOCALE_FORMAT);
 			array[RELAPSE_ROW][column] = WHEN_NON_APPLICABLE;
 			array[TOTAL_ROW][column] = array[NEW_ROW][column];
 			array[IMPORTED_ROW][column] = WHEN_NON_APPLICABLE; 
