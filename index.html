@@ -2968,15 +2968,15 @@
 		$(":checkbox."+LEISH_COLUMN_DETAIL_PREFIX).change(function() {
 				var index = Number(this.id.slice(this.id.length-1, this.id.length));
 				$('#epiTable tr, #diagTable tr, #toutcomeTable tr').each(function() {
-					$(this).find("td,th").eq(index+1).toggle();
+					$(this).find("td,th").eq(index+1).toggle(); // +1 since first column are texts
 				});
 
 				// text descriptions under tables
 				$('#textUnderEpiTable').each(function() {
-					$(this).find("span").eq(index+1).toggle();
+					$(this).find("span").eq(index+1).toggle(); // +1 since N/A is at first position
 				});
 				$('#textUnderDiagTable1').each(function() {
-					$(this).find("span").eq(index+1).toggle();
+					$(this).find("span").eq(index).toggle();
 				});
 			}
 		);
@@ -4039,7 +4039,7 @@
 				<a class="usermanual" target="_blank"><img class="resize" src="img/icons/pdf.png" border=0></a>
 		  </div>
 		</form>
-		<div id="footer"> LCPG v0.24.TEST - 2019.12.05 </div>
+		<div id="footer"> LCPG v0.24 - 2019.12.06 </div>
 	</div>
 </body>
 </html>
