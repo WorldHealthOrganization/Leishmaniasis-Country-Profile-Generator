@@ -143,7 +143,8 @@
 	var ZCL_CHART_LEGEND = "ZCL ";
 	var TOUTCOME_TABLE_FIRST_COLUMNS = "INITIAL TREATMENT OUTCOME FOR NEW CASES";
 
-	var CHART_CHECKBOXES_LABELS = ["VL monthly", "CL monthly", "AZCL monthly", "VL yearly", "CL yearly", "AZCL yearly"];
+	var MONTHLY_CHART_LABELS = ["VL monthly", "CL monthly", "AZCL monthly"];
+	var YEARLY_CHART_LABELS = ["VL yearly", "CL yearly", "AZCL yearly"];
 
 	var TWO_VALUES_SEPARATOR = " / ";
 
@@ -933,13 +934,6 @@
 	var SORTABLE_LIST_2_NAME = "sortable2";
 	var SORTABLE_LIST_3_NAME = "sortable3";
 
-	var NEW_CASES_CL_CHART_ID = "chart1";	
-	var NEW_CASES_AZCL_CHART_ID = "chart2";
-	var NEW_CASES_VL_CHART_ID = "chart0";
-	var HIST_INCD_CL_CHART_ID = "chart4";
-	var HIST_INCD_AZCL_CHART_ID = "chart5";
-	var HIST_INCD_VL_CHART_ID = "chart3";
-
 	var charts_array = [];
 
 	/* HTML elements */
@@ -953,8 +947,11 @@
 	var TOUTCOME_TABLE_NAME = "toutcomeTable";
 
 	var BUTTON_PREFIX = '_BUTTON_';
-	var DIV_FOR_CHART_PREFIX = "divForChart";
-	var CHART_PREFIX = "chart";
+	var DIV = "divFor";
+	var CHART = "chart";
+	var MONTHLY = "monthly";
+	var YEARLY = "yearly";
+
 	var LEGENDSET_PREFIX = "legendSet";
 	var LEGEND_PREFIX = "legend";
 	var LEISH_COLUMN_DETAIL_PREFIX = "LeishDetail";
@@ -1001,8 +998,12 @@
 		htmlObject.html(html);
 	}
 
-	function generateMapConfigurationList(htmlObject, labels, prefix){
+	function generateMapConfigurationList(htmlObject, labels, prefix, keepHTML){
 		var html = '';
+
+		if (keepHTML) {
+			html = htmlObject.html();
+		}
 		
 		for (var i=0; i<labels.length; i++){
 			html+='<option id="' + prefix + OPTION_PREFIX + i + '" value="' + i + '" >';
@@ -2399,19 +2400,19 @@
 			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+CL_ROW).trigger('click');
 
 			// CL charts
-			$('#'+CHART_PREFIX+BUTTON_PREFIX+"0").trigger('click');
-			$('#'+CHART_PREFIX+BUTTON_PREFIX+"3").trigger('click');
-			$('#'+MAP_PREFIX+BUTTON_PREFIX+ CL_INDEX ).trigger('click');
+			$('#'+MONTHLY + CHART + BUTTON_PREFIX + CL_INDEX).trigger('click');
+			$('#'+YEARLY + CHART + BUTTON_PREFIX + CL_INDEX).trigger('click');
+			$('#'+MAP_PREFIX + BUTTON_PREFIX + CL_INDEX ).trigger('click');
 		}
 
 		// deactivates VL content if no VL dataset is assigned to the country
 		if (!dsinfo[VL_DETAILED][ASSG] && !dsinfo[VL_SIMPLE][ASSG]){
 			$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(VL_COLUMN-1)).trigger('click');
 
-			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+VL_ROW).trigger('click');//.prop('checked', false);
-			$('#'+CHART_PREFIX+BUTTON_PREFIX+"2").trigger('click');
-			$('#'+CHART_PREFIX+BUTTON_PREFIX+"5").trigger('click');
-			$('#'+MAP_PREFIX+BUTTON_PREFIX+ VL_INDEX ).trigger('click');
+			$('#'+ MONTHLY_TABLE_NAME + BUTTON_PREFIX + VL_ROW).trigger('click');//.prop('checked', false);
+			$('#'+ MONTHLY + CHART + BUTTON_PREFIX + VL_INDEX).trigger('click');
+			$('#'+ YEARLY + CHART + BUTTON_PREFIX + VL_INDEX).trigger('click');
+			$('#'+ MAP_PREFIX+BUTTON_PREFIX + VL_INDEX ).trigger('click');
 		}
 
 		// deactivates AZCL content if no AZCL dataset is assigned to the country
@@ -2422,8 +2423,8 @@
 			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+ACL_ROW).trigger('click');
 			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+ZCL_ROW).trigger('click');
 			
-			$('#'+CHART_PREFIX+BUTTON_PREFIX+"1").trigger('click');
-			$('#'+CHART_PREFIX+BUTTON_PREFIX+"4").trigger('click');
+			$('#'+ MONTHLY + CHART + BUTTON_PREFIX + ACL_INDEX).trigger('click');
+			$('#'+ YEARLY + CHART + BUTTON_PREFIX + ACL_INDEX).trigger('click');
 			$('#'+MAP_PREFIX+BUTTON_PREFIX+ ACL_INDEX ).trigger('click');
 			$('#'+MAP_PREFIX+BUTTON_PREFIX+ ZCL_INDEX ).trigger('click');
 
@@ -2524,14 +2525,14 @@
 		var acl_previous_year = monthlyArray[ACL_PREVIOUS_YEAR_ROW].slice(1,monthlyArray[ACL_PREVIOUS_YEAR_ROW].length);
 		var zcl_previous_year = monthlyArray[ZCL_PREVIOUS_YEAR_ROW].slice(1,monthlyArray[ZCL_PREVIOUS_YEAR_ROW].length);
 		var dataarrays = [acl_current_year, acl_previous_year, zcl_current_year, zcl_previous_year];
-		lineChart(NEW_CASES_AZCL_CHART_ID, CL_CASES_CHART_TITLE + yearsText, MONTHS_ABBREV, CL_CASES_CHART_Y_TITLE, labels, dataarrays, colors, true);
+		lineChart(MONTHLY+CHART+ACL_INDEX, CL_CASES_CHART_TITLE + yearsText, MONTHS_ABBREV, CL_CASES_CHART_Y_TITLE, labels, dataarrays, colors, true);
 
 		colors = [COLORS.blue, COLORS.blue];
 		labels = [CL_CHART_LEGEND + ds.year, CL_CHART_LEGEND + (ds.year-1)];
 		var cl_current_year = monthlyArray[CL_ROW].slice(1,monthlyArray[CL_ROW].length);
 		var cl_previous_year = monthlyArray[CL_PREVIOUS_YEAR_ROW].slice(1,monthlyArray[CL_PREVIOUS_YEAR_ROW].length);
 		var dataarrays = [cl_current_year, cl_previous_year];
-		lineChart(NEW_CASES_CL_CHART_ID, CL_CASES_CHART_TITLE + yearsText, MONTHS_ABBREV, CL_CASES_CHART_Y_TITLE, labels, dataarrays, colors, true);
+		lineChart(MONTHLY+CHART+CL_INDEX, CL_CASES_CHART_TITLE + yearsText, MONTHS_ABBREV, CL_CASES_CHART_Y_TITLE, labels, dataarrays, colors, true);
 
 		var vl_current_year = monthlyArray[VL_ROW].slice(1,monthlyArray[VL_ROW].length);
 		var vl_previous_year = monthlyArray[VL_PREVIOUS_YEAR_ROW].slice(1,monthlyArray[VL_PREVIOUS_YEAR_ROW].length);
@@ -2539,7 +2540,7 @@
 		var vl_colors = [COLORS.violet, COLORS.violet];
 		var vl_labels = [VL_CHART_LEGEND + ds.year, VL_CHART_LEGEND + (ds.year-1)];
 
-		lineChart(NEW_CASES_VL_CHART_ID, VL_CASES_CHART_TITLE + yearsText, MONTHS_ABBREV, VL_CASES_CHART_Y_TITLE, vl_labels, vl_data_arrays, vl_colors, true);
+		lineChart(MONTHLY+CHART+VL_INDEX, VL_CASES_CHART_TITLE + yearsText, MONTHS_ABBREV, VL_CASES_CHART_Y_TITLE, vl_labels, vl_data_arrays, vl_colors, true);
 
 	}
 
@@ -2552,7 +2553,7 @@
 		var dataArray = [historicIncidenceChart[ACL_COLUMN], historicIncidenceChart[ZCL_COLUMN], historicNewCases[ACL_COLUMN], historicNewCases[ZCL_COLUMN]];
 		var colorArray = [COLORS.blue, COLORS.green, COLORS.soft_blue, COLORS.soft_green];
 		var dataChartIDs= [DATASID.RIGHT, DATASID.RIGHT, DATASID.LEFT, DATASID.LEFT];
-		lineBarChart(HIST_INCD_AZCL_CHART_ID, CL_INCIDENCE_CHART_TITLE, dataLabelArray, CL_INCIDENCE_CHART_Y1_TITLE, CL_INCIDENCE_CHART_Y2_TITLE, charType, dataArray, colorArray, dataChartIDs);
+		lineBarChart(YEARLY+CHART+ACL_INDEX, CL_INCIDENCE_CHART_TITLE, dataLabelArray, CL_INCIDENCE_CHART_Y1_TITLE, CL_INCIDENCE_CHART_Y2_TITLE, charType, dataArray, colorArray, dataChartIDs);
 
 
 
@@ -2561,7 +2562,7 @@
 		dataArray = [historicIncidenceChart[VL_COLUMN], historicNewCases[VL_COLUMN]];
 		colorArray = [COLORS.violet, COLORS.soft_violet];
 		dataChartIDs= [DATASID.RIGHT, DATASID.LEFT];
-		lineBarChart(HIST_INCD_VL_CHART_ID, VL_INCIDENCE_CHART_TITLE, dataLabelArray, VL_INCIDENCE_CHART_Y1_TITLE, VL_INCIDENCE_CHART_Y2_TITLE, charType, dataArray, colorArray, dataChartIDs);
+		lineBarChart(YEARLY+CHART+VL_INDEX, VL_INCIDENCE_CHART_TITLE, dataLabelArray, VL_INCIDENCE_CHART_Y1_TITLE, VL_INCIDENCE_CHART_Y2_TITLE, charType, dataArray, colorArray, dataChartIDs);
 
 
 		dataLabelArray = [CL_CHART_INCIDENCE_LEGEND, CL_CHART_CASES_LEGEND];
@@ -2569,7 +2570,7 @@
 		dataArray = [historicIncidenceChart[CL_COLUMN], historicNewCases[CL_COLUMN]];
 		colorArray = [COLORS.blue, COLORS.green];
 		dataChartIDs= [DATASID.RIGHT, DATASID.LEFT];
-		lineBarChart(HIST_INCD_CL_CHART_ID, CL_INCIDENCE_CHART_TITLE, dataLabelArray, CL_INCIDENCE_CHART_Y1_TITLE, CL_INCIDENCE_CHART_Y2_TITLE, charType, dataArray, colorArray, dataChartIDs);
+		lineBarChart(YEARLY+CHART+CL_INDEX, CL_INCIDENCE_CHART_TITLE, dataLabelArray, CL_INCIDENCE_CHART_Y1_TITLE, CL_INCIDENCE_CHART_Y2_TITLE, charType, dataArray, colorArray, dataChartIDs);
 
 	}
 
@@ -2764,13 +2765,14 @@
 		event.preventDefault();
 		if($("#chartPreview").html()){
 			var min_value = 0;
-			var id_num = $("#chartPreview").children()[0].id.split("chart").pop();
+			var type = $("#chartPreview").children()[0].id.split(CHART)[0];
+			var id_num = $("#chartPreview").children()[0].id.split(CHART)[1];
 			minCases = Number($("#minCases").val());
 			maxCases = Number($("#maxCases").val());				
 			minIncd = Number($("#minIncd").val());
 			maxIncd = Number($("#maxIncd").val());
-			updateScale(CHART_PREFIX+id_num, minCases, maxCases, minIncd, maxIncd);
-			$("#chartPreview").contents().appendTo("#"+DIV_FOR_CHART_PREFIX+id_num);
+			updateScale(type+CHART+id_num, minCases, maxCases, minIncd, maxIncd);
+			$("#chartPreview").contents().appendTo("#"+DIV+type+CHART+id_num);
 
 		}
 		cleanUpdateChartForm();
@@ -2780,9 +2782,10 @@
 	function cancelUpdateChart(event){
 		if($("#chartPreview").html()){
 			var min_value = 0;
-			var id_num = $("#chartPreview").children()[0].id.split("chart").pop();
-			updateScale(CHART_PREFIX+id_num, defaultMinCases, defaultMaxCases, defaultMinIncd, defaultMaxIncd);
-			$("#chartPreview").contents().appendTo("#"+DIV_FOR_CHART_PREFIX+id_num);
+			var type = $("#chartPreview").children()[0].id.split(CHART)[0];
+			var id_num = $("#chartPreview").children()[0].id.split(CHART)[1];
+			updateScale(type+CHART+id_num, defaultMinCases, defaultMaxCases, defaultMinIncd, defaultMaxIncd);
+			$("#chartPreview").contents().appendTo("#"+DIV+type+CHART+id_num);
 		}	
 		cleanUpdateChartForm();
 	}
@@ -2792,7 +2795,7 @@
 		$("#maxIncd").val(null);
 		$("#minCases").val(null);
 		$("#maxCases").val(null);
-		$( "#chartSelector" ).val(0);
+		$( "#chartSelector" ).prop("selectedIndex", 0);
 		$( "#chartSelector" ).selectmenu( 'refresh', true);
 		setButtonDisabledTo("updateChartButton",true);
 		setButtonDisabledTo("cancelChartButton",true);
@@ -2987,26 +2990,30 @@
 		});
 		
 		// Listener chart buttons
-		$(":checkbox."+CHART_PREFIX).change(function() {
+		$(":checkbox."+MONTHLY+CHART+", "+":checkbox."+YEARLY+CHART).change(function() {
 			var index = Number(this.id.slice(this.id.length-1, this.id.length));
-			var chartSelectorIndex = index + 1;
-			var startingid = this.id.slice(0, -1-BUTTON_PREFIX.length);
+			var type = this.id.split(CHART+BUTTON_PREFIX)[0];
+			//var chartSelectorIndex = index + 1;
 
 			// enables or disables the updatedMapButton
-			var selected_chart = parseInt($('#chartSelector').val()) - 1 ; //first option is the "select text"
-			if(selected_chart==index){
-				var checked = $("#"+CHART_PREFIX+BUTTON_PREFIX+index).prop('checked');			
+			var selected_chart_index = parseInt($('#chartSelector').val());
+			var selected_chart_type = $("#chartSelector option:selected" ).text().split(" ")[1];
+
+			if(selected_chart_index == index && selected_chart_type.localeCompare(type) == 0 ){
+				var checked = $("#"+type+CHART+BUTTON_PREFIX+index).prop('checked');			
 				cleanUpdateChartForm();
 			}
-
+			
 			// enables or disables the options of the list
-			$("#"+CHART_PREFIX+index).toggle();
-			var changeOption = $('#' + startingid + OPTION_PREFIX + chartSelectorIndex);
+			var changeOption = $('#' + type + CHART + OPTION_PREFIX + index);
 			changeOption.prop('disabled', function(_, attr){ return !attr});
 
-			var theCanvas = $('#'+startingid+index);
+			// togles the chart
+			$("#"+type+CHART+index).toggle();
+
+			var theCanvas = $('#'+type + CHART + index);
 			theCanvas.toggleClass('sameLine');
-			theCanvas.toggleClass('notShown');
+			theCanvas.toggleClass('notShown');			
 
 			$( "#chartSelector" ).selectmenu( 'refresh', true);
 		});
@@ -3061,26 +3068,32 @@
 		$('#chartSelector').on('selectmenuchange', function() {
 			setButtonDisabledTo("updateChartButton",false);
 			setButtonDisabledTo("cancelChartButton",false);
-			var selected_chart = parseInt($('#chartSelector').val()) - 1
+			var index = parseInt($('#chartSelector').val());
+			var type = $("#chartSelector option:selected" ).text().split(" ")[1];
+
+			// puts back the already present chart
 			if($("#chartPreview").html()){
-				var id_num = $("#chartPreview").children()[0].id.split("chart").pop();
-				$("#chartPreview").contents().appendTo("#"+DIV_FOR_CHART_PREFIX+id_num);
+				var old_type = $("#chartPreview").children()[0].id.split(CHART)[0];
+				var old_index = $("#chartPreview").children()[0].id.split(CHART)[1];
+				$("#chartPreview").contents().appendTo("#"+DIV+old_type+CHART+old_index);
 			}
-			$("#"+DIV_FOR_CHART_PREFIX+selected_chart).contents().appendTo("#chartPreview");
+			
+			// puts the selected one in the chartPreview
+			$("#"+DIV+type+CHART+index).contents().appendTo("#chartPreview");
 			
 			// retrieves current values from chart
-			if (typeof  charts_array[CHART_PREFIX+selected_chart].scales.right != 'undefined'){
+			if (typeof  charts_array[type+CHART+index].scales.right != 'undefined'){
 
-				defaultMinCases = charts_array[CHART_PREFIX+selected_chart].scales.left.min;
-				defaultMaxCases = charts_array[CHART_PREFIX+selected_chart].scales.left.max;
-				defaultMinIncd = charts_array[CHART_PREFIX+selected_chart].scales.right.min;
-				defaultMaxIncd = charts_array[CHART_PREFIX+selected_chart].scales.right.max;
+				defaultMinCases = charts_array[type+CHART+index].scales.left.min;
+				defaultMaxCases = charts_array[type+CHART+index].scales.left.max;
+				defaultMinIncd = charts_array[type+CHART+index].scales.right.min;
+				defaultMaxIncd = charts_array[type+CHART+index].scales.right.max;
 				
 				$("#minIncd").val(defaultMinIncd);
 				$("#maxIncd").val(defaultMaxIncd);
 			} else {
-				defaultMinCases = charts_array[CHART_PREFIX+selected_chart].scales["y-axis-0"].min;
-				defaultMaxCases = charts_array[CHART_PREFIX+selected_chart].scales["y-axis-0"].max;
+				defaultMinCases = charts_array[type+CHART+index].scales["y-axis-0"].min;
+				defaultMaxCases = charts_array[type+CHART+index].scales["y-axis-0"].max;
 			
 			}
 			$("#minCases").val(defaultMinCases);
@@ -3092,12 +3105,13 @@
 			
 			if($("#chartPreview").html()){
 				var min_value = 0;
-				var id_num = $("#chartPreview").children()[0].id.split("chart").pop();
+				var type = $("#chartPreview").children()[0].id.split(CHART)[0];
+				var id_num = $("#chartPreview").children()[0].id.split(CHART)[1];
 				minCases = Number($("#minCases").val());
 				maxCases = Number($("#maxCases").val());				
 				minIncd = Number($("#minIncd").val());
 				maxIncd = Number($("#maxIncd").val());
-				updateScale(CHART_PREFIX+id_num, minCases, maxCases, minIncd, maxIncd);
+				updateScale(type+CHART+id_num, minCases, maxCases, minIncd, maxIncd);
 			}
 		});
 
@@ -3387,7 +3401,8 @@
 
 		generateCheckboxes($("#leish_detail_checkboxes"), COLUMNS_LABELS, "Leishmaniasis types to show:", LEISH_COLUMN_DETAIL_PREFIX, -1);
 		generateCheckboxes($("#monthlyCheckboxes"), MONTHLY_LABELS, "Leishmaniasis types to show in monthly table:", MONTHLY_TABLE_NAME, -1);
-		generateCheckboxes($("#chartCheckboxes"), CHART_CHECKBOXES_LABELS, "Charts to show", CHART_PREFIX, 2);
+		generateCheckboxes($("#monthlyChartCheckboxes"), MONTHLY_CHART_LABELS, "Monthly charts to show", MONTHLY+CHART, -1);
+		generateCheckboxes($("#yearlyChartCheckboxes"), YEARLY_CHART_LABELS, "Yearly charts to show", YEARLY+CHART, -1);
 		generateCheckboxes($("#mapCheckboxes"), MAP_CHECKBOXES_LABELS, "Maps to show", MAP_PREFIX, -1);
 
 		addListenersToCheckboxes();
@@ -3423,13 +3438,13 @@
 		setOptionSelectMenu("positionLegendSelector", BOTTOM_RIGHT);
 
 		var mapOptions =  ["Select map"].concat(MAP_CHECKBOXES_LABELS);
-		var chartOptions = ["Select chart"].concat(CHART_CHECKBOXES_LABELS);
 		var legendOptions = ["Select legend"].concat(MAP_CHECKBOXES_LABELS);
-		generateMapConfigurationList($("#mapSelector"), mapOptions, MAP_PREFIX);
-		generateMapConfigurationList($("#chartSelector"), chartOptions, CHART_PREFIX);
-		generateMapConfigurationList($("#legendSelector"), legendOptions, LEGENDSET_PREFIX);
-		generateMapConfigurationList($("#positionLegendSelector"), LEGEND_POSITION_LABELS, LEGEND_PREFIX);
-		generateMapConfigurationList($("#mapStyleSelector"), MAP_STYLE_LABELS, MAP_STYLE_PREFIX);
+		generateMapConfigurationList($("#mapSelector"), mapOptions, MAP_PREFIX, false);
+		generateMapConfigurationList($("#chartSelector"), MONTHLY_CHART_LABELS, MONTHLY+CHART, true);
+		generateMapConfigurationList($("#chartSelector"), YEARLY_CHART_LABELS, YEARLY+CHART, true);
+		generateMapConfigurationList($("#legendSelector"), legendOptions, LEGENDSET_PREFIX, false);
+		generateMapConfigurationList($("#positionLegendSelector"), LEGEND_POSITION_LABELS, LEGEND_PREFIX, false);
+		generateMapConfigurationList($("#mapStyleSelector"), MAP_STYLE_LABELS, MAP_STYLE_PREFIX, false);
 
 		// Disables Google options
 		$('#' + MAP_STYLE_PREFIX + OPTION_PREFIX + GOOGLE_STREETS).prop('disabled', function(_, attr){ return !attr});
@@ -3438,7 +3453,7 @@
 
 		setOptionSelectMenu("mapStyleSelector", OSM_LIGHT);
 		
-		generateMapConfigurationList($("#subnationalLevelSelector"), LEVEL_CONFIG_LABELS, LEVEL_PREFIX);
+		generateMapConfigurationList($("#subnationalLevelSelector"), LEVEL_CONFIG_LABELS, LEVEL_PREFIX, false);
 
 		fillNotaBene();
 		fillNotaBeneMaps();
@@ -3737,7 +3752,8 @@
 					</p>
 				</div>
 				<div id="tabs-2">	
-					<fieldset id="chartCheckboxes"></fieldset>
+					<fieldset id="monthlyChartCheckboxes"></fieldset>
+					<fieldset id="yearlyChartCheckboxes"></fieldset>
 					<fieldset id="chartConfiguration"><legend>Configure chart</legend>
 						<table id="chartConfigTable">
 							<tr>
@@ -3916,15 +3932,15 @@
 		</div>
 
 		<div>
-			<div id="divForChart0" class="sameLine draggable"><canvas class="chart" id="chart0" width="400" height="240" ></canvas></div>
-			<div id="divForChart1" class="sameLine draggable"><canvas class="chart" id="chart1" width="400" height="240" ></canvas></div>
-			<div id="divForChart2" class="sameLine draggable"><canvas class="chart" id="chart2" width="400" height="240" ></canvas></div>
+			<div id ="divFormonthlychart0" class="sameLine draggable"><canvas class="chart" id="monthlychart0" width="400" height="240" ></canvas></div>
+			<div id ="divFormonthlychart1"class="sameLine draggable"><canvas class="chart" id="monthlychart1" width="400" height="240" ></canvas></div>
+			<div id ="divFormonthlychart2" class="sameLine draggable"><canvas class="chart" id="monthlychart2" width="400" height="240" ></canvas></div>
 		</div>
 		<h4 class="editableElement footnotable" >Number of new cases and Incidence rate/10,000 at the national level from <span id ="chartTitleFirstYear"></span> to <span id ="chartTitleLastYear"></span></h4>
 		<div>
-			<div id="divForChart3" class="sameLine draggable"><canvas class="chart" id="chart3" width="400" height="240" ></canvas></div>
-			<div id="divForChart4" class="sameLine draggable"><canvas class="chart" id="chart4" width="400" height="240" ></canvas></div>
-			<div id="divForChart5" class="sameLine draggable"><canvas class="chart" id="chart5" width="400" height="240" ></canvas></div>
+			<div id ="divForyearlychart0" class="sameLine draggable"><canvas class="chart" id="yearlychart0" width="400" height="240" ></canvas></div>
+			<div id ="divForyearlychart1" class="sameLine draggable"><canvas class="chart" id="yearlychart1" width="400" height="240" ></canvas></div>
+			<div id ="divForyearlychart2" class="sameLine draggable"><canvas class="chart" id="yearlychart2" width="400" height="240" ></canvas></div>
 		</div>
 
 		<div class="section">
