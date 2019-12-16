@@ -536,13 +536,13 @@
 	var historicLength = HISTORIC_DEFAULT_VALUE;
 	var historicIncidenceChart = create_2_dim_array(5,"",LABELS_ON_ROWS);
 	var historicNewCases = create_2_dim_array(5,"",LABELS_ON_ROWS);
-
+/*
 	var ITxO_DRUG_DE = new Array(5);
 	ITxO_DRUG_DE[VL_COLUMN] = "ossDxe1C4F2";  // VL_INIT_OUTCOME_Drug_Type
 	ITxO_DRUG_DE[CL_COLUMN] = "OjY8uiHVetP";  // CL_ITxO_Tx-route
 	ITxO_DRUG_DE[ACL_COLUMN] = "GXyfQMlaXEn"; // ACL_ITxO_Tx-drug
 	ITxO_DRUG_DE[ZCL_COLUMN] = "GPG5qCJ65uO"; // ZCL_ITxO_Tx-drug
-
+*/
 	var ITx_TREAT_DE = new Array(5);
 	ITx_TREAT_DE[VL_COLUMN] = "PUD4SrCGSZE";  // VL_TREAT_completed
 	ITx_TREAT_DE[CL_COLUMN] = "daJVc4WMhye";  // CL_TREAT_completed
@@ -718,7 +718,7 @@
 	/* Treatment Category options*/
 
 	// Outcome
-
+/*
 	// CC for drugs Initial Cure Treatment outcome
 	var IC_NEW_AMB = "MfebCxR7NDr"; // VL
 	var IC_UNS_AMB = "Da9OoxaeVxn";
@@ -777,7 +777,7 @@
 	var CL_DEATH_NEW_OTH = "kT7zue7yO7B"; // CL, ACL, ZCL
 	var CL_DEATH_UNS_OTH = "oBUl8XZw0GT";
 	var CL_DEATH_NEW_UNS = "DfIKXg8q1UM"; // CL, ACL, ZCL
-	var CL_DEATH_UNS_UNS = "KpxWMjKWw1B";
+	var CL_DEATH_UNS_UNS = "KpxWMjKWw1B";*/
 
 	// CC for drugs Death Treatment outcome
 
@@ -812,6 +812,24 @@
 	TREAT_COMPLETED[CL_INDEX] = "foObvaWTV2q"; // NTD_LSH_CL_TREAT_completed_I
 	TREAT_COMPLETED[ACL_INDEX] = "uSRDXhpcEjS"; // NTD_LSH_ACL_TREAT_completed_I
 	TREAT_COMPLETED[ZCL_INDEX] = "ZtbetBov4Nk"; // NTD_LSH_ZCL_TREAT_completed_I
+
+	var TREAT_OUTCOME_CURE = new Array(4);
+	TREAT_OUTCOME_CURE[VL_INDEX] = "Ks5Jju6anpF"; // IA_NTD_VL_ITO_cureRate
+	TREAT_OUTCOME_CURE[CL_INDEX] = "kVPOCIEBIyW"; // IA_NTD_CL_ITO_cureRate 
+	TREAT_OUTCOME_CURE[ACL_INDEX] = "IeniC1gZeI4"; // IA_NTD_ACL_ITO_cureRate
+	TREAT_OUTCOME_CURE[ZCL_INDEX] = "Gf2RLaWerOl"; // IA_NTD_ZCL_ITO_cureRate
+
+	var TREAT_OUTCOME_FAIL = new Array(4);
+	TREAT_OUTCOME_FAIL[VL_INDEX] = "jEdZE79G6KZ"; // IA_NTD_VL_ITO_failureRate
+	TREAT_OUTCOME_FAIL[CL_INDEX] = "VoqodpvVc0l"; // IA_NTD_CL_ITO_failureRate 
+	TREAT_OUTCOME_FAIL[ACL_INDEX] = "adkROLW4Kdr"; // IA_NTD_ACL_ITO_failureRate
+	TREAT_OUTCOME_FAIL[ZCL_INDEX] = "ep15GwmenJh"; // IA_NTD_ZCL_ITO_failureRate
+
+	var TREAT_OUTCOME_FATAL = new Array(4);
+	TREAT_OUTCOME_FATAL[VL_INDEX] = "RcXtqpnzUkF"; // IA_NTD_VL_ITO_fatalityRate
+	TREAT_OUTCOME_FATAL[CL_INDEX] = "h0wM7ryy0mK"; // IA_NTD_CL_ITO_fatalityRate 
+	TREAT_OUTCOME_FATAL[ACL_INDEX] = "LsjoXBjbXbL"; // IA_NTD_ACL_ITO_fatalityRate
+	TREAT_OUTCOME_FATAL[ZCL_INDEX] = "XUDNMjVo899"; // IA_NTD_ZCL_ITO_fatalityRate
 
 	var SCREEN_PASSIVE = new Array(4);
 	SCREEN_PASSIVE[VL_INDEX] = "ECAJUz3nff5"; // NTD_LSH_VL_SCREEN_passive_I
@@ -916,6 +934,9 @@
 	var new_and_usnp_cases = Array(5);
 	var total_treated = Array(5);
 	var screen_passive = Array(5);
+	var toutcome_cure = Array(5);
+	var toutcome_fail = Array(5);
+	var toutcome_fatal = Array(5);
 
 	var editingElement;
 
@@ -1776,120 +1797,10 @@
 
 		if (column == VL_COLUMN || column == CL_COLUMN || column == ACL_COLUMN || column == ZCL_COLUMN){
 			
-			if (column == VL_COLUMN) {
-				ic_new_oth =  VL_IC_NEW_OTH;
-				ic_uns_oth =  VL_IC_UNS_OTH;
-				ic_new_uns =  VL_IC_NEW_UNS;
-				ic_uns_uns =  VL_IC_UNS_UNS;	
-				fail_new_oth =  VL_FAIL_NEW_OTH;
-				fail_uns_oth =  VL_FAIL_UNS_OTH;
-				fail_new_uns =  VL_FAIL_NEW_UNS;
-				fail_uns_uns =  VL_FAIL_UNS_UNS;	
-				death_new_oth =  VL_DEATH_NEW_OTH;
-				death_uns_oth =  VL_DEATH_UNS_OTH;
-				death_new_uns =  VL_DEATH_NEW_UNS;
-				death_uns_uns =  VL_DEATH_UNS_UNS;	
-				unknown_new_oth =  VL_UNKNOWN_NEW_OTH;
-				unknown_uns_oth =  VL_UNKNOWN_UNS_OTH;
-				unknown_new_uns =  VL_UNKNOWN_NEW_UNS;
-				unknown_uns_uns =  VL_UNKNOWN_UNS_UNS;	
-			} else {
-				// CL_COLUMN, ACL_COLUMN, ZCL_COLUMN
-	 			ic_new_oth =  CL_IC_NEW_OTH;
-				ic_uns_oth =  CL_IC_UNS_OTH;
-				ic_new_uns =  CL_IC_NEW_UNS;
-				ic_uns_uns =  CL_IC_UNS_UNS;	
-				fail_new_oth =  CL_FAIL_NEW_OTH;
-				fail_uns_oth =  CL_FAIL_UNS_OTH;
-				fail_new_uns =  CL_FAIL_NEW_UNS;
-				fail_uns_uns =  CL_FAIL_UNS_UNS;	
-				death_new_oth =  CL_DEATH_NEW_OTH;
-				death_uns_oth =  CL_DEATH_UNS_OTH;
-				death_new_uns =  CL_DEATH_NEW_UNS;
-				death_uns_uns =  CL_DEATH_UNS_UNS;
-				unknown_new_oth =  CL_UNKNOWN_NEW_OTH;
-				unknown_uns_oth =  CL_UNKNOWN_UNS_OTH;
-				unknown_new_uns =  CL_UNKNOWN_NEW_UNS;
-				unknown_uns_uns =  CL_UNKNOWN_UNS_UNS;	
-			}
-
-
-			var ic_new_amb = getValueForKey(dataValues,[CC_KEY, DE_KEY],[IC_NEW_AMB, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var ic_uns_amb = getValueForKey(dataValues,[CC_KEY, DE_KEY],[IC_UNS_AMB, ITxO_DRUG_DE[column]], VALUE_KEY);
-			var ic_new_glu = getValueForKey(dataValues,[CC_KEY, DE_KEY],[IC_NEW_GLU, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var ic_uns_glu = getValueForKey(dataValues,[CC_KEY, DE_KEY],[IC_UNS_GLU, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var ic_new_pen = getValueForKey(dataValues,[CC_KEY, DE_KEY],[IC_NEW_PEN, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var ic_uns_pen = getValueForKey(dataValues,[CC_KEY, DE_KEY],[IC_UNS_PEN, ITxO_DRUG_DE[column]], VALUE_KEY);
-			var ic_new_ssg = getValueForKey(dataValues,[CC_KEY, DE_KEY],[IC_NEW_SSG, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var ic_uns_ssg = getValueForKey(dataValues,[CC_KEY, DE_KEY],[IC_UNS_SSG, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var ic_new_ssg_paro = getValueForKey(dataValues,[CC_KEY, DE_KEY],[IC_NEW_SSG_PARO, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var ic_uns_ssg_paro = getValueForKey(dataValues,[CC_KEY, DE_KEY],[IC_UNS_SSG_PARO, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var ic_new_oth_t = getValueForKey(dataValues,[CC_KEY, DE_KEY],[ic_new_oth, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var ic_uns_oth_t = getValueForKey(dataValues,[CC_KEY, DE_KEY],[ic_uns_oth, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var ic_new_uns_t = getValueForKey(dataValues,[CC_KEY, DE_KEY],[ic_new_uns, ITxO_DRUG_DE[column]], VALUE_KEY);
-			var ic_uns_uns_t = getValueForKey(dataValues,[CC_KEY, DE_KEY],[ic_uns_uns, ITxO_DRUG_DE[column]], VALUE_KEY);
-		
-			total_ic = add([ic_new_amb, ic_uns_amb,
-								ic_new_glu, ic_uns_glu,
-								ic_new_pen, ic_uns_pen,
-								ic_new_ssg, ic_uns_ssg,
-								ic_new_ssg_paro, ic_uns_ssg_paro,
-								ic_new_oth_t, ic_uns_oth_t,
-								ic_new_uns_t, ic_uns_uns_t]);
-
-
-			var fail_new_amb = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_NEW_AMB, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var fail_uns_amb = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_UNS_AMB, ITxO_DRUG_DE[column]], VALUE_KEY);
-			var fail_new_glu = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_NEW_GLU, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var fail_uns_glu = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_UNS_GLU, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var fail_new_pen = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_NEW_PEN, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var fail_uns_pen = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_UNS_PEN, ITxO_DRUG_DE[column]], VALUE_KEY);
-			var fail_new_ssg = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_NEW_SSG, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var fail_uns_ssg = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_UNS_SSG, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var fail_new_ssg_paro = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_NEW_SSG_PARO, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var fail_uns_ssg_paro = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_UNS_SSG_PARO, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var fail_new_oth_t = getValueForKey(dataValues,[CC_KEY, DE_KEY],[fail_new_oth, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var fail_uns_oth_t = getValueForKey(dataValues,[CC_KEY, DE_KEY],[fail_uns_oth, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var fail_new_uns_t = getValueForKey(dataValues,[CC_KEY, DE_KEY],[fail_new_uns, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var fail_uns_uns_t = getValueForKey(dataValues,[CC_KEY, DE_KEY],[fail_uns_uns, ITxO_DRUG_DE[column]], VALUE_KEY);
-
-			total_fail = add([fail_new_amb, fail_uns_amb,
-								fail_new_glu, fail_uns_glu,
-								fail_new_pen, fail_uns_pen,
-								fail_new_ssg, fail_uns_ssg,
-								fail_new_ssg_paro, fail_uns_ssg_paro,
-								fail_new_oth_t, fail_uns_oth_t,
-								fail_new_uns_t, fail_uns_uns_t]);
-
-
-			var death_new_amb = getValueForKey(dataValues,[CC_KEY, DE_KEY],[DEATH_NEW_AMB, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var death_uns_amb = getValueForKey(dataValues,[CC_KEY, DE_KEY],[DEATH_UNS_AMB, ITxO_DRUG_DE[column]], VALUE_KEY);
-			var death_new_glu = getValueForKey(dataValues,[CC_KEY, DE_KEY],[DEATH_NEW_GLU, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var death_uns_glu = getValueForKey(dataValues,[CC_KEY, DE_KEY],[DEATH_UNS_GLU, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var death_new_pen = getValueForKey(dataValues,[CC_KEY, DE_KEY],[DEATH_NEW_PEN, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var death_uns_pen = getValueForKey(dataValues,[CC_KEY, DE_KEY],[DEATH_UNS_PEN, ITxO_DRUG_DE[column]], VALUE_KEY);
-			var death_new_ssg = getValueForKey(dataValues,[CC_KEY, DE_KEY],[DEATH_NEW_SSG, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var death_uns_ssg = getValueForKey(dataValues,[CC_KEY, DE_KEY],[DEATH_UNS_SSG, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var death_new_ssg_paro = getValueForKey(dataValues,[CC_KEY, DE_KEY],[DEATH_NEW_SSG_PARO, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var death_uns_ssg_paro = getValueForKey(dataValues,[CC_KEY, DE_KEY],[DEATH_UNS_SSG_PARO, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var death_new_oth_t = getValueForKey(dataValues,[CC_KEY, DE_KEY],[death_new_oth, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var death_uns_oth_t = getValueForKey(dataValues,[CC_KEY, DE_KEY],[death_uns_oth, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var death_new_uns_t = getValueForKey(dataValues,[CC_KEY, DE_KEY],[death_new_uns, ITxO_DRUG_DE[column]], VALUE_KEY);
-            var death_uns_uns_t = getValueForKey(dataValues,[CC_KEY, DE_KEY],[death_uns_uns, ITxO_DRUG_DE[column]], VALUE_KEY);
-			
-			total_death = add([death_new_amb, death_uns_amb,
-								death_new_glu, death_uns_glu,
-								death_new_pen, death_uns_pen,
-								death_new_ssg, death_uns_ssg,
-								death_new_ssg_paro, death_uns_ssg_paro,
-								death_new_oth_t, death_uns_oth_t,
-								death_new_uns_t, death_uns_uns_t]);
-
-
 			toutcomeArray[PROPORTION_TREATED_CASES_ROW][column] = percentageCasesAndTotal(total_treated[column-1], new_and_usnp_cases[column-1], 0, true);
-			toutcomeArray[INITIAL_CURE_RATE_ROW][column] = percentageCasesAndTotal(total_ic, new_and_usnp_cases[column-1], 0, true);
-			toutcomeArray[FAILURE_RATE_ROW][column] = percentageCasesAndTotal(total_fail, new_and_usnp_cases[column-1], 0, true);
-			toutcomeArray[CASE_FATALITY_ROW][column] = percentageCasesAndTotal(total_death, new_and_usnp_cases[column-1], 0, true);
+			toutcomeArray[INITIAL_CURE_RATE_ROW][column] = percentageCasesAndTotal(toutcome_cure[column-1], new_and_usnp_cases[column-1], 0, true);
+			toutcomeArray[FAILURE_RATE_ROW][column] = percentageCasesAndTotal(toutcome_fail[column-1], new_and_usnp_cases[column-1], 0, true);
+			toutcomeArray[CASE_FATALITY_ROW][column] = percentageCasesAndTotal(toutcome_fatal[column-1], new_and_usnp_cases[column-1], 0, true);
 
 		}
 
@@ -3590,7 +3501,7 @@
 			get_azcl_cases(),	
 			get_pops_at_risk) // gets popAtRisks who is needed for EPI incidence
 			//.then(function(){ return fillArray_IncidenceRow(VL_COLUMN); });
-			.then( function(un, nc, sp, tc, data_cl, data_vl, data_azcl){
+			.then( function(un, nc, sp, tofatal, data_cl, data_vl, data_azcl){
 				fillUN_WPP();
 				fillArray(data_cl.dataValues, CL_COLUMN, DE.CL_EPI_Type); 
 				fillArray(data_cl.dataValues, MCL_COLUMN, DE.MCL_EPI_Type, DE.MCL_GEN_EPID_cases); 
@@ -3629,6 +3540,9 @@
 			getAnalyticsDataForDX(NEW_AND_UNSP_CASES[CL_INDEX], historicLength, fillNewCasesArray, [CL_COLUMN]),
 			getAnalyticsDataForDX(NEW_AND_UNSP_CASES[ACL_INDEX], historicLength, fillNewCasesArray, [ACL_COLUMN]),
 			getAnalyticsDataForDX(NEW_AND_UNSP_CASES[ZCL_INDEX], historicLength, fillNewCasesArray, [ZCL_COLUMN]),
+			getAnalyticsDataForDX(TREAT_OUTCOME_CURE, 1, fillIndicatorArray, [TREAT_OUTCOME_CURE, toutcome_cure]),
+			getAnalyticsDataForDX(TREAT_OUTCOME_FAIL, 1, fillIndicatorArray, [TREAT_OUTCOME_FAIL, toutcome_fail]),
+			getAnalyticsDataForDX(TREAT_OUTCOME_FATAL, 1, fillIndicatorArray, [TREAT_OUTCOME_FATAL, toutcome_fatal]),
 			get_monthly_cases_for(CL_MONTHLY, ds.year, DE_MONTHLY.CL_CASES, CL_ROW),
 			get_monthly_cases_for(CL_MONTHLY, ds.year-1, DE_MONTHLY.CL_CASES, CL_PREVIOUS_YEAR_ROW),
 			get_monthly_cases_for(VL_MONTHLY, ds.year, DE_MONTHLY.VL_CASES, VL_ROW),
@@ -3638,7 +3552,7 @@
 			get_monthly_cases_for(CL_MONTHLY, ds.year, DE_MONTHLY.ZCL_CASES, ZCL_ROW),
 			get_monthly_cases_for(CL_MONTHLY, ds.year-1, DE_MONTHLY.ZCL_CASES, ZCL_PREVIOUS_YEAR_ROW),
 			getFootnotes(defaultSubnationalLevel)).done(function(epi,l1,l2,l3,l4,gho,dx1,dx2,dx3,dx4,dx5,dx6,dx7,dx8,
-																m1,m2,m3,m4,m5,m6,m7,m8,fndata){
+																dx9,dx10,dx11,m1,m2,m3,m4,m5,m6,m7,m8,fndata){
 			// the code here will be executed when all four ajax requests resolve.
 			// a1, a2, a3 and a4 are lists of length 3 containing the response text,
 			// status, and jqXHR object for each of the four ajax calls respectively.
@@ -4039,7 +3953,7 @@
 				<a class="usermanual" target="_blank"><img class="resize" src="img/icons/pdf.png" border=0></a>
 		  </div>
 		</form>
-		<div id="footer"> LCPG v0.24 - 2019.12.06 </div>
+		<div id="footer"> LCPG v0.25 - 2019.12.16 </div>
 	</div>
 </body>
 </html>
