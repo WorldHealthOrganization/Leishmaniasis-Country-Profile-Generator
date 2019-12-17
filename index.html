@@ -450,18 +450,6 @@
 	var CLINICALLY_DIAGNOSED_ROW = 6;
 	var HIV_COINFECTION_ROW = 7;
 
-	var DIRECTEXAM_DE = new Array(5);
-	DIRECTEXAM_DE[VL_COLUMN] = "RrKpXTbayoB";  // VL_Lab_parasito_tested_type
-	DIRECTEXAM_DE[CL_COLUMN] = "Cj4t9M02Stv";  // CL_LAB_parasito_Suspects
-	DIRECTEXAM_DE[ACL_COLUMN] = "VKWHFyDvZxg"; // ACL_Lab_Parasito_Suspects
-	DIRECTEXAM_DE[ZCL_COLUMN] = "LvqN7RkPdc6"; // ZCL_Lab_Parasito_Suspects
-
-	var POSITIVESLIDES_DE = new Array(5);
-	POSITIVESLIDES_DE[VL_COLUMN] = "Qc7ujS567UL";  // VL_LAB_parasito_result_type
-	POSITIVESLIDES_DE[CL_COLUMN] = "fXPoRfJbFsE";  // CL_LAB_Parasito_Results
-	POSITIVESLIDES_DE[ACL_COLUMN] = "KSidYi6vKfR"; // ACL_Lab_Parasito_Results
-	POSITIVESLIDES_DE[ZCL_COLUMN] = "wyfYiCFojPL"; // ZCL_Lab_Parasito_Results
-
 	var LABCLINICAL_DE = new Array(5);
 	LABCLINICAL_DE[VL_COLUMN] = "BAsexzzzJZC";  // VL_LAB_clinical
 	LABCLINICAL_DE[CL_COLUMN] = "";  // 
@@ -801,6 +789,30 @@
 	UN_WPP[POP_GENDER_FEMALE] = "YqYnthOMpKZ";
 	UN_WPP[POP_GENDER_MALE] = "l8oBc9hn1OH";
 
+	var LAB_PARASITO_RESULT_NEWUNSP = new Array(4);
+	LAB_PARASITO_RESULT_NEWUNSP[VL_INDEX] = "wcQXFCgeirI"; // IA_VL_LAB_parasito_result_type_NewUnsp
+	LAB_PARASITO_RESULT_NEWUNSP[CL_INDEX] = "I0UeqrXgFP3"; // IA_CL_LAB_parasito_result_type_NewUnsp
+	LAB_PARASITO_RESULT_NEWUNSP[ACL_INDEX] = "xlKiq2a2VnC"; // IA_ACL_LAB_parasito_result_type_NewUnsp
+	LAB_PARASITO_RESULT_NEWUNSP[ZCL_INDEX] = "w0Jp3JgB4QV"; // IA_ZCL_LAB_parasito_result_type_NewUnsp
+
+	var LAB_PARASITO_TESTED_NEWUNSP = new Array(4);
+	LAB_PARASITO_TESTED_NEWUNSP[VL_INDEX] = "apw84Yy3Bmm"; // IA_VL_LAB_parasito_tested_type_NewUnsp
+	LAB_PARASITO_TESTED_NEWUNSP[CL_INDEX] = "LtmgT3l81DD"; // IA_CL_LAB_parasito_Suspects_NewUnsp
+	LAB_PARASITO_TESTED_NEWUNSP[ACL_INDEX] = "wXzlrrmB33B"; //  IA_ACL_LAB_parasito_Suspects_NewUnsp
+	LAB_PARASITO_TESTED_NEWUNSP[ZCL_INDEX] = "ZfIJmWMYXuz"; // IA_ZCL_LAB_parasito_Suspects_NewUnsp
+
+	var DIRECT_EXAM_DIAGNOSED = new Array(4);
+	DIRECT_EXAM_DIAGNOSED[VL_INDEX] = "waGzv39rlKk"; // IA_VL_directExam_diagCases
+	DIRECT_EXAM_DIAGNOSED[CL_INDEX] = "KMCo5B0frEb"; // IA_CL_directExam_diagCases
+	DIRECT_EXAM_DIAGNOSED[ACL_INDEX] = "NQcaaslXLbQ"; // IA_ACL_directExam_diagCases
+	DIRECT_EXAM_DIAGNOSED[ZCL_INDEX] = "o3OxTZj5SN9"; // IA_ZCL_directExam_diagCases
+
+	var POSITIVE_SLIDES_PROP = new Array(4);
+	POSITIVE_SLIDES_PROP[VL_INDEX] = "GacG3QWCHcd"; // IA_VL_positiveSlides_PROP
+	POSITIVE_SLIDES_PROP[CL_INDEX] = "YJJniMaZ9dy"; // IA_CL_positiveSlides_PROP
+	POSITIVE_SLIDES_PROP[ACL_INDEX] = "CsrJBUGBpuW"; // IA_ACL_positiveSlides_PROP
+	POSITIVE_SLIDES_PROP[ZCL_INDEX] = "wUoGgWWIyUP"; // IA_ZCL_positiveSlides_PROP
+
 	var NEW_AND_UNSP_CASES = new Array(4);
 	NEW_AND_UNSP_CASES[VL_INDEX] = "TAi5pNjuxmq"; // NTD_LSH_VL_EPI_NewCases_I
 	NEW_AND_UNSP_CASES[CL_INDEX] = "CeO5dTNMbPp"; // NTD_LSH_CL_EPI_NewCases_I
@@ -934,6 +946,10 @@
 	var new_and_usnp_cases = Array(5);
 	var total_treated = Array(5);
 	var screen_passive = Array(5);
+	var lab_parasito_result = Array(4);
+	var lab_parasito_tested = Array(4);
+	var direct_exam_diagnosed = Array(4);
+	var positive_slides_prop = Array(4);
 	var toutcome_cure = Array(5);
 	var toutcome_fail = Array(5);
 	var toutcome_fatal = Array(5);
@@ -1769,20 +1785,10 @@
 		else {
 		
 			// Direct exam
-			var direct_exam_new = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_NEW_CASES, DIRECTEXAM_DE[column]], VALUE_KEY);
-			var direct_exam_rel = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_RELAPSE, DIRECTEXAM_DE[column]], VALUE_KEY);
-			var direct_exam_uns = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED, DIRECTEXAM_DE[column]], VALUE_KEY);
-			var direct_exam_total = add([direct_exam_new, direct_exam_rel, direct_exam_uns]);
-
-			diagnosisArray[DIRECT_EXAM_DIAGNOSED_ROW][column] = percentageCasesAndTotal(direct_exam_total, total_cases_type, 0, true);
+			diagnosisArray[DIRECT_EXAM_DIAGNOSED_ROW][column] = percentageCasesAndTotal(lab_parasito_result[column-1], new_and_usnp_cases[column-1], 0, true, direct_exam_diagnosed[column-1]);
 
 			//Positive slides
-			var positive_slides_new = getValueForKey(dataValues,[CC_KEY, DE_KEY],[POSITIVE_NEW, POSITIVESLIDES_DE[column]], VALUE_KEY); 
-			var positive_slides_rel = getValueForKey(dataValues,[CC_KEY, DE_KEY],[POSITIVE_RELAPSE, POSITIVESLIDES_DE[column]], VALUE_KEY); 
-			var positive_slides_uns = getValueForKey(dataValues,[CC_KEY, DE_KEY],[POSITIVE_UNSP, POSITIVESLIDES_DE[column]], VALUE_KEY); 
-			var positive_slides_total = add([positive_slides_new, positive_slides_rel, positive_slides_uns]);
-
-			diagnosisArray[POSITIVE_DIRECT_EXAM_ROW][column] = percentageCasesAndTotal(positive_slides_total, direct_exam_total, 0, true);
+			diagnosisArray[POSITIVE_DIRECT_EXAM_ROW][column] = percentageCasesAndTotal(lab_parasito_result[column-1], lab_parasito_tested[column-1], 0, true, positive_slides_prop[column-1]);
 
 			//Cases diagnosed clinically
 			var clinical_cases_new = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_NEW_CASES, LABCLINICAL_DE[column]], VALUE_KEY);
@@ -2221,7 +2227,7 @@
 	/*	Returns a percentage with no decimals, the #cases and the total between parenthesis
 
 	*/
-	function percentageCasesAndTotal(numerator, denominator, precision, percentageSymbol){
+	function percentageCasesAndTotal(numerator, denominator, precision, percentageSymbol, percentageValue){
 
 		if (numerator === WHEN_NON_APPLICABLE  ||
 			denominator === WHEN_NON_APPLICABLE) {
@@ -2230,6 +2236,12 @@
 		else if (numerator === WHEN_UNDEFINED || numerator === undefined ||
 			denominator === WHEN_UNDEFINED || denominator === undefined) {
 			return WHEN_UNDEFINED;
+		}
+		else if (typeof percentageValue !== "undefined" && percentageValue !== null ) {
+			// userprovides calculated percentage
+			return 	percentageText(percentageValue, 1, precision, percentageSymbol) + "  (" +
+					formatIntValue(numerator, SAME, LOCALE_FORMAT) + "/" + 
+					formatIntValue(denominator, SAME, LOCALE_FORMAT) + ")";
 		}
 		else {
 			return 	percentageText(numerator, denominator, precision, percentageSymbol) + "  (" +
@@ -3540,6 +3552,10 @@
 			getAnalyticsDataForDX(NEW_AND_UNSP_CASES[CL_INDEX], historicLength, fillNewCasesArray, [CL_COLUMN]),
 			getAnalyticsDataForDX(NEW_AND_UNSP_CASES[ACL_INDEX], historicLength, fillNewCasesArray, [ACL_COLUMN]),
 			getAnalyticsDataForDX(NEW_AND_UNSP_CASES[ZCL_INDEX], historicLength, fillNewCasesArray, [ZCL_COLUMN]),
+			getAnalyticsDataForDX(LAB_PARASITO_RESULT_NEWUNSP, 1, fillIndicatorArray, [LAB_PARASITO_RESULT_NEWUNSP, lab_parasito_result]),
+			getAnalyticsDataForDX(LAB_PARASITO_TESTED_NEWUNSP, 1, fillIndicatorArray, [LAB_PARASITO_TESTED_NEWUNSP, lab_parasito_tested]),
+			getAnalyticsDataForDX(DIRECT_EXAM_DIAGNOSED, 1, fillIndicatorArray, [DIRECT_EXAM_DIAGNOSED, direct_exam_diagnosed]),
+			getAnalyticsDataForDX(POSITIVE_SLIDES_PROP, 1, fillIndicatorArray, [POSITIVE_SLIDES_PROP, positive_slides_prop]),
 			getAnalyticsDataForDX(TREAT_OUTCOME_CURE, 1, fillIndicatorArray, [TREAT_OUTCOME_CURE, toutcome_cure]),
 			getAnalyticsDataForDX(TREAT_OUTCOME_FAIL, 1, fillIndicatorArray, [TREAT_OUTCOME_FAIL, toutcome_fail]),
 			getAnalyticsDataForDX(TREAT_OUTCOME_FATAL, 1, fillIndicatorArray, [TREAT_OUTCOME_FATAL, toutcome_fatal]),
@@ -3953,7 +3969,7 @@
 				<a class="usermanual" target="_blank"><img class="resize" src="img/icons/pdf.png" border=0></a>
 		  </div>
 		</form>
-		<div id="footer"> LCPG v0.25 - 2019.12.16 </div>
+		<div id="footer"> LCPG v0.26 - 2019.12.17 </div>
 	</div>
 </body>
 </html>
