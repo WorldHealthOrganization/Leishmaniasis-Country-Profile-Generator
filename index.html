@@ -631,12 +631,6 @@
 	DE_SCREEN_ACTIVE[ACL_COLUMN] = "hqgnicLioSz";
 	DE_SCREEN_ACTIVE[ZCL_COLUMN] = "NDNcasRLz01";
 
-	var DE_SCREEN_PASSIVE = {};
-	DE_SCREEN_PASSIVE[VL_COLUMN] = "MRFflirvoj4";
-	DE_SCREEN_PASSIVE[CL_COLUMN] = "jdQau4rlj73";
-	DE_SCREEN_PASSIVE[ACL_COLUMN] = "gZuua8o0gNS";
-	DE_SCREEN_PASSIVE[ZCL_COLUMN] = "yEmHARyqLIk";
-
 	var DE_MONTHLY = {
 		CL_CASES : "kyMxUQqI2ed",
 		ACL_CASES : "lhxeWB8OiAG",
@@ -1482,7 +1476,7 @@
 		return $.ajax({
 			url: builtUrl
 		}).then(function(data) {
-			thenFunction(data, thenFParams)
+			return thenFunction(data, thenFParams)
 		});
 	}
 
@@ -1761,7 +1755,7 @@
 		} else {
 			var screen_active = getValueForKey(dataValues, DE_KEY, DE_SCREEN_ACTIVE[column] , VALUE_KEY);
 			diagnosisArray[SCREENED_ACTIVELY_ROW][column] = formatIntValue(screen_active, SAME, LOCALE_FORMAT);
-			diagnosisArray[SCREENED_PASSIVELY_ROW][column] = formatIntValue(screen_passive[column-1], SAME, LOCALE_FORMAT);
+			diagnosisArray[SCREENED_PASSIVELY_ROW][column] = formatIntValue((screen_passive[column-1] || WHEN_NO_DATA), SAME, LOCALE_FORMAT);
 		}
 		
 
@@ -3081,7 +3075,7 @@
 		$("#subnationalLevelSelector").on('selectmenuchange', function() {
 			var subNationaSelectedLevel = parseInt($("#subnationalLevelSelector").val());
 
-			var get_pops_at_risk = $.when(
+			var get_indicators_values = $.when(
 				getPopulationAtRiskFor(POP_AT_RISK[VL_INDEX], VL_COLUMN, subNationaSelectedLevel),
 				getPopulationAtRiskFor(POP_AT_RISK[CL_INDEX], CL_COLUMN, subNationaSelectedLevel),
 				getPopulationAtRiskFor(POP_AT_RISK[ACL_INDEX], ACL_COLUMN, subNationaSelectedLevel),
@@ -3090,7 +3084,7 @@
 			.then( function(){return fillArray_IncidenceRow();} ); // recalculates EPI table incidence
 
 			var update_epi_and_cgi_tables = $.when(
-					get_pops_at_risk,
+					get_indicators_values,
 					updateNumberOfDivisions(subNationaSelectedLevel)
 			).done(function(result){
 				writeTable(CGI_TABLE_NAME, "Body", generalInformationArray, LINES_BELOW_LABELS_CGI);
@@ -3512,27 +3506,34 @@
 		var getDEUsedByMetadataPromise = $.when(getDEUsedByMetadata()) // gets totalPopulation var who is neeeded for popAtRisk
 			.then( function(){return;});
 			
-		var get_pops_at_risk = $.when(get_cgi(), getDEUsedByMetadataPromise) // gets totalPopulation var who is neeeded for popAtRisk
+		var get_indicators_values = $.when(get_cgi(), 
+			//getAnalyticsDataForDX(NEW_AND_UNSP_CASES, 1, fillIndicatorArray, [NEW_AND_UNSP_CASES, new_and_usnp_cases]), // replaced by fillNewAndUnspCasesWorkaround
+			getAnalyticsDataForDX(UN_WPP, 1, fillIndicatorArray, [UN_WPP, un_wpp_data]),
+			getAnalyticsDataForDX(SCREEN_PASSIVE, 1, fillIndicatorArray, [SCREEN_PASSIVE, screen_passive]),
+			getAnalyticsDataForDX(TREAT_COMPLETED, 1, fillIndicatorArray, [TREAT_COMPLETED, total_treated]),	
+			getAnalyticsDataForDX(LAB_PARASITO_RESULT_NEWUNSP, 1, fillIndicatorArray, [LAB_PARASITO_RESULT_NEWUNSP, lab_parasito_result]),
+			getAnalyticsDataForDX(LAB_PARASITO_TESTED_NEWUNSP, 1, fillIndicatorArray, [LAB_PARASITO_TESTED_NEWUNSP, lab_parasito_tested]),
+			getAnalyticsDataForDX(DIRECT_EXAM_DIAGNOSED, 1, fillIndicatorArray, [DIRECT_EXAM_DIAGNOSED, direct_exam_diagnosed]),
+			getAnalyticsDataForDX(POSITIVE_SLIDES_PROP, 1, fillIndicatorArray, [POSITIVE_SLIDES_PROP, positive_slides_prop]),
+			getAnalyticsDataForDX(TREAT_OUTCOME_CURE, 1, fillIndicatorArray, [TREAT_OUTCOME_CURE, toutcome_cure]),
+			getAnalyticsDataForDX(TREAT_OUTCOME_FAIL, 1, fillIndicatorArray, [TREAT_OUTCOME_FAIL, toutcome_fail]),
+			getAnalyticsDataForDX(TREAT_OUTCOME_FATAL, 1, fillIndicatorArray, [TREAT_OUTCOME_FATAL, toutcome_fatal]),
+			getDEUsedByMetadataPromise) // gets totalPopulation var who is neeeded for popAtRisk
 			.then( function(){return getPopulationAtRiskFor(POP_AT_RISK[VL_INDEX], VL_COLUMN, defaultSubnationalLevel);} )
 			.then( function(){return getPopulationAtRiskFor(POP_AT_RISK[CL_INDEX], CL_COLUMN, defaultSubnationalLevel);} )
 			.then( function(){return getPopulationAtRiskFor(POP_AT_RISK[ACL_INDEX], ACL_COLUMN, defaultSubnationalLevel);} )
 			.then( function(){return getPopulationAtRiskFor(POP_AT_RISK[ZCL_INDEX], ZCL_COLUMN, defaultSubnationalLevel);} );
 
 		var epi_incidence_async = $.when(
-			getAnalyticsDataForDX(UN_WPP, 1, fillIndicatorArray, [UN_WPP, un_wpp_data]),
-			//getAnalyticsDataForDX(NEW_AND_UNSP_CASES, 1, fillIndicatorArray, [NEW_AND_UNSP_CASES, new_and_usnp_cases]), // replaced by fillNewAndUnspCasesWorkaround
-			getAnalyticsDataForDX(SCREEN_PASSIVE, 1, fillIndicatorArray, [SCREEN_PASSIVE, screen_passive]),
-			getAnalyticsDataForDX(TREAT_COMPLETED, 1, fillIndicatorArray, [TREAT_COMPLETED, total_treated]),
 			get_cl_cases(), // gets cl cases who is needed for EPI incidence
 			get_vl_cases(), 
 			get_azcl_cases(),	
-			get_pops_at_risk) // gets popAtRisks who is needed for EPI incidence
+			get_indicators_values) // gets popAtRisks who is needed for EPI incidence
 			//.then(function(){ return fillArray_IncidenceRow(VL_COLUMN); });
-			.then( function(un, sp, tofatal, data_cl, data_vl, data_azcl){
+			.then( function(data_cl, data_vl, data_azcl){
 				fillUN_WPP();
 				fillArray(data_cl.dataValues, CL_COLUMN, DE.CL_EPI_Type); 
 				fillArray(data_cl.dataValues, MCL_COLUMN, DE.MCL_EPI_Type, DE.MCL_GEN_EPID_cases); 
-
 				fillArray(data_vl.dataValues, VL_COLUMN, DE.VL_EPI_Type, "");
 				fillArray(data_vl.dataValues, PKDL_COLUMN, DE.VL_EPI_Type, DE.PKDL_GEN_EPID_cases);
 				//TODO: move to a proper place
@@ -3567,13 +3568,6 @@
 			getAnalyticsDataForDX(NEW_AND_UNSP_CASES[CL_INDEX], historicLength, fillNewCasesArray, [CL_COLUMN]),
 			getAnalyticsDataForDX(NEW_AND_UNSP_CASES[ACL_INDEX], historicLength, fillNewCasesArray, [ACL_COLUMN]),
 			getAnalyticsDataForDX(NEW_AND_UNSP_CASES[ZCL_INDEX], historicLength, fillNewCasesArray, [ZCL_COLUMN]),
-			getAnalyticsDataForDX(LAB_PARASITO_RESULT_NEWUNSP, 1, fillIndicatorArray, [LAB_PARASITO_RESULT_NEWUNSP, lab_parasito_result]),
-			getAnalyticsDataForDX(LAB_PARASITO_TESTED_NEWUNSP, 1, fillIndicatorArray, [LAB_PARASITO_TESTED_NEWUNSP, lab_parasito_tested]),
-			getAnalyticsDataForDX(DIRECT_EXAM_DIAGNOSED, 1, fillIndicatorArray, [DIRECT_EXAM_DIAGNOSED, direct_exam_diagnosed]),
-			getAnalyticsDataForDX(POSITIVE_SLIDES_PROP, 1, fillIndicatorArray, [POSITIVE_SLIDES_PROP, positive_slides_prop]),
-			getAnalyticsDataForDX(TREAT_OUTCOME_CURE, 1, fillIndicatorArray, [TREAT_OUTCOME_CURE, toutcome_cure]),
-			getAnalyticsDataForDX(TREAT_OUTCOME_FAIL, 1, fillIndicatorArray, [TREAT_OUTCOME_FAIL, toutcome_fail]),
-			getAnalyticsDataForDX(TREAT_OUTCOME_FATAL, 1, fillIndicatorArray, [TREAT_OUTCOME_FATAL, toutcome_fatal]),
 			get_monthly_cases_for(CL_MONTHLY, ds.year, DE_MONTHLY.CL_CASES, CL_ROW),
 			get_monthly_cases_for(CL_MONTHLY, ds.year-1, DE_MONTHLY.CL_CASES, CL_PREVIOUS_YEAR_ROW),
 			get_monthly_cases_for(VL_MONTHLY, ds.year, DE_MONTHLY.VL_CASES, VL_ROW),
@@ -3583,7 +3577,7 @@
 			get_monthly_cases_for(CL_MONTHLY, ds.year, DE_MONTHLY.ZCL_CASES, ZCL_ROW),
 			get_monthly_cases_for(CL_MONTHLY, ds.year-1, DE_MONTHLY.ZCL_CASES, ZCL_PREVIOUS_YEAR_ROW),
 			getFootnotes(defaultSubnationalLevel)).done(function(epi,l1,l2,l3,l4,gho,dx1,dx2,dx3,dx4,dx5,dx6,dx7,dx8,
-																dx9,dx10,dx11,m1,m2,m3,m4,m5,m6,m7,m8,fndata){
+																m1,m2,m3,m4,m5,m6,m7,m8,fndata){
 			// the code here will be executed when all four ajax requests resolve.
 			// a1, a2, a3 and a4 are lists of length 3 containing the response text,
 			// status, and jqXHR object for each of the four ajax calls respectively.
