@@ -814,10 +814,10 @@
 	POSITIVE_SLIDES_PROP[ZCL_INDEX] = "wUoGgWWIyUP"; // IA_ZCL_positiveSlides_PROP
 
 	var NEW_AND_UNSP_CASES = new Array(4);
-	NEW_AND_UNSP_CASES[VL_INDEX] = "TAi5pNjuxmq"; // NTD_LSH_VL_EPI_NewCases_I
-	NEW_AND_UNSP_CASES[CL_INDEX] = "CeO5dTNMbPp"; // NTD_LSH_CL_EPI_NewCases_I
-	NEW_AND_UNSP_CASES[ACL_INDEX] = "ZUL3QhfRZBT"; // NTD_LSH_ACL_EPI_NewCases_I
-	NEW_AND_UNSP_CASES[ZCL_INDEX] = "LCa3hY8xkst"; // NTD_LSH_ZCL_EPI_NewCases_I
+	NEW_AND_UNSP_CASES[VL_INDEX] = "TAi5pNjuxmq"; // IA_VL_EPI_NewUnsp_INT
+	NEW_AND_UNSP_CASES[CL_INDEX] = "CeO5dTNMbPp"; // IA_CL_EPI_NewUnsp_INT
+	NEW_AND_UNSP_CASES[ACL_INDEX] = "ZUL3QhfRZBT"; // IA_ACL_EPI_NewUnsp_INT
+	NEW_AND_UNSP_CASES[ZCL_INDEX] = "LCa3hY8xkst"; // IA_ZCL_EPI_NewUnsp_INT
 
 	var TREAT_COMPLETED = new Array(4);
 	TREAT_COMPLETED[VL_INDEX] = "dUns9PpQ58C"; // NTD_LSH_VL_TREAT_completed_I
@@ -1347,7 +1347,7 @@
 		return $.ajax({
 			url: builtUrl
 		}).then(function(data) {
-				fillCountryGeneralInformation(data);
+				return fillCountryGeneralInformation(data);
 		});
 	}
 
@@ -1363,7 +1363,7 @@
 		return $.ajax({
 			url: builtUrl
 		}).then(function(data) {
-				fillGHO(data);
+				return fillGHO(data);
 		});
 	}
 
@@ -1395,7 +1395,7 @@
 			return $.when(getAggregateEvents(program, dimensions, de, NULL_FILTER, AGGR_TYPE.SUM, SKIP_PAGING, SKIP_META, OUTPUT_TYPE.EVENT))
 				.done(function(result){
 					var data = getAnalyticValueForKey(result, MONTHLY_MODE);
-					fillMonthlyArray(row, data);
+					return fillMonthlyArray(row, data);
 				});
 	}
 
@@ -1549,10 +1549,15 @@
 		index = column - 1;
 		headerIndex = getHeaderIndex(data.headers, "value");
 		pop_at_risk_values[index] = parseInt(sumValueForHeader(data, headerIndex));
-		percentage =  percentageText(pop_at_risk_values[index], totalPopulation, 0, true);
+		if (!isNaN(pop_at_risk_values[index])) {
 
-		array[RISK_ROW][column] = percentage + ", " + formatIntValue(pop_at_risk_values[index], SAME, LOCALE_FORMAT) 
-											+ " / " + formatIntValue((totalPopulation || WHEN_NO_DATA), SAME, LOCALE_FORMAT);
+			percentage =  percentageText(pop_at_risk_values[index], totalPopulation, 0, true);
+
+			array[RISK_ROW][column] = percentage + ", " + formatIntValue(pop_at_risk_values[index], SAME, LOCALE_FORMAT) 
+									+ " / " + formatIntValue((totalPopulation || WHEN_NO_DATA), SAME, LOCALE_FORMAT);
+		} else {
+			array[RISK_ROW][column] = WHEN_NO_DATA; // This is a workaround related with indicators. Ideally, indicator should return blank but it's returning NaN when no data.
+		}
 	}
 
 	function fillArray_IncidenceRow(){
@@ -1608,6 +1613,15 @@
 	
 	}
 
+	// work around instead of using indicators, due to 
+	// https://jira.dhis2.org/browse/DHIS2-8059
+    // https://jira.dhis2.org/browse/DHIS2-8060
+	 
+	function fillNewAndUnspCasesWorkaround(column, new_cases, unspecified){
+		if (column == VL_COLUMN || column == CL_COLUMN || column == ACL_COLUMN || column == ZCL_COLUMN){
+			new_and_usnp_cases[column-1] = add([new_cases, unspecified]);
+		}
+	}
 
 	/*
 		column :
@@ -1621,6 +1635,8 @@
 		var relapse = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_RELAPSE,epiDE], VALUE_KEY);
 		var unspecified = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED,epiDE], VALUE_KEY);
 		var total_cases_type = add([new_cases, relapse, unspecified]);
+
+		fillNewAndUnspCasesWorkaround(column, new_cases, unspecified);
 		
 		array[NEW_ROW][column] = formatIntValue(new_cases, SAME, LOCALE_FORMAT);
 		array[RELAPSE_ROW][column] = formatIntValue(relapse, SAME, LOCALE_FORMAT);
@@ -3504,7 +3520,7 @@
 
 		var epi_incidence_async = $.when(
 			getAnalyticsDataForDX(UN_WPP, 1, fillIndicatorArray, [UN_WPP, un_wpp_data]),
-			getAnalyticsDataForDX(NEW_AND_UNSP_CASES, 1, fillIndicatorArray, [NEW_AND_UNSP_CASES, new_and_usnp_cases]),
+			//getAnalyticsDataForDX(NEW_AND_UNSP_CASES, 1, fillIndicatorArray, [NEW_AND_UNSP_CASES, new_and_usnp_cases]), // replaced by fillNewAndUnspCasesWorkaround
 			getAnalyticsDataForDX(SCREEN_PASSIVE, 1, fillIndicatorArray, [SCREEN_PASSIVE, screen_passive]),
 			getAnalyticsDataForDX(TREAT_COMPLETED, 1, fillIndicatorArray, [TREAT_COMPLETED, total_treated]),
 			get_cl_cases(), // gets cl cases who is needed for EPI incidence
@@ -3512,7 +3528,7 @@
 			get_azcl_cases(),	
 			get_pops_at_risk) // gets popAtRisks who is needed for EPI incidence
 			//.then(function(){ return fillArray_IncidenceRow(VL_COLUMN); });
-			.then( function(un, nc, sp, tofatal, data_cl, data_vl, data_azcl){
+			.then( function(un, sp, tofatal, data_cl, data_vl, data_azcl){
 				fillUN_WPP();
 				fillArray(data_cl.dataValues, CL_COLUMN, DE.CL_EPI_Type); 
 				fillArray(data_cl.dataValues, MCL_COLUMN, DE.MCL_EPI_Type, DE.MCL_GEN_EPID_cases); 
@@ -3968,7 +3984,7 @@
 				<a class="usermanual" target="_blank"><img class="resize" src="img/icons/pdf.png" border=0></a>
 		  </div>
 		</form>
-		<div id="footer"> LCPG v0.27 - 2019.12.18 </div>
+		<div id="footer"> LCPG v0.28 - 2019.12.19 </div>
 	</div>
 </body>
 </html>
