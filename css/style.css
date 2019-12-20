@@ -158,10 +158,6 @@ th {
   text-align: left;
 }
 
-#cgiTable6 td:nth-child(2) {
-  color: red;
-}
-
 /* for graphs */
 .sameLine
 {
