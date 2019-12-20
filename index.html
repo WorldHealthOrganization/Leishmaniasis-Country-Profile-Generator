@@ -95,7 +95,6 @@
 	var WHEN_UNDEFINED = "No data";
 	var WHEN_NO_DATA = "No data";
 	var WHEN_NON_APPLICABLE = "N/A";
-	var WHEN_DIV_0 = "-";
 	var ERROR = "Error!";
 
 	var HISTORIC_DEFAULT_VALUE = 16; // includes current year
@@ -1633,9 +1632,9 @@
 
 		fillNewAndUnspCasesWorkaround(column, new_cases, unspecified);
 		
-		array[NEW_ROW][column] = formatIntValue(new_cases, SAME, LOCALE_FORMAT);
-		array[RELAPSE_ROW][column] = formatIntValue(relapse, SAME, LOCALE_FORMAT);
-		array[TOTAL_ROW][column] = formatIntValue(total_cases_type, SAME, LOCALE_FORMAT);
+		array[NEW_ROW][column] = formatIntValue((new_cases || WHEN_NO_DATA), SAME, LOCALE_FORMAT);
+		array[RELAPSE_ROW][column] = formatIntValue((relapse || WHEN_NO_DATA), SAME, LOCALE_FORMAT);
+		array[TOTAL_ROW][column] = formatIntValue((total_cases_type || WHEN_NO_DATA), SAME, LOCALE_FORMAT);
 
 		// sex distribution 
 		var new_unknown = getValueForKey(dataValues, [CC_KEY, DE_KEY],[NEW_UNKNOWN, GENDER_DE[column]], VALUE_KEY);
@@ -1719,7 +1718,7 @@
 
 		if (column == PKDL_COLUMN || column == MCL_COLUMN){
 			var pkdl_cases = getValueForKey(dataValues, DE_KEY, epiPKDLMCLCases, VALUE_KEY);
-			array[NEW_ROW][column] = formatIntValue(pkdl_cases, SAME, LOCALE_FORMAT);
+			array[NEW_ROW][column] = formatIntValue((pkdl_cases || WHEN_NO_DATA), SAME, LOCALE_FORMAT);
 			array[RELAPSE_ROW][column] = WHEN_NON_APPLICABLE;
 			array[TOTAL_ROW][column] = array[NEW_ROW][column];
 			array[IMPORTED_ROW][column] = WHEN_NON_APPLICABLE; 
@@ -1755,7 +1754,7 @@
 			diagnosisArray[SCREENED_PASSIVELY_ROW][column] = WHEN_NON_APPLICABLE;
 		} else {
 			var screen_active = getValueForKey(dataValues, DE_KEY, DE_SCREEN_ACTIVE[column] , VALUE_KEY);
-			diagnosisArray[SCREENED_ACTIVELY_ROW][column] = formatIntValue(screen_active, SAME, LOCALE_FORMAT);
+			diagnosisArray[SCREENED_ACTIVELY_ROW][column] = formatIntValue((screen_active || WHEN_NO_DATA), SAME, LOCALE_FORMAT);
 			diagnosisArray[SCREENED_PASSIVELY_ROW][column] = formatIntValue((screen_passive[column-1] || WHEN_NO_DATA), SAME, LOCALE_FORMAT);
 		}
 		
@@ -2280,7 +2279,7 @@
 		if (isNaN(numerator)){
 			return numerator; // It's not a number. Return numerator
 		} else if (denominator === 0 || isNaN(denominator)){
-			return WHEN_DIV_0;
+			return WHEN_NO_DATA;
 		} else if (denominator === WHEN_UNDEFINED){
 			return WHEN_UNDEFINED;
 		}
@@ -3239,7 +3238,7 @@
 				autocompleteSearcher("targetCountry", organisationUnits, doNothing, 2, 200);
 
 				country_selector_open();
-				DEBUG_AutomaticallyfillInitialForm();
+				//DEBUG_AutomaticallyfillInitialForm();
 
 			});
 		
@@ -3998,7 +3997,7 @@
 				<a class="usermanual" target="_blank"><img class="resize" src="img/icons/pdf.png" border=0></a>
 		  </div>
 		</form>
-		<div id="footer"> LCPG v0.28 - 2019.12.19 </div>
+		<div id="footer"> LCPG v0.29 - 2019.12.20 </div>
 	</div>
 </body>
 </html>
