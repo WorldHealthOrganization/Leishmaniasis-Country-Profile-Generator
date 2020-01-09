@@ -1225,8 +1225,7 @@
 				}],
 				onReady: function() {
                     console.log('map '+index +'is ready!');
-					// Removes zoom and legend
-					$('#'+idHtmlElement).find(".leaflet-control-zoom").remove();
+					// Removes legend
 					$('#'+idHtmlElement).find(".leaflet-control-legend").remove();
 					
 					// Removes openmaps signature
@@ -3151,6 +3150,46 @@
 
 	 }
 
+	/* AFTER AND BEFORE printing actions */
+	var beforePrint = function() {
+		console.log('Functionality to run before printing.');
+
+		// hides zoom buttons on maps
+		$('#' + MAP_PREFIX + VL_INDEX).find(".leaflet-control-zoom").hide();
+		$('#' + MAP_PREFIX + CL_INDEX).find(".leaflet-control-zoom").hide();
+		$('#' + MAP_PREFIX + ACL_INDEX).find(".leaflet-control-zoom").hide();
+		$('#' + MAP_PREFIX + ZCL_INDEX).find(".leaflet-control-zoom").hide();
+
+	};
+
+	var afterPrint = function() {
+		console.log('CP printed');
+
+		// restores zoom buttons on maps
+		$('#' + MAP_PREFIX + VL_INDEX).find(".leaflet-control-zoom").show();
+		$('#' + MAP_PREFIX + CL_INDEX).find(".leaflet-control-zoom").show();
+		$('#' + MAP_PREFIX + ACL_INDEX).find(".leaflet-control-zoom").show();
+		$('#' + MAP_PREFIX + ZCL_INDEX).find(".leaflet-control-zoom").show();
+	};
+
+	if (window.matchMedia) {
+		var mediaQueryList = window.matchMedia('print');
+		mediaQueryList.addListener(function(mql) {
+			if (mql.matches) {
+				beforePrint();
+			} else {
+				afterPrint();
+			}
+		});
+	}
+
+	window.onbeforeprint = beforePrint;
+	window.onafterprint = afterPrint;
+	/* END AFTER AND BEFORE printing actions */
+
+
+	/* AUX functions  */
+
 	 function getLastPosition(selectedlegend){
 		for (var i=0; i<LEGEND_POSITIONS.length; i++){
 			console.log("getLastPosition");
@@ -3162,9 +3201,6 @@
 			}
 		}
 	 }
-
-
-
 	
     function fillOrgUnits(data, length, start){
         var orgUnit;
