@@ -191,10 +191,10 @@
 		soft_violet :'rgba(153, 0, 255, 0.2)'
 	};
 
-	CL_CASES_CHART_TITLE = "Number of new CL cases reported by month in ";
-	VL_CASES_CHART_TITLE = "Number of new (primary) VL cases reported by month in ";
+	CL_CASES_CHART_TITLE = "Cutaneous leishmaniasis";
+	VL_CASES_CHART_TITLE = "Visceral leishmaniasis";
 	CL_CASES_CHART_Y_TITLE = "Number of new CL cases";
-	VL_CASES_CHART_Y_TITLE = "Number of new (primary) VL cases";
+	VL_CASES_CHART_Y_TITLE = "Number of new VL cases";
 
 	CL_INCIDENCE_CHART_TITLE = "Number of cases and incidence rate of CL";
 	VL_INCIDENCE_CHART_TITLE = "Number of cases and incidence rate of VL";
@@ -2458,7 +2458,6 @@
 	*/
 	function generate_cl_vl_new_monthly_charts (){
 	
-		var yearsText = (ds.year-1) + " and " + ds.year;
 		var colors = [COLORS.blue, COLORS.blue, COLORS.green, COLORS.green];
 		var labels = [ACL_CHART_LEGEND +ds.year, ACL_CHART_LEGEND +(ds.year-1), ZCL_CHART_LEGEND + ds.year, ZCL_CHART_LEGEND  + (ds.year-1)];
 		
@@ -2467,14 +2466,14 @@
 		var acl_previous_year = monthlyArray[ACL_PREVIOUS_YEAR_ROW].slice(1,monthlyArray[ACL_PREVIOUS_YEAR_ROW].length);
 		var zcl_previous_year = monthlyArray[ZCL_PREVIOUS_YEAR_ROW].slice(1,monthlyArray[ZCL_PREVIOUS_YEAR_ROW].length);
 		var dataarrays = [acl_current_year, acl_previous_year, zcl_current_year, zcl_previous_year];
-		lineChart(MONTHLY+CHART+ACL_INDEX, CL_CASES_CHART_TITLE + yearsText, MONTHS_ABBREV, CL_CASES_CHART_Y_TITLE, labels, dataarrays, colors, true);
+		lineChart(MONTHLY+CHART+ACL_INDEX, CL_CASES_CHART_TITLE, MONTHS_ABBREV, CL_CASES_CHART_Y_TITLE, labels, dataarrays, colors, true);
 
 		colors = [COLORS.blue, COLORS.blue];
 		labels = [CL_CHART_LEGEND + ds.year, CL_CHART_LEGEND + (ds.year-1)];
 		var cl_current_year = monthlyArray[CL_ROW].slice(1,monthlyArray[CL_ROW].length);
 		var cl_previous_year = monthlyArray[CL_PREVIOUS_YEAR_ROW].slice(1,monthlyArray[CL_PREVIOUS_YEAR_ROW].length);
 		var dataarrays = [cl_current_year, cl_previous_year];
-		lineChart(MONTHLY+CHART+CL_INDEX, CL_CASES_CHART_TITLE + yearsText, MONTHS_ABBREV, CL_CASES_CHART_Y_TITLE, labels, dataarrays, colors, true);
+		lineChart(MONTHLY+CHART+CL_INDEX, CL_CASES_CHART_TITLE, MONTHS_ABBREV, CL_CASES_CHART_Y_TITLE, labels, dataarrays, colors, true);
 
 		var vl_current_year = monthlyArray[VL_ROW].slice(1,monthlyArray[VL_ROW].length);
 		var vl_previous_year = monthlyArray[VL_PREVIOUS_YEAR_ROW].slice(1,monthlyArray[VL_PREVIOUS_YEAR_ROW].length);
@@ -2482,7 +2481,7 @@
 		var vl_colors = [COLORS.violet, COLORS.violet];
 		var vl_labels = [VL_CHART_LEGEND + ds.year, VL_CHART_LEGEND + (ds.year-1)];
 
-		lineChart(MONTHLY+CHART+VL_INDEX, VL_CASES_CHART_TITLE + yearsText, MONTHS_ABBREV, VL_CASES_CHART_Y_TITLE, vl_labels, vl_data_arrays, vl_colors, true);
+		lineChart(MONTHLY+CHART+VL_INDEX, VL_CASES_CHART_TITLE, MONTHS_ABBREV, VL_CASES_CHART_Y_TITLE, vl_labels, vl_data_arrays, vl_colors, true);
 
 	}
 
@@ -3004,7 +3003,14 @@
 
 		// enables the updatedMapButton
 		$('#mapSelector').on('selectmenuchange', function() {
-			setButtonDisabledTo("updateMapButton", false);
+			var selected_map = parseInt($("#mapSelector").val()) - 1 ; // first option is the "select map"
+
+			if (selected_map >= 0) { 
+				setButtonDisabledTo("updateMapButton", false);
+			} else  { // "Select map" option
+				setButtonDisabledTo("updateMapButton", true);
+			}
+
 		}).change();
 
 		// enables the updatedChartButton
@@ -3063,10 +3069,8 @@
 
 
 		 $('#legendSelector').on('selectmenuchange', function() {
-			var selected_legend = parseInt($("#legendSelector").val()) - 1 ; // fisrt option is the "select text"
-			setButtonDisabledTo("updateLegendButton", false);
-
-
+			var selected_legend = parseInt($("#legendSelector").val()) - 1 ; // first option is the "select legend"
+		
 			// move back the legend to it map
 			var position_index =  $('#positionLegendSelector').val();
 			for (var i=0; i<MAP_CHECKBOXES_LABELS.length; i++){
@@ -3075,11 +3079,16 @@
 				}
 			}
 
-			lastLegendPosition = getLastPosition(selected_legend);
-			setOptionSelectMenu("positionLegendSelector", lastLegendPosition);
+			if (selected_legend >= 0) {
+				setButtonDisabledTo("updateLegendButton", false);
 
-			moveLegend(selected_legend, $("#legendPool"), LEGEND_TO_LEGEND_POOL);
+				lastLegendPosition = getLastPosition(selected_legend);
+				setOptionSelectMenu("positionLegendSelector", lastLegendPosition);
 
+				moveLegend(selected_legend, $("#legendPool"), LEGEND_TO_LEGEND_POOL);
+			} else { // "select legend" option
+				setButtonDisabledTo("updateLegendButton", true);
+			}
 
 		}).change();
 
@@ -3997,7 +4006,7 @@
 				<a class="usermanual" target="_blank"><img class="resize" src="img/icons/pdf.png" border=0></a>
 		  </div>
 		</form>
-		<div id="footer"> LCPG v0.29 - 2019.12.20 </div>
+		<div id="footer"> LCPG v0.30 - 2020.01.09 </div>
 	</div>
 </body>
 </html>
