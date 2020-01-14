@@ -118,6 +118,8 @@
 	var SUBLEVEL1 = 1;
 	var SUBLEVEL2 = 2;
 	var SUBLEVEL3 = 3;
+	var MIN_OU_LEVEL = SUBLEVEL1 + WIDP_OU_SHIFT;
+	var MAX_OU_LEVEL = SUBLEVEL3 + WIDP_OU_SHIFT;
 	var LEVEL_CONFIG_LABELS = new Array(4);
 	var LEVEL_REPORT_LABELS = new Array(4);
 	var ENDEMIC_SUBN_LEVEL_LABELS = new Array(4);
@@ -549,6 +551,8 @@
 	var SQL_COC_DS = "mejiVo59hWs";
 	var SQL_DE_DS = "oQdIVqkVlxC";
 	var SQL_DE_P = "IrawAndH02Y";
+
+	var SQL_OU_LEVELS = "ly3JqHMcHyk";
 	
 	var CL_DETAILED = "tnek2LjfuIm";
 	var CL_SIMPLE = "zna8KfLMXn4";
@@ -1326,6 +1330,30 @@
 			pinfo[puid][DE_IDX] = result.dataelements;
 		});
 	}
+
+	
+	function getOULevels(min, max){
+		var params = {
+			var: "ouid:" + ds.countryID,
+			paging: false
+		};
+
+		var extraParams = "&var=minLevel:" + min + "&var=maxLevel:" + max;
+
+		return $.when(getv3(SQLVIEWS + "/" + SQL_OU_LEVELS + "/data", params, extraParams))
+		.done(function(result){
+			console.log(result);
+			var widp_level, ou_qty, ou_name;
+			$("#subnationalLevelSelector option").prop('disabled',true); // disables all
+			for(var i=0; i< result.listGrid.rows.length; i++){
+				widp_level = result.listGrid.rows[i][0];
+				$("#subnationalLevelSelector option:eq("+(widp_level - WIDP_OU_SHIFT)+")").prop('disabled',false);
+			}
+			$("#subnationalLevelSelector option:eq("+NATIONAL_LEVEL+")").prop('disabled',false);
+			$( "#subnationalLevelSelector" ).selectmenu( 'refresh', true);
+		});
+	}
+
 
 	/* getting country General Information from API */
 	function get_cgi() {
@@ -3570,6 +3598,7 @@
 			.then( function(){return;});
 			
 		var get_indicators_values = $.when(get_cgi(), 
+			getOULevels(MIN_OU_LEVEL, MAX_OU_LEVEL),
 			//getAnalyticsDataForDX(NEW_AND_UNSP_CASES, 1, fillIndicatorArray, [NEW_AND_UNSP_CASES, new_and_usnp_cases]), // replaced by fillNewAndUnspCasesWorkaround
 			getAnalyticsDataForDX(UN_WPP, 1, fillIndicatorArray, [UN_WPP, un_wpp_data]),
 			getAnalyticsDataForDX(SCREEN_PASSIVE, 1, fillIndicatorArray, [SCREEN_PASSIVE, screen_passive]),
@@ -4042,7 +4071,7 @@
 				<a class="usermanual" target="_blank"><img class="resize" src="img/icons/pdf.png" border=0></a>
 		  </div>
 		</form>
-		<div id="footer"> LCPG v0.30 - 2020.01.09 </div>
+		<div id="footer"> LCPG v0.31 - 2020.01.14 </div>
 	</div>
 </body>
 </html>
