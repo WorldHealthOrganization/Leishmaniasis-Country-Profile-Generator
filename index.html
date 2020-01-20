@@ -539,14 +539,15 @@
 	ITx_TREAT_DE[ZCL_COLUMN] = "KYuMdxHQTqQ"; // ZCL_TREAT_completed
 
 	// stores all de assigned through DS or P
-	var de_assigned = [];
+	var de_assigned = new Map();
 	// stores all category option combinations assigned through DE assigned through DS 
-	var coc_assigned = [];
+	var coc_assigned = new Map();
 	var dsinfo = new Array(8); // key: UID of dataset. Contains its name and whether the DS is assigned to the OU.
 	var pinfo = new Array(4); // key: UID of program. Contains its name and whether the P is assigned to the OU.
 	var NAME = 0;
 	var ASSG = 1;
 	var DE_IDX = 2;
+	var indicators_info = new Map();
 
 	var SQL_COC_DS = "mejiVo59hWs";
 	var SQL_DE_DS = "oQdIVqkVlxC";
@@ -561,6 +562,7 @@
 	var AZCL_DETAILED = "Uc3j0vpsfSB";
 	var AZCL_SIMPLE = "Sn0dExPzQqW";
 	var GI = "NKWbkXyfO5F";
+	var POPULATION_DATA = "deKCGAGoEHz"; // some indicators depends on some DE assigned to this DS
 	var GHO_NTDS = "p0NhuIUoeST";
 	var CL_MONTHLY = "w9hSFsNr3Vh";
 	var VL_MONTHLY = "i5JSf4ffFl2";
@@ -574,6 +576,7 @@
 	dsinfo[AZCL_DETAILED] = ["ACL/ZCL - Detailed - Annual", false];
 	dsinfo[AZCL_SIMPLE] = ["ACL/ZCL - - Simple aggregated - Annual", false];
 	dsinfo[GI] = ["General information", false];
+	dsinfo[POPULATION_DATA] = ["Population data", false];
 	dsinfo[GHO_NTDS] = ["GHO indicators for NTDs", false];
 	pinfo[CL_MONTHLY] = ["CL_cases_by provenance", false];
 	pinfo[VL_MONTHLY] = ["VL_cases_by provenance", false];
@@ -1279,15 +1282,16 @@
 			for (var i = 0; i < ds_indexes.length; i++) {
 				// *2 since we have generated two promises per dataset, first one for DE
 				dsinfo[ds_indexes[i]][DE_IDX] = [...result[i*2].listGrid.rows];
-				de_assigned = de_assigned.concat(result[i*2].listGrid.rows);
+				de_assigned = new Map([...de_assigned, ...new Map(result[i*2].listGrid.rows)]); //converts array into a set and merges two sets into one
 				// *2+1 since we have generated two promises per dataset, second one for COC
-				coc_assigned = coc_assigned.concat(result[i*2+1].listGrid.rows);
+				coc_assigned = new Map([...coc_assigned, ...new Map(result[i*2+1].listGrid.rows)]);
 			}
 
 			var shift = ds_indexes.length;
 			for (i = shift; i < shift + p_indexes.length; i++) {
 				pinfo[p_indexes[i-shift]][DE_IDX] = [...result[i+shift].listGrid.rows];
-				de_assigned = de_assigned.concat(result[i+shift].listGrid.rows);
+				de_assigned = new Map([...de_assigned, ...new Map(result[i+shift].listGrid.rows)]); //converts array into a set and merges two sets into one
+
 			}
 			return;
 		});
@@ -1352,6 +1356,126 @@
 			$("#subnationalLevelSelector option:eq("+NATIONAL_LEVEL+")").prop('disabled',false);
 			$( "#subnationalLevelSelector" ).selectmenu( 'refresh', true);
 		});
+	}
+
+	function getIndicatorInfo(arrayOfArrays, indType, field1, field2){
+
+		var params = {
+			paging: false,
+			fields: "id,"+field1+","+field2,
+			filter: ["id:in:["+arrayOfArrays.join()+"]"], 
+		};
+		builtUrl = buildAPIUrl(indType, params);
+		return $.ajax({
+			url: builtUrl
+		}).then(function(data) {
+				
+			var field1Array, field2Array, id, indInfo;
+			for (var i = 0; i< data[indType].length; i++){
+				id = data[indType][i].id;
+				field1Array = data[indType][i][field1].split("{"); // e.g. data.indicators[4].numerator
+				field2Array = data[indType][i][field2].split("{"); // e.g. data.programIndicators[4].filter
+				indInfo = {};
+				indInfo.de = new Set(); 
+				indInfo.i = new Set(); 
+				indicators_info.set(id, indInfo);
+
+				fillIndicatorInfo(id, field1Array, field1);
+				fillIndicatorInfo(id, field2Array, field1);
+
+			}
+
+			var notReadyIndicators = getNotPresentIndicators();
+			console.log(notReadyIndicators);
+
+			if (notReadyIndicators.length > 0){
+				return 	$.when(	getIndicatorInfo(notReadyIndicators, "programIndicators", "filter", "expression"))
+								.then( function(){return getIndicatorInfo(notReadyIndicators, "indicators", "numerator", "denominator");});
+			} else {
+				return;
+			}
+		});
+	}
+
+
+	function fillIndicatorInfo(id, array, field1){
+		var type, de_start, de_end;
+
+		if (field1.localeCompare("numerator") == 0){ // indicator
+			de_start = 0;
+			de_end = 11;
+		} else if (field1.localeCompare("filter") == 0){ // programIndicator
+			de_start = 12;
+			de_end = 23;
+		} else {
+			console.log ("ERROR in fillIndicatorInfo. Field type not expected.");
+		}
+		
+		for (var n=1; n < array.length; n++){
+			type = array[n-1][array[n-1].length-1]; // gets the last character of the previous element (to get the #, I, D or N)
+			switch (type){
+				case "#": // dataElement
+					indicators_info.get(id).de.add(array[n].substring(de_start,de_end)); // gets the ID of an string type A0123456789.B0123456789} *...
+					break;
+				case "D":
+					indicators_info.get(id).de.add(array[n].substring(12,23)); // gets the second ID of an string type A0123456789.B0123456789} *...
+					break;
+				case "I":
+					indicators_info.get(id).i.add(array[n].substring(0,11)); // gets the ID of an string type A0123456789.B0123456789} *...
+					break;
+			}
+		}
+	}
+
+	function allDEInIndicatorAreReachable(ind_id){
+		var ind_object = indicators_info.get(ind_id);
+		var reachable = true;
+		ind_object.de.forEach(de => {
+			if(!de_assigned.has(de)){
+
+				console.log ("DE " + de + " NOT FOUND")
+				reachable = false;
+			} else {
+				console.log ("DE " + de + " OK")
+			}
+		});
+
+		ind_object.i.forEach(i => {
+			console.log ("reachable " + reachable + " i " + i + ": " + allDEInIndicatorAreReachable(i));
+			reachable = reachable && allDEInIndicatorAreReachable(i);
+		});
+
+		return reachable;
+	}
+
+	function getNotPresentIndicators() {
+		var notPresentIndicators = [];
+		for (let [index, ind_object] of indicators_info.entries()) {
+			ind_object.i.forEach(i => {
+				if(!indicators_info.has(i)){
+					notPresentIndicators.push(i);
+				}
+			});
+		}
+		return notPresentIndicators;
+	}
+
+
+	function test_ind_info(){			
+		console.log("********** TEST INDICATOR INFO *****************");
+		for (let [index, ind_object] of indicators_info.entries()) {
+			console.log("*** TEST OF " + index);
+
+			if (allDEInIndicatorAreReachable(index)){
+				console.log (index + " I OK");
+
+			} else {
+				console.log (index + " I has DE that are not in the list");
+			}
+			
+			console.log("*** - *** ");
+
+		}
 	}
 
 
@@ -1552,10 +1676,15 @@
 		var dx_header = getHeaderIndex(data.headers, "dx"); 
 		var value_header = getHeaderIndex(data.headers, "value"); 
 
-		for (var i = 0; i<data.rows.length; i++){
-			var id = data.rows[i][dx_header];
-			var index = arrayReference.indexOf(id);
-			arrayName[index] = parseFloat(data.rows[i][value_header]);
+		for (var i = 0; i<arrayReference.length; i++){
+			id = arrayReference[i];
+			index = arrayReference.indexOf(id);
+			if(WHEN_NON_APPLICABLE.localeCompare(checkI(id))==0){
+				console.log("N/A: index "+index+ " - id: "+id);
+				arrayName[index] = WHEN_NON_APPLICABLE;
+			} else if (typeof data.rows != "undefined" && i < data.rows.length){
+				arrayName[index] = parseFloat(data.rows[i][value_header]);
+			}
 		}
 
 	}
@@ -2153,8 +2282,8 @@
 		}
 		if (typeof keyName === 'string') {
 			// checks if DE or COD is assigned to one DS or P
-			if ((keyName == DE_KEY && de_assigned.filter(obj => { return obj[0] === keyValue}).length == 0) ||
-			 	(keyName == CC_KEY && coc_assigned.filter(obj => { return obj[0] === keyValue}).length == 0))
+			if ((keyName == DE_KEY && !de_assigned.has(keyValue)) ||
+			 	(keyName == CC_KEY && !coc_assigned.has(keyValue)))
 			{
 				return WHEN_NON_APPLICABLE;
 			} else {
@@ -2168,10 +2297,10 @@
 			}
 		} else if (keyName.length > 1 && keyValue.length > 1) {
 			// checks if DE is assigned
-			if ((keyName[0] == DE_KEY && de_assigned.filter(obj => { return obj[0] === keyValue[0]}).length == 0) || 
-				(keyName[1] == DE_KEY && de_assigned.filter(obj => { return obj[0] === keyValue[1]}).length == 0) || 
-				(keyName[0] == CC_KEY && coc_assigned.filter(obj => { return obj[0] === keyValue[0]}).length == 0) || 
-				(keyName[1] == CC_KEY && coc_assigned.filter(obj => { return obj[0] === keyValue[1]}).length == 0))
+			if ((keyName[0] == DE_KEY && !de_assigned.has(keyValue[0])) || 
+				(keyName[1] == DE_KEY && !de_assigned.has(keyValue[1])) || 
+				(keyName[0] == CC_KEY && !coc_assigned.has(keyValue[0])) || 
+				(keyName[1] == CC_KEY && !coc_assigned.has(keyValue[1])))
 			{
 				return WHEN_NON_APPLICABLE;
 			} else {
@@ -2229,6 +2358,17 @@
 		return returnValue;
 	}
 
+	/*
+	returns WHEN_NON_APPLICABLE if DE in the indicator not assigned to this country
+	returns false otherwise (to be able to do = checkI(idx) || getValue(...))
+	*/
+	function checkI(ind_id){
+		if (!allDEInIndicatorAreReachable(ind_id)){
+			return WHEN_NON_APPLICABLE;
+		} else {
+			return false;
+		}
+	}
 
 	/*	Returns three percentages with no decimals, between parenthesis
 
@@ -3326,7 +3466,7 @@
 
 		var datasets = [];
 		datasets.push(CL_DETAILED, CL_SIMPLE, VL_DETAILED, VL_SIMPLE, 
-						AZCL_DETAILED, AZCL_SIMPLE, GI, GHO_NTDS);
+						AZCL_DETAILED, AZCL_SIMPLE, GI, POPULATION_DATA, GHO_NTDS);
 
 		var programs = [];
 		programs.push(CL_MONTHLY, VL_MONTHLY, FOOTNOTES, SUBN_ENDEMCTY);
@@ -3365,7 +3505,10 @@
 			var IS_NOT_ASSG = " is not assigned to this country.</br>";
 			if (!dsinfo[GI][ASSG] ){
 				notAssginedMtd += dsinfo[GI][NAME] + IS_NOT_ASSG;
-			}			
+			}		
+			if (!dsinfo[POPULATION_DATA][ASSG] ){
+				notAssginedMtd += dsinfo[POPULATION_DATA][NAME] + IS_NOT_ASSG;
+			}
 			if (!dsinfo[GHO_NTDS][ASSG] ){
 				notAssginedMtd += dsinfo[GHO_NTDS][NAME] + IS_NOT_ASSG;
 			}
@@ -3390,8 +3533,8 @@
 	function DEBUG_AutomaticallyfillInitialForm()
 	{
 
-		$( "#targetCountry" ).val("Algeria"); //val("Federal Democratic Republic of Nepal");//
-		$( "#targetCountry" ).text("mNa42CHbkO7"); //text("pZZriU4sY0l");//
+		$( "#targetCountry" ).val("Algeria"); //val("Federal Democratic Republic of Nepal");///val("Burkina Faso"); //val("Algeria");
+		$( "#targetCountry" ).text("mNa42CHbkO7"); //text("pZZriU4sY0l");//  .text("hmZE3mVAZFf");text("mNa42CHbkO7");
 		$( "#yearField" ).val(2017); // val(2016);
 
 		checkMetadataAssignedToThisCountry();
@@ -3593,9 +3736,14 @@
 		// http://stackoverflow.com/questions/3709597/wait-until-all-jquery-ajax-requests-are-done
 //        var async2 = $.when( a3() ).then(function(){ return a4(); });
 
-		
-		var getDEUsedByMetadataPromise = $.when(getDEUsedByMetadata()) // gets totalPopulation var who is neeeded for popAtRisk
-			.then( function(){return;});
+	
+		var getDEUsedByMetadataPromise = $.when(getDEUsedByMetadata(), 
+										getIndicatorInfo([...UN_WPP, ...LAB_PARASITO_RESULT_NEWUNSP, ...LAB_PARASITO_TESTED_NEWUNSP, ...DIRECT_EXAM_DIAGNOSED, 
+															...POSITIVE_SLIDES_PROP, ...NEW_AND_UNSP_CASES, ...TREAT_COMPLETED, ...TREAT_OUTCOME_CURE, 
+															...TREAT_OUTCOME_FAIL, ...TREAT_OUTCOME_FATAL, ...SCREEN_PASSIVE, ...INCIDENCE_FOR_MAPS, 
+															...INCIDENCE_FOR_CHARTS, ...POP_AT_RISK, ],
+															"indicators", "numerator", "denominator"))
+			.then( function(){return test_ind_info();});
 			
 		var get_indicators_values = $.when(get_cgi(), 
 			getOULevels(MIN_OU_LEVEL, MAX_OU_LEVEL),
@@ -4071,7 +4219,7 @@
 				<a class="usermanual" target="_blank"><img class="resize" src="img/icons/pdf.png" border=0></a>
 		  </div>
 		</form>
-		<div id="footer"> LCPG v0.31 - 2020.01.14 </div>
+		<div id="footer"> LCPG v0.32 - 2020.01.17 </div>
 	</div>
 </body>
 </html>
