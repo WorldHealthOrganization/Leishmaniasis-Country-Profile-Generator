@@ -58,7 +58,11 @@
  <script type="text/javascript" src ="js/jquery-te-1.4.0-oms.js"></script>
  <script type="text/javascript" src ="js/tools.js"></script>
  <script type="text/javascript" src ="js/largestRemainderRound.js"></script>
-<script type="text/javascript" src ="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js">//TODO:use the cdn officiel</script>
+<!--<script type="text/javascript" src ="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js">//TODO:use the cdn officiel</script>-->
+<script
+  src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
+  integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
+  crossorigin="anonymous"></script>
 <script type="text/javascript" src="../../../dhis-web-visualizer/chart.js"></script>
 <script type="text/javascript" src="js/Chart-2.7.3.js"></script>
 <!--<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.js"></script>-->
@@ -525,13 +529,7 @@
 	var historicLength = HISTORIC_DEFAULT_VALUE;
 	var historicIncidenceChart = create_2_dim_array(5,"",LABELS_ON_ROWS);
 	var historicNewCases = create_2_dim_array(5,"",LABELS_ON_ROWS);
-/*
-	var ITxO_DRUG_DE = new Array(5);
-	ITxO_DRUG_DE[VL_COLUMN] = "ossDxe1C4F2";  // VL_INIT_OUTCOME_Drug_Type
-	ITxO_DRUG_DE[CL_COLUMN] = "OjY8uiHVetP";  // CL_ITxO_Tx-drug
-	ITxO_DRUG_DE[ACL_COLUMN] = "GXyfQMlaXEn"; // ACL_ITxO_Tx-drug
-	ITxO_DRUG_DE[ZCL_COLUMN] = "GPG5qCJ65uO"; // ZCL_ITxO_Tx-drug
-*/
+
 	var ITx_TREAT_DE = new Array(5);
 	ITx_TREAT_DE[VL_COLUMN] = "PUD4SrCGSZE";  // VL_TREAT_completed
 	ITx_TREAT_DE[CL_COLUMN] = "daJVc4WMhye";  // CL_TREAT_completed
@@ -555,6 +553,7 @@
 
 	var SQL_OU_LEVELS = "ly3JqHMcHyk";
 	
+	/* DATASETS */
 	var CL_DETAILED = "tnek2LjfuIm";
 	var CL_SIMPLE = "zna8KfLMXn4";
 	var VL_DETAILED = "fdBM4sWSuPR";
@@ -564,6 +563,8 @@
 	var GI = "NKWbkXyfO5F";
 	var POPULATION_DATA = "deKCGAGoEHz"; // some indicators depends on some DE assigned to this DS
 	var GHO_NTDS = "p0NhuIUoeST";
+	
+	/* PROGRAMS */
 	var CL_MONTHLY = "w9hSFsNr3Vh";
 	var VL_MONTHLY = "i5JSf4ffFl2";
 	var FOOTNOTES = "NVUlJzIakuO";
@@ -702,81 +703,6 @@
 	var POSITIVE_NEW = "jRcT6HVKb2t";
 	var POSITIVE_RELAPSE = "QKqVJ13mGZI";
 	var POSITIVE_UNSP = "YXktM46YiXo";
-
-	/* Treatment Category options*/
-
-	// Outcome
-/*
-	// CC for drugs Initial Cure Treatment outcome
-	var IC_NEW_AMB = "MfebCxR7NDr"; // VL
-	var IC_UNS_AMB = "Da9OoxaeVxn";
-	var IC_NEW_GLU = "wuSFWEdQuZH"; // CL, ACL, ZCL
-	var IC_UNS_GLU = "edJOdz8AWve";
-	var IC_NEW_PEN = "iHN06Kmhvdx"; // VL
-	var IC_UNS_PEN = "SmTniJtU9yc";
-	var IC_NEW_SSG = "Akgp3RvT6l3"; // CL, ACL, ZCL
-	var IC_UNS_SSG = "BjLReGCNxwk";
-	var IC_NEW_SSG_PARO = "S4YOw3gkmFa"; // VL
-	var IC_UNS_SSG_PARO = "zGPEo9L7srN";
-	var VL_IC_NEW_OTH = "ODhB7M16KTG"; // VL
-	var VL_IC_UNS_OTH = "T6LBaVMXq4E";
-	var VL_IC_NEW_UNS = "kT60pxOR9DT"; // VL
-	var VL_IC_UNS_UNS = "LAkANoW73LV";	
-	var CL_IC_NEW_OTH = "OLyLq0AkHEQ"; // CL, ACL, ZCL
-	var CL_IC_UNS_OTH = "EnhXnkfyLWa";
-	var CL_IC_NEW_UNS = "eYp1LtWKuon"; // CL, ACL, ZCL
-	var CL_IC_UNS_UNS = "FVAmnbEI6kn";
-
-	// CC for drugs failure Initial Treatment outcome
-	var FAIL_NEW_AMB = "T2MDkJzCKf7"; // VL
-	var FAIL_UNS_AMB = "Pr6aEN8PC5M";
-	var FAIL_NEW_GLU = "WJf6H2HVZKN"; // CL, ACL, ZCL
-	var FAIL_UNS_GLU = "hggEQ5Xm0cN";
-	var FAIL_NEW_PEN = "aeBFt3rX6NP"; // VL
-	var FAIL_UNS_PEN = "BWqkFDITG0V";
-	var FAIL_NEW_SSG = "dzqOoSKXPKL"; // CL, ACL, ZCL
-	var FAIL_UNS_SSG = "jFmiZOTK9rc";
-	var FAIL_NEW_SSG_PARO = "if1h2SRcku2"; // VL
-	var FAIL_UNS_SSG_PARO = "azirNffjDgP";
-	var VL_FAIL_NEW_OTH = "WUWQqRMnWDq"; // VL
-	var VL_FAIL_UNS_OTH = "yaX1pqDkpQg";
-	var VL_FAIL_NEW_UNS = "IDinKF2U3Ck"; // VL
-	var VL_FAIL_UNS_UNS = "bmukoyyu4Pr";	
-	var CL_FAIL_NEW_OTH = "Cl3ZokvTdwK"; // CL, ACL, ZCL
-	var CL_FAIL_UNS_OTH = "EJDj412Rxso";
-	var CL_FAIL_NEW_UNS = "SHKozECi3D8"; // CL, ACL, ZCL
-	var CL_FAIL_UNS_UNS = "ZmlPKopCQ4C";
-
-	// CC for drugs Death Treatment outcome
-	var DEATH_NEW_AMB = "x4cgQg2AcY0"; // VL
-	var DEATH_UNS_AMB = "YOmhC4PE87B";
-	var DEATH_NEW_GLU = "FnJi3vH25Hu"; // CL, ACL, ZCL
-	var DEATH_UNS_GLU = "WEZIdAT6iF7";
-	var DEATH_NEW_PEN = "aA3lP8pEbeb"; // VL
-	var DEATH_UNS_PEN = "KAetedUQTtU";
-	var DEATH_NEW_SSG = "kbGdhqu16zE"; // CL, ACL, ZCL
-	var DEATH_UNS_SSG = "v3bRDWs5P7s";
-	var DEATH_NEW_SSG_PARO = "i7wr45ig4ho"; // VL
-	var DEATH_UNS_SSG_PARO = "FIJebC73iWT";
-	var VL_DEATH_NEW_OTH = "ZVVzyM4NTY2"; // VL
-	var VL_DEATH_UNS_OTH = "mdtkHiVSZQP";
-	var VL_DEATH_NEW_UNS = "TaxNA8fHbey"; // VL
-	var VL_DEATH_UNS_UNS = "tpW0Oiuo0Sh";	
-	var CL_DEATH_NEW_OTH = "kT7zue7yO7B"; // CL, ACL, ZCL
-	var CL_DEATH_UNS_OTH = "oBUl8XZw0GT";
-	var CL_DEATH_NEW_UNS = "DfIKXg8q1UM"; // CL, ACL, ZCL
-	var CL_DEATH_UNS_UNS = "KpxWMjKWw1B";*/
-
-	// CC for drugs Death Treatment outcome
-
-	var VL_UNKNOWN_NEW_OTH = "MdTYGUtqXvy"; // VL
-	var VL_UNKNOWN_UNS_OTH = "xTFEwFzg8e8";
-	var VL_UNKNOWN_NEW_UNS = "SzuZ0zZuDYi"; // VL
-	var VL_UNKNOWN_UNS_UNS = "X49CoAZyVYt";	
-	var CL_UNKNOWN_NEW_OTH = "S4OvFzEe6SJ"; // CL, ACL, ZCL
-	var CL_UNKNOWN_UNS_OTH = "ftIbkUE8cTg";
-	var CL_UNKNOWN_NEW_UNS = "DcUvDhdVhsw"; // CL, ACL, ZCL
-	var CL_UNKNOWN_UNS_UNS = "DwRc6xeV3LN";
 
 	/* Indicators*/
 	var UN_WPP = new Array(4);
@@ -1676,15 +1602,24 @@
 		var dx_header = getHeaderIndex(data.headers, "dx"); 
 		var value_header = getHeaderIndex(data.headers, "value"); 
 
-		for (var i = 0; i<arrayReference.length; i++){
-			id = arrayReference[i];
-			index = arrayReference.indexOf(id);
-			if(WHEN_NON_APPLICABLE.localeCompare(checkI(id))==0){
-				console.log("N/A: index "+index+ " - id: "+id);
-				arrayName[index] = WHEN_NON_APPLICABLE;
-			} else if (typeof data.rows != "undefined" && i < data.rows.length){
-				arrayName[index] = parseFloat(data.rows[i][value_header]);
-			}
+		if(Array.isArray(data.rows)) {
+
+			for (var i = 0; i<data.rows.length; i++){
+				id = data.rows[i][dx_header];
+				index = arrayReference.indexOf(id);
+				if(WHEN_NON_APPLICABLE.localeCompare(checkI(id))==0){
+					console.log("N/A: index "+index+ " - id: "+id);
+					arrayName[index] = WHEN_NON_APPLICABLE;
+				} else if (typeof data.rows != "undefined" && i < data.rows.length){
+					arrayName[index] = parseFloat(data.rows[i][value_header]);
+				} else {
+					console.log("Unexpected error on fillIndicatorArray");
+					console.log("id: "+data.rows[i][dx_header] + "value_header: " + data.rows[i][value_header]);
+				}
+			} 
+		} else {
+			console.log("Unexpected error on fillIndicatorArray. data.rows is not an array");
+			console.log(data.rows);
 		}
 
 	}
@@ -2039,7 +1974,7 @@
 
 		// gets population in miles, transforms it in units and adds local separators
 		var popIn1000 = getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_Pop_Tot_1000, CC_DEFAULT], VALUE_KEY);
-		totalPopulation = parseInt(popIn1000) * 1000 ;
+		totalPopulation = parseInt(popIn1000 * 1000) ;
 		generalInformationArray[CIG_ROW_POP][1] = formatIntValue((totalPopulation || WHEN_NO_DATA), SAME, LOCALE_FORMAT);
 
 		// gets GDP
@@ -3894,7 +3829,7 @@
 	<meta charset="UTF-8">
 	<title>Leishmaniasis Country Profile Generator</title>
    <link rel="stylesheet" href="css/jquery-te-1.4.0.css" type="text/css" />
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" type="text/css" />
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" type="text/css" crossorigin="anonymous"> />
 	<link rel="stylesheet" href="https://jqueryui.com/resources/demos/style.css" type="text/css" />
    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400" />
    <link rel="stylesheet" href="css/style.css" type="text/css" />
@@ -4219,7 +4154,7 @@
 				<a class="usermanual" target="_blank"><img class="resize" src="img/icons/pdf.png" border=0></a>
 		  </div>
 		</form>
-		<div id="footer"> LCPG v0.32 - 2020.01.17 </div>
+		<div id="footer"> LCPG v0.33 - 2020.03.04</div>
 	</div>
 </body>
 </html>
