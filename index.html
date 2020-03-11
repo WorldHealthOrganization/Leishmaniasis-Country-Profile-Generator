@@ -100,6 +100,7 @@
 	var WHEN_NO_DATA = "No data";
 	var WHEN_NON_APPLICABLE = "N/A";
 	var ERROR = "Error!";
+	var ERROR_API_TEXT_START = "Error getting ";
 
 	var HISTORIC_DEFAULT_VALUE = 16; // includes current year
 
@@ -992,7 +993,7 @@
 			html +='<span id="'  +idprefi + i + '" class="' + CLASS_EDITABLE_ELEMENT+'">' + labels[i] + ' = ' + labelsDesc[i] + '</span>';
 		}
 
-		$("#"+elementId).append(html);
+		$("#"+elementId).html(html);
 	}
 
 
@@ -1028,7 +1029,7 @@
 
 
 			return getQueryEvents(FOOTNOTES, dimensions, filters, OUTPUT_TYPE.EVENT, extraParams);
-		});
+		}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " footnotes.");}); 
 		
 	}
 
@@ -1074,20 +1075,6 @@
 		});
 	}
 
-	function getEventsFor(program, orgUnit, params) {
-		params.orgUnit = orgUnit;
-		params.program = program;
-		var builtUrl = buildAPIUrl(EVENTS, params);
-		return $.ajax({
-			url: builtUrl
-		}).done(function(data) {
-			return data;
-		}).fail(function(data) {
-			console.log ("ERROR. getEventsFor");
-			console.log (data);
-		});
-	}
-
 	function getLegendSet(index){
 		var legendUrl = "../../legendSets/"+LEGENDS[index];
 
@@ -1109,9 +1096,9 @@
 					mapLegends[index][i].endValue = data.legends[i].endValue;
 				}
 				mapLegends[index] =  reOrderLegendSet(mapLegends[index]);
-			});
+			}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " legends for " + legendSetName);}); 
 			
-		});
+		}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " legendSets: " + LEGENDS[index]);}); 
 	}
 
 	function generateMap(index, dimentionType, levels, orgUnitId, year, thematic, mapStyle, opacityLevel){
@@ -1176,7 +1163,7 @@
 
 	function getDEUsedByMetadata(){
 
-
+		console.log ("getDEUsedByMetadata");
 		var promises = [];
 		var ds_indexes = [];
 		var p_indexes = [];
@@ -1220,45 +1207,75 @@
 
 			}
 			return;
-		});
-
+		}); 
 	}
 
 	function getCOCusedByDataSet(dsuid){
-		var params = {
-			var: "datasetuid:" + dsuid,
-			paging: false
-		};
+		return new Promise((resolve, reject) => {
+			console.log("getCOCusedByDataSet: " + dsuid);
 
-		return $.when(getv3(SQLVIEWS + "/" + SQL_COC_DS + "/data", params))
-		.done(function(result){
-			// not interested in store COC in dsinfo array
-			return;
-		});
+			var params = {
+				var: "datasetuid:" + dsuid,
+				paging: false
+			};
+
+			return $.when(getv3(SQLVIEWS + "/" + SQL_COC_DS + "/data", params))
+			.done(function(result){
+				console.log("got getCOCusedByDataSet: " + dsuid);
+
+				// not interested in store COC in dsinfo array
+				return resolve(result);
+			}).fail( function(){
+				addToErrorFeedback(ERROR_API_TEXT_START + " COC used by dataSet " + dsuid);
+				return reject();
+			}); 
+		})
+
+
 	}
 
 	function getDEusedByDataSet(dsuid){
-		var params = {
-			var: "datasetuid:" + dsuid,
-			paging: false
-		};
+		return new Promise((resolve, reject) => {
+			console.log("getDEusedByDataSet: " + dsuid);
+			var params = {
+				var: "datasetuid:" + dsuid,
+				paging: false
+			};
 
-		return $.when(getv3(SQLVIEWS + "/" + SQL_DE_DS + "/data", params))
-		.done(function(result){
-			dsinfo[dsuid][DE_IDX] = result.dataelements;
-		});
+			return $.when(getv3(SQLVIEWS + "/" + SQL_DE_DS + "/data", params))
+			.done(function(result){
+				console.log("got getDEusedByDataSet: " + dsuid);
+
+				dsinfo[dsuid][DE_IDX] = result.dataelements;
+				return resolve(result);
+			}).fail( function(){
+				addToErrorFeedback(ERROR_API_TEXT_START + " DE used By dataSet " + dsuid);
+				return reject();
+			}); 
+		})
 	}
 
 	function getDEusedByProgram(puid){
-		var params = {
-			var: "programuid:" + puid,
-			paging: false
-		};
+		return new Promise((resolve, reject) => {
+			console.log("getDEusedByProgram: " + puid);
 
-		return $.when(getv3(SQLVIEWS + "/" +SQL_DE_P + "/data", params))
-		.done(function(result){
-			pinfo[puid][DE_IDX] = result.dataelements;
-		});
+			var params = {
+				var: "programuid:" + puid,
+				paging: false
+			};
+
+			return $.when(getv3(SQLVIEWS + "/" +SQL_DE_P + "/data", params))
+			.done(function(result){
+				console.log("got getDEusedByProgram: " + puid);
+
+				pinfo[puid][DE_IDX] = result.dataelements;
+				return resolve(result);
+			}).fail( function(){
+				addToErrorFeedback(ERROR_API_TEXT_START + " DE used by program " + puid);
+				return reject();
+		}); 
+	})
+
 	}
 
 	
@@ -1281,7 +1298,7 @@
 			}
 			$("#subnationalLevelSelector option:eq("+NATIONAL_LEVEL+")").prop('disabled',false);
 			$( "#subnationalLevelSelector" ).selectmenu( 'refresh', true);
-		});
+		}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " ou levels");}); 
 	}
 
 	function getIndicatorInfo(arrayOfArrays, indType, field1, field2){
@@ -1320,7 +1337,7 @@
 			} else {
 				return;
 			}
-		});
+		}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " indicators information");}); 
 	}
 
 
@@ -1359,15 +1376,15 @@
 		ind_object.de.forEach(de => {
 			if(!de_assigned.has(de)){
 
-				console.log ("DE " + de + " NOT FOUND")
+				//console.log ("DE " + de + " NOT FOUND")
 				reachable = false;
 			} else {
-				console.log ("DE " + de + " OK")
+				//console.log ("DE " + de + " OK")
 			}
 		});
 
 		ind_object.i.forEach(i => {
-			console.log ("reachable " + reachable + " i " + i + ": " + allDEInIndicatorAreReachable(i));
+			//console.log ("reachable " + reachable + " i " + i + ": " + allDEInIndicatorAreReachable(i));
 			reachable = reachable && allDEInIndicatorAreReachable(i);
 		});
 
@@ -1407,7 +1424,7 @@
 
 	/* getting country General Information from API */
 	function get_cgi() {
-
+		console.log("get_cgi" + defaultSubnationalLevel);
 		var params = {
 			dataSet: GI,
 			period: ds.year,
@@ -1418,8 +1435,13 @@
 		return $.ajax({
 			url: builtUrl
 		}).then(function(data) {
+			console.log("get_cgi then" + defaultSubnationalLevel);
+
 				return fillCountryGeneralInformation(data);
-		});
+		}).fail( function(){
+			console.log("get_cgi fail" + defaultSubnationalLevel);
+			addToErrorFeedback(ERROR_API_TEXT_START + " Country General Information.");
+		}); 
 	}
 
 	function get_gho_ntds() {
@@ -1435,7 +1457,7 @@
 			url: builtUrl
 		}).then(function(data) {
 				return fillGHO(data);
-		});
+		}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " GHO data.");}); 
 	}
 
 	function get_subnational_endemicity_for(program, year, level, ind, column) {
@@ -1451,7 +1473,7 @@
 			.done(function(result){
 				var data = getAnalyticValueForKey(result, YEARLY_MODE);
 				array[THIRD_LEVEL_ROW][column] =  formatIntValue((data[0] || WHEN_NO_DATA), SAME, LOCALE_FORMAT);
-			});
+			}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " subnational Endemicity.");}); 
 	}
 	
 	function get_monthly_cases_for(program, year, de, row) {
@@ -1467,7 +1489,7 @@
 				.done(function(result){
 					var data = getAnalyticValueForKey(result, MONTHLY_MODE);
 					return fillMonthlyArray(row, data);
-				});
+				}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " monthly cases for " + program + " " + year + " DE: " + de);}); 
 	}
 
 
@@ -1485,7 +1507,7 @@
 			url: builtUrl
 		}).then(function(data) {
 			return data;
-		});
+		}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " CL cases.");}); 
 	}
 
 
@@ -1502,7 +1524,7 @@
 			url: builtUrl
 		}).then(function(data) {
 			return data;
-		});
+		}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " ACL/ZCL cases.");}); 
 	}
 
 
@@ -1519,7 +1541,7 @@
 			url: builtUrl
 		}).then(function(data) {
 			return data;
-		});
+		}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " VL cases.");}); 
 	}
 
 	/**
@@ -1529,6 +1551,7 @@
 	* thenFunction(data, thenFParams)
 	*/
 	function getAnalyticsDataForDX(dx_dimension, yearsToInclude, thenFunction, thenFParams){
+		console.log ("getAnalyticsDataForDX " + dx_dimension.toString());
 		var dx_dimension_treated = "";
 		if (Array.isArray(dx_dimension)){
 			for (var i = 0; i<dx_dimension.length; i++){
@@ -1554,7 +1577,7 @@
 			url: builtUrl
 		}).then(function(data) {
 			return thenFunction(data, thenFParams)
-		});
+		}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " analytics data:" + dx_dimension.toString());}); 
 	}
 
 	function getPopulationAtRiskFor(indicator, column, subNationalLevel){
@@ -1571,8 +1594,8 @@
 		return $.ajax({
 			url: builtUrl
 		}).then(function(data) {
-				fillPopulationAtRiskArray(data, column);
-		});
+				return fillPopulationAtRiskArray(data, column);
+		}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " Population at Risk.");}); 
 	}
 
 
@@ -1611,7 +1634,7 @@
 				id = data.rows[i][dx_header];
 				index = arrayReference.indexOf(id);
 				if(WHEN_NON_APPLICABLE.localeCompare(checkI(id))==0){
-					console.log("N/A: index "+index+ " - id: "+id);
+					//console.log("N/A: index "+index+ " - id: "+id);
 					arrayName[index] = WHEN_NON_APPLICABLE;
 				} else if (typeof data.rows != "undefined" && i < data.rows.length){
 					arrayName[index] = parseFloat(data.rows[i][value_header]);
@@ -1989,7 +2012,6 @@
 		var ressource = "dataElements/"+DE_CGI.GEN_WB_IncomeGroup;
 		var fields = "optionSet[options[name,code]]";
 		$.when(get(ressource,fields)).done(function(result){
-			console.log(result);
 			var incomeCode = getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_WB_IncomeGroup, CC_DEFAULT], VALUE_KEY);
 			var incomeName = getValueForKey(result.optionSet.options, CODE_KEY, incomeCode, NAME_KEY);
 			generalInformationArray[CIG_ROW_INCOME][1] = incomeName;
@@ -2026,8 +2048,7 @@
 					array[THIRD_LEVEL_ROW][0] = ENDEMIC_SUBN_LEVEL_LABELS[subNationalLevel];
 
 				}).fail(function(result, aaaaa,bbbb,cccc,ddd,eee,ffff,ggg,hhh){
-					console.log("ERRROR");
-					console.log(result);
+					addToErrorFeedback("Error updating NumberOfDivisions"); //TODO: review double notification
 					return true;
 				});
 
@@ -2949,6 +2970,14 @@
 		Pace.restart();
 		document.getElementById("country-selector").style.display = "none";
 	}
+
+	function error_report_open(){
+		document.getElementById("error-report").style.display = "block";
+	}
+
+	function error_report_close(){
+		document.getElementById("error-report").style.display = "none";
+	}
 	
 	function initializeDialogs (){
 
@@ -3207,7 +3236,9 @@
 				getPopulationAtRiskFor(POP_AT_RISK[ACL_INDEX], ACL_COLUMN, subNationaSelectedLevel),
 				getPopulationAtRiskFor(POP_AT_RISK[ZCL_INDEX], ZCL_COLUMN, subNationaSelectedLevel)
 				)
-			.then( function(){return fillArray_IncidenceRow();} ); // recalculates EPI table incidence
+			.then( function(){
+				return fillArray_IncidenceRow();			
+			}); // recalculates EPI table incidence
 
 			var update_epi_and_cgi_tables = $.when(
 					get_indicators_values,
@@ -3259,8 +3290,6 @@
 
 	/* AFTER AND BEFORE printing actions */
 	var beforePrint = function() {
-		console.log('Functionality to run before printing.');
-
 		// hides zoom buttons on maps
 		$('#' + MAP_PREFIX + VL_INDEX).find(".leaflet-control-zoom").hide();
 		$('#' + MAP_PREFIX + CL_INDEX).find(".leaflet-control-zoom").hide();
@@ -3270,8 +3299,6 @@
 	};
 
 	var afterPrint = function() {
-		console.log('CP printed');
-
 		// restores zoom buttons on maps
 		$('#' + MAP_PREFIX + VL_INDEX).find(".leaflet-control-zoom").show();
 		$('#' + MAP_PREFIX + CL_INDEX).find(".leaflet-control-zoom").show();
@@ -3489,6 +3516,17 @@
 		$("#metadataFeedback").html(text);
 	}
 
+	function cleanErrorFeedback(){
+		$("#errorFeedback").html('');
+
+	}
+
+	function addToErrorFeedback(text){
+		$("#errorFeedback").append("<li>" + text + "</li>");
+		console.log ("added to errorFeedback: " + text);
+		error_report_open();
+	}
+
 	function saveSelectedYearAndCountry() {
 		// retrieves values from form
 		ds.countryName =  $( "#targetCountry" ).val(); 
@@ -3499,6 +3537,7 @@
 	function startPreparingReport() {
 	
 		country_selector_close();
+		cleanErrorFeedback();
 
 		$( "#country_name" ).text(ds.countryName);
 		$( "#year" ).text(ds.year);
@@ -3676,16 +3715,30 @@
 //        var async2 = $.when( a3() ).then(function(){ return a4(); });
 
 	
-		var getDEUsedByMetadataPromise = $.when(getDEUsedByMetadata(), 
-										getIndicatorInfo([...UN_WPP, ...LAB_PARASITO_RESULT_NEWUNSP, ...LAB_PARASITO_TESTED_NEWUNSP, ...DIRECT_EXAM_DIAGNOSED, 
-															...POSITIVE_SLIDES_PROP, ...NEW_AND_UNSP_CASES, ...TREAT_COMPLETED, ...TREAT_OUTCOME_CURE, 
-															...TREAT_OUTCOME_FAIL, ...TREAT_OUTCOME_FATAL, ...SCREEN_PASSIVE, ...INCIDENCE_FOR_MAPS, 
-															...INCIDENCE_FOR_CHARTS, ...POP_AT_RISK, ],
-															"indicators", "numerator", "denominator"))
-			.then( function(){return test_ind_info();});
-			
-		var get_indicators_values = $.when(get_cgi(), 
+		$.when(	getDEUsedByMetadata(), 
+				getIndicatorInfo([...UN_WPP, ...LAB_PARASITO_RESULT_NEWUNSP, ...LAB_PARASITO_TESTED_NEWUNSP, ...DIRECT_EXAM_DIAGNOSED, 
+									...POSITIVE_SLIDES_PROP, ...NEW_AND_UNSP_CASES, ...TREAT_COMPLETED, ...TREAT_OUTCOME_CURE, 
+									...TREAT_OUTCOME_FAIL, ...TREAT_OUTCOME_FATAL, ...SCREEN_PASSIVE, ...INCIDENCE_FOR_MAPS, 
+									...INCIDENCE_FOR_CHARTS, ...POP_AT_RISK, ],
+									"indicators", "numerator", "denominator"))
+		.then( function(){
+			return $.when(
+			get_cgi(), // gets totalPopulation var who is neeeded for popAtRisk
 			getOULevels(MIN_OU_LEVEL, MAX_OU_LEVEL),
+			
+			).done( function(){
+				return;
+			})
+		}) 
+		.then( function(){
+		 	return $.when(
+			get_cl_cases(), // gets cl cases who is needed for EPI incidence
+			get_vl_cases(), 
+			get_azcl_cases(),
+			getPopulationAtRiskFor(POP_AT_RISK[VL_INDEX], VL_COLUMN, defaultSubnationalLevel),	
+			getPopulationAtRiskFor(POP_AT_RISK[CL_INDEX], CL_COLUMN, defaultSubnationalLevel),
+			getPopulationAtRiskFor(POP_AT_RISK[ACL_INDEX], ACL_COLUMN, defaultSubnationalLevel),
+			getPopulationAtRiskFor(POP_AT_RISK[ZCL_INDEX], ZCL_COLUMN, defaultSubnationalLevel),
 			//getAnalyticsDataForDX(NEW_AND_UNSP_CASES, 1, fillIndicatorArray, [NEW_AND_UNSP_CASES, new_and_usnp_cases]), // replaced by fillNewAndUnspCasesWorkaround
 			getAnalyticsDataForDX(UN_WPP, 1, fillIndicatorArray, [UN_WPP, un_wpp_data]),
 			getAnalyticsDataForDX(SCREEN_PASSIVE, 1, fillIndicatorArray, [SCREEN_PASSIVE, screen_passive]),
@@ -3696,20 +3749,9 @@
 			getAnalyticsDataForDX(POSITIVE_SLIDES_PROP, 1, fillIndicatorArray, [POSITIVE_SLIDES_PROP, positive_slides_prop]),
 			getAnalyticsDataForDX(TREAT_OUTCOME_CURE, 1, fillIndicatorArray, [TREAT_OUTCOME_CURE, toutcome_cure]),
 			getAnalyticsDataForDX(TREAT_OUTCOME_FAIL, 1, fillIndicatorArray, [TREAT_OUTCOME_FAIL, toutcome_fail]),
-			getAnalyticsDataForDX(TREAT_OUTCOME_FATAL, 1, fillIndicatorArray, [TREAT_OUTCOME_FATAL, toutcome_fatal]),
-			getDEUsedByMetadataPromise) // gets totalPopulation var who is neeeded for popAtRisk
-			.then( function(){return getPopulationAtRiskFor(POP_AT_RISK[VL_INDEX], VL_COLUMN, defaultSubnationalLevel);} )
-			.then( function(){return getPopulationAtRiskFor(POP_AT_RISK[CL_INDEX], CL_COLUMN, defaultSubnationalLevel);} )
-			.then( function(){return getPopulationAtRiskFor(POP_AT_RISK[ACL_INDEX], ACL_COLUMN, defaultSubnationalLevel);} )
-			.then( function(){return getPopulationAtRiskFor(POP_AT_RISK[ZCL_INDEX], ZCL_COLUMN, defaultSubnationalLevel);} );
-
-		var epi_incidence_async = $.when(
-			get_cl_cases(), // gets cl cases who is needed for EPI incidence
-			get_vl_cases(), 
-			get_azcl_cases(),	
-			get_indicators_values) // gets popAtRisks who is needed for EPI incidence
-			//.then(function(){ return fillArray_IncidenceRow(VL_COLUMN); });
-			.then( function(data_cl, data_vl, data_azcl){
+			getAnalyticsDataForDX(TREAT_OUTCOME_FATAL, 1, fillIndicatorArray, [TREAT_OUTCOME_FATAL, toutcome_fatal])
+			//get_indicators_values) // gets popAtRisks who is needed for EPI incidence
+			).done( function(data_cl, data_vl, data_azcl){
 				fillUN_WPP();
 				fillArray(data_cl.dataValues, CL_COLUMN, DE.CL_EPI_Type); 
 				fillArray(data_cl.dataValues, MCL_COLUMN, DE.MCL_EPI_Type, DE.MCL_GEN_EPID_cases); 
@@ -3730,33 +3772,35 @@
 
 				return fillArray_IncidenceRow();
 			
-			} );
+			} )
+		})	
+		.then( function(){
 	
-		$.when(
-			epi_incidence_async,
-			generateMapAndLegend(VL_INDEX),
-			generateMapAndLegend(CL_INDEX),
-			generateMapAndLegend(ACL_INDEX),
-			generateMapAndLegend(ZCL_INDEX),
-			get_gho_ntds(),
-			getAnalyticsDataForDX(INCIDENCE_FOR_CHARTS[VL_INDEX], historicLength, fillIncidenceChartArray, [VL_COLUMN]),
-			getAnalyticsDataForDX(INCIDENCE_FOR_CHARTS[CL_INDEX], historicLength, fillIncidenceChartArray, [CL_COLUMN]),
-			getAnalyticsDataForDX(INCIDENCE_FOR_CHARTS[ACL_INDEX], historicLength, fillIncidenceChartArray, [ACL_COLUMN]),
-			getAnalyticsDataForDX(INCIDENCE_FOR_CHARTS[ZCL_INDEX], historicLength, fillIncidenceChartArray, [ZCL_COLUMN]),
-			getAnalyticsDataForDX(NEW_AND_UNSP_CASES[VL_INDEX], historicLength, fillNewCasesArray, [VL_COLUMN]),
-			getAnalyticsDataForDX(NEW_AND_UNSP_CASES[CL_INDEX], historicLength, fillNewCasesArray, [CL_COLUMN]),
-			getAnalyticsDataForDX(NEW_AND_UNSP_CASES[ACL_INDEX], historicLength, fillNewCasesArray, [ACL_COLUMN]),
-			getAnalyticsDataForDX(NEW_AND_UNSP_CASES[ZCL_INDEX], historicLength, fillNewCasesArray, [ZCL_COLUMN]),
-			get_monthly_cases_for(CL_MONTHLY, ds.year, DE_MONTHLY.CL_CASES, CL_ROW),
-			get_monthly_cases_for(CL_MONTHLY, ds.year-1, DE_MONTHLY.CL_CASES, CL_PREVIOUS_YEAR_ROW),
-			get_monthly_cases_for(VL_MONTHLY, ds.year, DE_MONTHLY.VL_CASES, VL_ROW),
-			get_monthly_cases_for(VL_MONTHLY, ds.year-1, DE_MONTHLY.VL_CASES, VL_PREVIOUS_YEAR_ROW),
-			get_monthly_cases_for(CL_MONTHLY, ds.year, DE_MONTHLY.ACL_CASES, ACL_ROW),
-			get_monthly_cases_for(CL_MONTHLY, ds.year-1, DE_MONTHLY.ACL_CASES, ACL_PREVIOUS_YEAR_ROW),
-			get_monthly_cases_for(CL_MONTHLY, ds.year, DE_MONTHLY.ZCL_CASES, ZCL_ROW),
-			get_monthly_cases_for(CL_MONTHLY, ds.year-1, DE_MONTHLY.ZCL_CASES, ZCL_PREVIOUS_YEAR_ROW),
-			getFootnotes(defaultSubnationalLevel)).done(function(epi,l1,l2,l3,l4,gho,dx1,dx2,dx3,dx4,dx5,dx6,dx7,dx8,
-																m1,m2,m3,m4,m5,m6,m7,m8,fndata){
+			return $.when( 
+				generateMapAndLegend(VL_INDEX),
+				generateMapAndLegend(CL_INDEX),
+				generateMapAndLegend(ACL_INDEX),
+				generateMapAndLegend(ZCL_INDEX),
+				get_gho_ntds(),
+				getAnalyticsDataForDX(INCIDENCE_FOR_CHARTS[VL_INDEX], historicLength, fillIncidenceChartArray, [VL_COLUMN]),
+				getAnalyticsDataForDX(INCIDENCE_FOR_CHARTS[CL_INDEX], historicLength, fillIncidenceChartArray, [CL_COLUMN]),
+				getAnalyticsDataForDX(INCIDENCE_FOR_CHARTS[ACL_INDEX], historicLength, fillIncidenceChartArray, [ACL_COLUMN]),
+				getAnalyticsDataForDX(INCIDENCE_FOR_CHARTS[ZCL_INDEX], historicLength, fillIncidenceChartArray, [ZCL_COLUMN]),
+				getAnalyticsDataForDX(NEW_AND_UNSP_CASES[VL_INDEX], historicLength, fillNewCasesArray, [VL_COLUMN]),
+				getAnalyticsDataForDX(NEW_AND_UNSP_CASES[CL_INDEX], historicLength, fillNewCasesArray, [CL_COLUMN]),
+				getAnalyticsDataForDX(NEW_AND_UNSP_CASES[ACL_INDEX], historicLength, fillNewCasesArray, [ACL_COLUMN]),
+				getAnalyticsDataForDX(NEW_AND_UNSP_CASES[ZCL_INDEX], historicLength, fillNewCasesArray, [ZCL_COLUMN]),
+				get_monthly_cases_for(CL_MONTHLY, ds.year, DE_MONTHLY.CL_CASES, CL_ROW),
+				get_monthly_cases_for(CL_MONTHLY, ds.year-1, DE_MONTHLY.CL_CASES, CL_PREVIOUS_YEAR_ROW),
+				get_monthly_cases_for(VL_MONTHLY, ds.year, DE_MONTHLY.VL_CASES, VL_ROW),
+				get_monthly_cases_for(VL_MONTHLY, ds.year-1, DE_MONTHLY.VL_CASES, VL_PREVIOUS_YEAR_ROW),
+				get_monthly_cases_for(CL_MONTHLY, ds.year, DE_MONTHLY.ACL_CASES, ACL_ROW),
+				get_monthly_cases_for(CL_MONTHLY, ds.year-1, DE_MONTHLY.ACL_CASES, ACL_PREVIOUS_YEAR_ROW),
+				get_monthly_cases_for(CL_MONTHLY, ds.year, DE_MONTHLY.ZCL_CASES, ZCL_ROW),
+				get_monthly_cases_for(CL_MONTHLY, ds.year-1, DE_MONTHLY.ZCL_CASES, ZCL_PREVIOUS_YEAR_ROW),
+				getFootnotes(defaultSubnationalLevel))
+				.done(function(l1,l2,l3,l4,gho,dx1,dx2,dx3,dx4,dx5,dx6,dx7,dx8,
+								m1,m2,m3,m4,m5,m6,m7,m8,fndata){
 			// the code here will be executed when all four ajax requests resolve.
 			// a1, a2, a3 and a4 are lists of length 3 containing the response text,
 			// status, and jqXHR object for each of the four ajax calls respectively.
@@ -3794,8 +3838,9 @@
 			//	$("#disableNBMaps").trigger('click');
 				//$(".radioButton").change();
 				document.getElementById("country_profile_and_panel").style.display = "block";
-
-		}).fail(function(data) {
+		
+		})})
+		.fail(function(data) {
 
 			if (defaultSubnationalLevel == 1){
 				// try againg against level 0
@@ -3833,7 +3878,7 @@
 	<meta charset="UTF-8">
 	<title>Leishmaniasis Country Profile Generator</title>
    <link rel="stylesheet" href="css/jquery-te-1.4.0.css" type="text/css" />
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" type="text/css" crossorigin="anonymous"> />
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" type="text/css" crossorigin="anonymous" />
 	<link rel="stylesheet" href="https://jqueryui.com/resources/demos/style.css" type="text/css" />
    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400" />
    <link rel="stylesheet" href="css/style.css" type="text/css" />
@@ -4139,6 +4184,12 @@
 	</div>
 
 
+	<div class="form-popup" id="error-report">
+		<div id="errorFeedbackTitle">There was a problem retrieving the following information: </div><br>
+		<div id= "errorFeedback"></div>
+		<button class="btn btnSafeOption" onclick="error_report_close(); startPreparingReport();" >Relaunch</button>	
+		<button class="btn btnRiskyOption" onclick="error_report_close()">Close this window</button>
+	</div>
 
 	<div class="form-popup" id="country-selector">
 		<form action="javascript:checkMetadataAssignedToThisCountry()" class="form-container">
@@ -4152,13 +4203,13 @@
 		  <input id="yearField" type="text" placeholder="Enter and select year" name="yearField" required>
 							
 		  <div id= "metadataFeedback"></div>
-		  <button type="submit" class="btn">Start preparing CP</button>
+		  <button type="submit" class="btn btnSafeOption" >Start preparing CP</button>
 		  <br><br>
 		  <div class="download_manual">Download here the LCPG manual: 
 				<a class="usermanual" target="_blank"><img class="resize" src="img/icons/pdf.png" border=0></a>
 		  </div>
 		</form>
-		<div id="footer"> LCPG v0.34 - 2020.03.09</div>
+		<div id="footer"> LCPG v0.35 - 2020.03.11</div>
 	</div>
 </body>
 </html>

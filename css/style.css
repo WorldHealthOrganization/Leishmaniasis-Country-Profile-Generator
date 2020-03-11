@@ -343,12 +343,22 @@ input {
 .form-popup {
   display: none;
   position: fixed;
+  z-index: 9;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+#country-selector{
   top: 25%;
   left: 25%;
   border: 3px solid #4CAF50;
-  z-index: 9;
-  font-family: Arial, Helvetica, sans-serif;
+}
 
+#error-report{
+  top: 5%;
+  left: 20%;
+  border: 3px solid #F44336;
+  padding: 10px;
+  background: white;
 }
 
 /* Add styles to the form container */
@@ -375,18 +385,25 @@ input {
 }
 
 /* Set a style for the submit/login button */
-.form-container .btn {
-  background-color: #4CAF50;
+.btn {
   color: white;
-  padding: 16px 20px;
   border: none;
   cursor: pointer;
   width: 100%;
-  margin-bottom:10px;
+  padding:16px;
+  margin-top: 10px;
   opacity: 0.8;
 }
 
+.btnSafeOption {
+  background-color: #4CAF50;
+}
+
+.btnRiskyOption {
+  background-color: #F44336;
+}
+
 /* Add some hover effects to buttons */
-.form-container .btn:hover, .open-button:hover {
+.btn:hover, .open-button:hover {
   opacity: 1;
 }
