@@ -2875,15 +2875,29 @@
 		$( "#mapSelector" ).selectmenu( 'refresh', true);
 	}
 	
-	function generateMapAndLegend(index){
+	function generateLegends(){
 
-		return $.when(getLegendSet(index)).done(function(result){
-			initalMapDiv[index] = $('#map'+index).html();
-			var mapStyle = MAP_STYLE[$('#mapStyleSelector').val()];
-			drawLegendSet("legendSet"+index, index);
-			generateMap(index, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity);
-
+		return $.when(getLegendSet(VL_INDEX),
+				getLegendSet(CL_INDEX),
+				getLegendSet(ACL_INDEX),
+				getLegendSet(ZCL_INDEX)
+		).done(function(result){
+			drawLegendSet("legendSet" + VL_INDEX, VL_INDEX);
+			drawLegendSet("legendSet" + CL_INDEX, CL_INDEX);
+			drawLegendSet("legendSet" + ACL_INDEX, ACL_INDEX);
+			drawLegendSet("legendSet" + ZCL_INDEX, ZCL_INDEX);
 		});
+	}
+	function generateMaps(){
+		var mapStyle = MAP_STYLE[$('#mapStyleSelector').val()];
+		return $.when(
+				generateMap(VL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity),
+				generateMap(CL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity),
+				generateMap(ACL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity),
+				generateMap(ZCL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity)
+			).done(function(result){
+				console.log("maps updated");
+			}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " maps.");}); 
 
 	}
 
@@ -3230,42 +3244,40 @@
 		$("#subnationalLevelSelector").on('selectmenuchange', function() {
 			var subNationaSelectedLevel = parseInt($("#subnationalLevelSelector").val());
 
-			var get_indicators_values = $.when(
+			$.when(
 				getPopulationAtRiskFor(POP_AT_RISK[VL_INDEX], VL_COLUMN, subNationaSelectedLevel),
 				getPopulationAtRiskFor(POP_AT_RISK[CL_INDEX], CL_COLUMN, subNationaSelectedLevel),
 				getPopulationAtRiskFor(POP_AT_RISK[ACL_INDEX], ACL_COLUMN, subNationaSelectedLevel),
 				getPopulationAtRiskFor(POP_AT_RISK[ZCL_INDEX], ZCL_COLUMN, subNationaSelectedLevel)
 				)
 			.then( function(){
-				return fillArray_IncidenceRow();			
-			}); // recalculates EPI table incidence
-
-			var update_epi_and_cgi_tables = $.when(
-					get_indicators_values,
+				return $.when( //DELETE update_epi_and_cgi_tables+
+					fillArray_IncidenceRow(),
 					updateNumberOfDivisions(subNationaSelectedLevel)
-			).done(function(result){
-				writeTable(CGI_TABLE_NAME, "Body", generalInformationArray, LINES_BELOW_LABELS_CGI);
-				underlineDivisionName();
-				writeTable(EPI_TABLE_NAME, "Body", array, LINES_BELOW_LABELS_EPI);
-				// It writes the entire table data, so put also the headers
-				fillTableHead(EPI_TABLE_NAME, "Head", '', COLUMNS_LABELS);
+				).done(function(result){
+					writeTable(CGI_TABLE_NAME, "Body", generalInformationArray, LINES_BELOW_LABELS_CGI);
+					underlineDivisionName();
+					writeTable(EPI_TABLE_NAME, "Body", array, LINES_BELOW_LABELS_EPI);
+					// It writes the entire table data, so put also the headers
+					fillTableHead(EPI_TABLE_NAME, "Head", '', COLUMNS_LABELS);
 
-				// rewrites also DiagTable and Toutcome table since buttons are going to be clicked
-				writeTable(DIAG_TABLE_NAME, "Body", diagnosisArray, LINES_BELOW_LABELS_DIAG);
-				writeTable(TOUTCOME_TABLE_NAME, "Body", toutcomeArray, LINES_BELOW_LABELS_TREAT);
-				fillTableHead(DIAG_TABLE_NAME, "Head", '', COLUMNS_LABELS);
-				fillTableHead(TOUTCOME_TABLE_NAME, "Head", TOUTCOME_TABLE_FIRST_COLUMNS, COLUMNS_LABELS.slice(0,4));
+					// rewrites also DiagTable and Toutcome table since buttons are going to be clicked
+					writeTable(DIAG_TABLE_NAME, "Body", diagnosisArray, LINES_BELOW_LABELS_DIAG);
+					writeTable(TOUTCOME_TABLE_NAME, "Body", toutcomeArray, LINES_BELOW_LABELS_TREAT);
+					fillTableHead(DIAG_TABLE_NAME, "Head", '', COLUMNS_LABELS);
+					fillTableHead(TOUTCOME_TABLE_NAME, "Head", TOUTCOME_TABLE_FIRST_COLUMNS, COLUMNS_LABELS.slice(0,4));
 
-				refreshToggleStatus();
+					refreshToggleStatus();
+					removeAllFootnotesMarks(); // removes all footnotes marks since refreshed elements will lost its footnote mark
+				});
 			});
 
 
-			var update_maps;
 			// recalculates maps to selected subnational level
 			if ($("#maps_to_selectedSubLevel").prop('checked')){
 				update_map_levels_var(map_levels[0], WIDP_OU_SHIFT + subNationaSelectedLevel);
 				var mapStyle = MAP_STYLE[$('#mapStyleSelector').val()];
-				update_maps = $.when(
+				$.when(
 					generateMap(VL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity),
 					generateMap(CL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity),
 					generateMap(ACL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity),
@@ -3275,18 +3287,10 @@
 				});
 			}
 
-			// removes all footnotes marks since refreshed elements will lost its footnote mark
-			$.when(
-					update_epi_and_cgi_tables,
-					update_epi_and_cgi_tables,
-					update_maps
-				).done(function(result){
-					removeAllFootnotesMarks();
-			});
-
 		}).change();
 
 	 }
+
 
 	/* AFTER AND BEFORE printing actions */
 	var beforePrint = function() {
@@ -3392,6 +3396,12 @@
 		$( "#updateChartButton" ).on( 'click', event, updateChart);
 		$( "#cancelChartButton" ).on( 'click', event, cancelUpdateChart);
 		
+		// save initial map state
+		initalMapDiv[VL_INDEX] = $('#map' + VL_INDEX).html();
+		initalMapDiv[CL_INDEX] = $('#map' + CL_INDEX).html();
+		initalMapDiv[ACL_INDEX] = $('#map' + ACL_INDEX).html();
+		initalMapDiv[ZCL_INDEX] = $('#map' + ZCL_INDEX).html();
+
 		// New footnote arrives 
 		$( "#sortable2" ).on( "sortupdate", function( event, ui ) {
 			writeFootnotes();
@@ -3777,10 +3787,8 @@
 		.then( function(){
 	
 			return $.when( 
-				generateMapAndLegend(VL_INDEX),
-				generateMapAndLegend(CL_INDEX),
-				generateMapAndLegend(ACL_INDEX),
-				generateMapAndLegend(ZCL_INDEX),
+				generateLegends(),
+				generateMaps(),
 				get_gho_ntds(),
 				getAnalyticsDataForDX(INCIDENCE_FOR_CHARTS[VL_INDEX], historicLength, fillIncidenceChartArray, [VL_COLUMN]),
 				getAnalyticsDataForDX(INCIDENCE_FOR_CHARTS[CL_INDEX], historicLength, fillIncidenceChartArray, [CL_COLUMN]),
@@ -3799,7 +3807,7 @@
 				get_monthly_cases_for(CL_MONTHLY, ds.year, DE_MONTHLY.ZCL_CASES, ZCL_ROW),
 				get_monthly_cases_for(CL_MONTHLY, ds.year-1, DE_MONTHLY.ZCL_CASES, ZCL_PREVIOUS_YEAR_ROW),
 				getFootnotes(defaultSubnationalLevel))
-				.done(function(l1,l2,l3,l4,gho,dx1,dx2,dx3,dx4,dx5,dx6,dx7,dx8,
+				.done(function(lgds,mps,gho,dx1,dx2,dx3,dx4,dx5,dx6,dx7,dx8,
 								m1,m2,m3,m4,m5,m6,m7,m8,fndata){
 			// the code here will be executed when all four ajax requests resolve.
 			// a1, a2, a3 and a4 are lists of length 3 containing the response text,
@@ -4209,7 +4217,7 @@
 				<a class="usermanual" target="_blank"><img class="resize" src="img/icons/pdf.png" border=0></a>
 		  </div>
 		</form>
-		<div id="footer"> LCPG v0.35 - 2020.03.11</div>
+		<div id="footer"> LCPG v0.36 - 2020.03.12 - TEST</div>
 	</div>
 </body>
 </html>
