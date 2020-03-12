@@ -2980,9 +2980,13 @@
 		document.getElementById("country-selector").style.display = "block";
 	}
 
-	function country_selector_close(){
+	function country_selector_relocate(){
 		Pace.restart();
-		document.getElementById("country-selector").style.display = "none";
+		document.getElementById('tabs-6').appendChild(
+			document.getElementById("country-selector")
+		);
+		$("#country-selector").css({width: 'fit-content', position: 'relative'});
+
 	}
 
 	function error_report_open(){
@@ -3547,7 +3551,6 @@
 
 	function startPreparingReport() {
 	
-		country_selector_close();
 		cleanErrorFeedback();
 
 		$( "#country_name" ).text(ds.countryName);
@@ -3567,6 +3570,9 @@
 		}).disableSelection();
 		$('input[type=checkbox]').checkboxradio();
 		$( "#tabs" ).tabs({heightStyle: "content"});
+		$( "#tabs" ).tabs( "option", "active", 0); // activates first tab (important when regenerating the report from other tab)
+		country_selector_relocate();
+
 		// corrects bug on checkboxes
 		$( ".ui-state-hover" ).removeClass( "ui-state-hover" );
 
@@ -3910,6 +3916,7 @@
 					<li><a href="#tabs-3">Maps</a></li>
 					<li><a href="#tabs-4">Footnotes</a></li>
 					<li><a href="#tabs-5">Help</a></li>
+					<li><a href="#tabs-6">New CP</a></li>
 				</ul>
 				<div id="tabs-1">		
 					<fieldset id="leish_detail_checkboxes"></fieldset>
@@ -4044,14 +4051,17 @@
 
 				</div>
 				<div id="tabs-5">
-						<div class="comment">
-								This Configuration Area wont be printed<br>
-								- Left click to add a footnote number.<br>
-								- Right click to edit an element.
-							</div>
+					<div class="comment">
+						This Configuration Area wont be printed<br>
+						- Left click to add a footnote number.<br>
+						- Right click to edit an element.
+					</div>
 
-				Download here the LCPG manual: 
-                        <a class="usermanual" target="_blank"><img class="resize" src="img/icons/pdf.png" border=0></a>
+					Download here the LCPG manual: 
+					<a class="usermanual" target="_blank"><img class="resize" src="img/icons/pdf.png" border=0></a>
+				</div>
+				<div id="tabs-6">
+
 				</div>
 			</div>
 			<hr>
@@ -4219,7 +4229,7 @@
 				<a class="usermanual" target="_blank"><img class="resize" src="img/icons/pdf.png" border=0></a>
 		  </div>
 		</form>
-		<div id="footer"> LCPG v0.36 - 2020.03.12 - TEST</div>
+		<div id="footer"> LCPG v0.36 - 2020.03.12</div>
 	</div>
 </body>
 </html>

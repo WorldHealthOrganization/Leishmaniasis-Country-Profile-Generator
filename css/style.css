@@ -316,6 +316,7 @@ div.col {
 	font-style: italic;
 	font-family:'Open Sans', verdana;
   margin: 20px 4px 4px 4px;
+  font-size:11px;
 }
 
 input {
@@ -342,15 +343,17 @@ input {
 /* The popup form - hidden by default */
 .form-popup {
   display: none;
-  position: fixed;
   z-index: 9;
   font-family: Arial, Helvetica, sans-serif;
+  background: white;
 }
 
 #country-selector{
   top: 25%;
   left: 25%;
   border: 3px solid #4CAF50;
+  position: fixed;
+
 }
 
 #error-report{
@@ -358,7 +361,7 @@ input {
   left: 20%;
   border: 3px solid #F44336;
   padding: 10px;
-  background: white;
+  position: fixed;
 }
 
 /* Add styles to the form container */
