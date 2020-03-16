@@ -371,7 +371,6 @@
 	var GOOGLE_STREETS = 2;
 	var GOOGLE_HYBRID = 3;
 	var OPEN_STREETS = 4;
-	var FACILITY = 5;
 
 	var MAP_STYLE = new Array(4);
 	var MAP_STYLE_LABELS = new Array(4);
@@ -381,14 +380,11 @@
 	MAP_STYLE [GOOGLE_STREETS] = "googleStreets";
 	MAP_STYLE [GOOGLE_HYBRID] = "googleHybrid";
 	MAP_STYLE [OPEN_STREETS] = "openStreetMap";
-	MAP_STYLE [FACILITY] = "facility";
-	
 	MAP_STYLE_LABELS [WHO_BASEMAP] = "WHO Basemap";
 	MAP_STYLE_LABELS [OSM_LIGHT] = "OSM Light";
 	MAP_STYLE_LABELS [GOOGLE_STREETS] = "Google Streets";
 	MAP_STYLE_LABELS [GOOGLE_HYBRID] = "Google Hybrid";
 	MAP_STYLE_LABELS [OPEN_STREETS] = "Open Street Map";
-	MAP_STYLE_LABELS [FACILITY] = "Facility";
 
 	var LEGENDS = []; 
 	LEGENDS[VL_INDEX] =  "gUOjExXros1";
@@ -925,6 +921,7 @@
 	var MONTHLY = "monthly";
 	var YEARLY = "yearly";
 
+	var LEGENDSET_POOL = "legendPool";
 	var LEGENDSET_PREFIX = "legendSet";
 	var LEGEND_PREFIX = "legend";
 	var LEISH_COLUMN_DETAIL_PREFIX = "LeishDetail";
@@ -1122,7 +1119,7 @@
 		$("#" + MAP_PREFIX + index).width(map_width);
 	
 		// Move back the legend to the legendPool
-		$("#legendPool").append($('#'+LEGENDSET_PREFIX+index));
+		$("#" + LEGENDSET_POOL).append($('#'+LEGENDSET_PREFIX+index));
 		
 		//restore map to its initial value
 		$('#'+idHtmlElement).html(initalMapDiv[index]);
@@ -1134,62 +1131,63 @@
 		}
 		itemsOnRow.push({id: orgUnitId});
 
-		https://extranet.who.int/dhis2-dev/api/29/externalMapLayers/CeszrLmiLNq
+		// url has to be defined outside
+		mapPlugin.url = base;
 
-		mapPlugin.url = '//extranet.who.int/dhis2-dev';
 		mapPlugin.load({
 			el: idHtmlElement,
-				basemap: mapStyle,
-				mapViews: [{
-					columns: [{dimension: "dx", items: [{id: dimension, dimensionItemType: dimentionType}]}],
-					rows: [{dimension: "ou", items: itemsOnRow}],
-					filters: [{
-							dimension: "pe",
-							items: [{id: year}]}],
-					valueType: "in",
-					layer: thematic,
- 					legendSet: {id: legendSetID},
-					labels: false, // labels of the regions
-					opacity:opacityLevel/100
-				}]
+			basemap: mapStyle,
+			mapViews: [{
+				columns: [{dimension: "dx", items: [{id: dimension, dimensionItemType: dimentionType}]}],
+				rows: [{dimension: "ou", items: itemsOnRow}],
+				filters: [{
+						dimension: "pe",
+						items: [{id: year}]}],
+				valueType: "in",
+				layer: thematic,
+				legendSet: {id: legendSetID},
+				labels: false, // labels of the regions
+				opacity:opacityLevel/100
+			}]
 		});
 
-/*
-		Ext.onReady(	function (){
-
-			DHIS.getMap({
-				url: base,
-				el: idHtmlElement,
-				basemap: mapStyle,
-				mapViews: [{
-					columns: [{dimension: "dx", items: [{id: dimension, dimensionItemType: dimentionType}]}],
-					rows: [{dimension: "ou", items: itemsOnRow}],
-					filters: [{
-							dimension: "pe",
-							items: [{id: year}]}],
-					valueType: "in",
-					layer: thematic,
- 					legendSet: {id: legendSetID},
-					labels: false, // labels of the regions
-					opacity:opacityLevel/100
-				}],
-				onReady: function() {
-                    console.log('map '+index +'is ready!');
-					// Removes legend
-					$('#'+idHtmlElement).find(".leaflet-control-legend").remove();
-					
-					// Removes openmaps signature
-					$('#'+idHtmlElement).find(".leaflet-bottom.leaflet-right").empty();
-
-					// Adds the legend
-					//$('#'+idHtmlElement).find(".leaflet-bottom.leaflet-right").append($('#'+LEGENDSET_PREFIX+index));
-					moveLegend(index, $('#'+idHtmlElement).find(LEGEND_POSITIONS[BOTTOM_RIGHT]), LEGEND_TO_REPORT);
-
-                }
-				
-			});
-		});*/
 	}
+
+	// Callback function when changes occurs
+	function onMapReady(mutationRecord, observer) {
+		var id = mutationRecord[mutationRecord.length-1].target.id;
+		console.log("map ready " + id);
+
+		// gets the last number of the DIV id, e.g. "3" for "map3"
+		var index = parseInt(id.slice(-1));
+
+		// hides default legend button
+		$('#' + MAP_PREFIX + index).find(".leaflet-control-legend").hide();
+
+		// moves custom legend on top of the map
+		moveLegend(index, $('#'+id).find(LEGEND_POSITIONS[BOTTOM_RIGHT]), LEGEND_TO_REPORT);
+	}
+
+	function prepareMapListeners() {
+		const target0 = document.getElementById("map0");
+		const target1 = document.getElementById("map1");
+		const target2 = document.getElementById("map2");
+		const target3 = document.getElementById("map3");
+
+		// Create a new instance of MutationObserver with callback in params
+		const observer = new MutationObserver(onMapReady);
+
+		// Setup config
+		const config = {
+			childList: true
+		};
+
+		observer.observe(target0, config);
+		observer.observe(target1, config);
+		observer.observe(target2, config);
+		observer.observe(target3, config);
+	}
+
 
 	function getDEUsedByMetadata(){
 
@@ -2854,7 +2852,14 @@
 		event.preventDefault();
 		var selected_map_index =  parseInt($('#mapSelector').val()) - 1 ; //first option is the "select text"
 		var mapStyle = MAP_STYLE[$('#mapStyleSelector').val()];
-		// TODO: adapt to Maps
+
+		// saves the legend in the pool
+		moveLegend(selected_map_index, $("#" + LEGENDSET_POOL), LEGEND_TO_LEGEND_POOL);
+
+		// removes the loaded map
+		mapPlugin.unmount(MAP_PREFIX + selected_map_index);
+
+		// generates a new map
 		generateMap(selected_map_index, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic", mapStyle, map_opacity);
 		cleanUpdateMapForm();
 	}
@@ -2912,22 +2917,54 @@
 				getLegendSet(ACL_INDEX),
 				getLegendSet(ZCL_INDEX)
 		).done(function(result){
-			drawLegendSet("legendSet" + VL_INDEX, VL_INDEX);
-			drawLegendSet("legendSet" + CL_INDEX, CL_INDEX);
-			drawLegendSet("legendSet" + ACL_INDEX, ACL_INDEX);
-			drawLegendSet("legendSet" + ZCL_INDEX, ZCL_INDEX);
+			drawLegendSet(LEGENDSET_PREFIX + VL_INDEX, VL_INDEX);
+			drawLegendSet(LEGENDSET_PREFIX + CL_INDEX, CL_INDEX);
+			drawLegendSet(LEGENDSET_PREFIX + ACL_INDEX, ACL_INDEX);
+			drawLegendSet(LEGENDSET_PREFIX + ZCL_INDEX, ZCL_INDEX);
 		});
 	}
+
+	function recreateDIV(parent, id, classes){
+		if ($("#" + id).length > 0) {
+			$("#" + id).html('<div id="'+id+'" class="'+classes+'" ></div>');
+		} else {
+			$("#" + parent).append('<div id="'+id+'" class="'+classes+'" ></div>');
+		}
+	}
+
+	function resetLegends(){
+		recreateDIV(LEGENDSET_POOL, LEGENDSET_PREFIX + VL_INDEX, "legendSet");
+		recreateDIV(LEGENDSET_POOL, LEGENDSET_PREFIX + CL_INDEX, "legendSet");
+		recreateDIV(LEGENDSET_POOL, LEGENDSET_PREFIX + ACL_INDEX, "legendSet");
+		recreateDIV(LEGENDSET_POOL, LEGENDSET_PREFIX + ZCL_INDEX, "legendSet");
+
+		// move recreated legends that have an active map
+		for (var i=0; i<MAP_CHECKBOXES_LABELS.length; i++){
+			if ( $('#'+ MAP_PREFIX+BUTTON_PREFIX + i ).prop( "checked") && 
+			$("#" + LEGENDSET_POOL).find('#' + LEGENDSET_PREFIX + i).length > 0) {
+				moveLegend(i, $('#' + MAP_PREFIX + i).find(LEGEND_POSITIONS[BOTTOM_RIGHT]), LEGEND_TO_REPORT);	
+			}
+		}
+
+		// generate legend content
+		generateLegends();
+	}
+
 	function generateMaps(){
+
 		var mapStyle = MAP_STYLE[$('#mapStyleSelector').val()];
 		return $.when(
-				generateMap(VL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic", mapStyle, map_opacity),
-				generateMap(CL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic", mapStyle, map_opacity),
-				generateMap(ACL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic", mapStyle, map_opacity),
-				generateMap(ZCL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic", mapStyle, map_opacity)
-			).done(function(result){
-				console.log("maps updated");
-			}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " maps.");}); 
+			mapPlugin.unmount(MAP_PREFIX + VL_INDEX),
+			mapPlugin.unmount(MAP_PREFIX + CL_INDEX),
+			mapPlugin.unmount(MAP_PREFIX + ACL_INDEX),
+			mapPlugin.unmount(MAP_PREFIX + ZCL_INDEX),
+			generateMap(VL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic", mapStyle, map_opacity),
+			generateMap(CL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic", mapStyle, map_opacity),
+			generateMap(ACL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic", mapStyle, map_opacity),
+			generateMap(ZCL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic", mapStyle, map_opacity)
+		).done(function(result){
+			console.log("maps updated");
+		}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " maps.");}); 
 
 	}
 
@@ -3258,7 +3295,7 @@
 			// move back the legend to it map
 			var position_index =  $('#positionLegendSelector').val();
 			for (var i=0; i<MAP_CHECKBOXES_LABELS.length; i++){
-				if ( $("#legendPool").find('#' + LEGENDSET_PREFIX + i).length > 0) {
+				if ( $("#" + LEGENDSET_POOL).find('#' + LEGENDSET_PREFIX + i).length > 0) {
 					moveLegend(i, $('#' + MAP_PREFIX + i).find(LEGEND_POSITIONS[position_index]), LEGEND_TO_REPORT);	
 				}
 			}
@@ -3269,7 +3306,7 @@
 				lastLegendPosition = getLastPosition(selected_legend);
 				setOptionSelectMenu("positionLegendSelector", lastLegendPosition);
 
-				moveLegend(selected_legend, $("#legendPool"), LEGEND_TO_LEGEND_POOL);
+				moveLegend(selected_legend, $("#" + LEGENDSET_POOL), LEGEND_TO_LEGEND_POOL);
 			} else { // "select legend" option
 				setButtonDisabledTo("updateLegendButton", true);
 			}
@@ -3311,15 +3348,7 @@
 			// recalculates maps to selected subnational level
 			if ($("#maps_to_selectedSubLevel").prop('checked')){
 				update_map_levels_var(map_levels[0], WIDP_OU_SHIFT + subNationaSelectedLevel);
-				var mapStyle = MAP_STYLE[$('#mapStyleSelector').val()];
-				$.when(
-					generateMap(VL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic", mapStyle, map_opacity),
-					generateMap(CL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic", mapStyle, map_opacity),
-					generateMap(ACL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic", mapStyle, map_opacity),
-					generateMap(ZCL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic", mapStyle, map_opacity)
-				).done(function(result){
-					console.log("maps updated");
-				});
+				generateMaps();
 			}
 
 		}).change();
@@ -3334,7 +3363,6 @@
 		$('#' + MAP_PREFIX + CL_INDEX).find(".leaflet-control-zoom").hide();
 		$('#' + MAP_PREFIX + ACL_INDEX).find(".leaflet-control-zoom").hide();
 		$('#' + MAP_PREFIX + ZCL_INDEX).find(".leaflet-control-zoom").hide();
-
 	};
 
 	var afterPrint = function() {
@@ -3427,6 +3455,7 @@
 		});
 		
 		$( "#updateLegendButton" ).on( 'click', event, updateLegend);
+		$( "#resetLegendButton" ).on( 'click', event, resetLegends);
 		$( "#updateMapButton" ).on( 'click', event, updateMap);
 		$( "#updateChartButton" ).on( 'click', event, updateChart);
 		$( "#cancelChartButton" ).on( 'click', event, cancelUpdateChart);
@@ -3437,6 +3466,8 @@
 		initalMapDiv[ACL_INDEX] = $('#map' + ACL_INDEX).html();
 		initalMapDiv[ZCL_INDEX] = $('#map' + ZCL_INDEX).html();
 
+		prepareMapListeners();
+		
 		// New footnote arrives 
 		$( "#sortable2" ).on( "sortupdate", function( event, ui ) {
 			writeFootnotes();
@@ -3618,6 +3649,7 @@
 		$( "#updateChartButton").button();
 		$( "#cancelChartButton").button();
 		$( "#updateLegendButton").button();
+		$( "#resetLegendButton").button();
 		$( ".radioButton" ).checkboxradio();
 
 
@@ -3638,8 +3670,8 @@
 		generateMapConfigurationList($("#mapStyleSelector"), MAP_STYLE_LABELS, MAP_STYLE_PREFIX, false);
 
 		// Disables Google options
-		$('#' + MAP_STYLE_PREFIX + OPTION_PREFIX + GOOGLE_STREETS).prop('disabled', function(_, attr){ return !attr});
-		$('#' + MAP_STYLE_PREFIX + OPTION_PREFIX + GOOGLE_HYBRID).prop('disabled', function(_, attr){ return !attr});
+		// $('#' + MAP_STYLE_PREFIX + OPTION_PREFIX + GOOGLE_STREETS).prop('disabled', function(_, attr){ return !attr});
+		// $('#' + MAP_STYLE_PREFIX + OPTION_PREFIX + GOOGLE_HYBRID).prop('disabled', function(_, attr){ return !attr});
 		$( "#mapStyleSelector" ).selectmenu( 'refresh', true);
 
 		setOptionSelectMenu("mapStyleSelector", WHO_BASEMAP);
@@ -4025,6 +4057,7 @@
 									<div id="font_size_slider"><div id="font_size_slider_handle" class="ui-slider-handle"></div></div>
 								</p>
 								<p><button id="updateLegendButton" class="ui-button ui-widget ui-corner-all">Update Legend</button></p>
+								<p><button id="resetLegendButton" class="ui-button ui-widget ui-corner-all" title="Use if legends didn't load properly or dissapeared">Recreate all legends</button></p>
 								<p>
 									<fieldset>
 										<legend>Resize Nota Bene for Maps: </legend>
@@ -4169,10 +4202,10 @@
 
 		<div class="section">
 			<h4 class="editableElement footnotable" >Disease distribution of new <span style="text-decoration: underline red" id ="mapsTitleDis"></span> cases at <span style="text-decoration: underline red" id ="mapsTitleLvl"></span> per 10,000 population <span id ="mapsTitleYear"></span></h4>
-			<div class="sameLine map"> <div id="map0" class="sameLine draggable"></div></div>
-			<div class="sameLine map"><div id="map1" class="sameLine draggable"></div></div>
-			<div class="sameLine map"><div id="map2" class="sameLine draggable"></div></div>
-			<div class="sameLine map"><div id="map3" class="sameLine draggable"></div></div>
+			<div class="sameLine map draggable"> <div id="map0"></div></div>
+			<div class="sameLine map draggable"><div id="map1"></div></div>
+			<div class="sameLine map draggable"><div id="map2"></div></div>
+			<div class="sameLine map draggable"><div id="map3"></div></div>
 			<div id="notaBeneMaps"  class="notasBene draggable"><div class="editableElement"></div></div>
 		</div>
 
@@ -4262,7 +4295,7 @@
 				<a class="usermanual" target="_blank"><img class="resize" src="img/icons/pdf.png" border=0></a>
 		  </div>
 		</form>
-		<div id="footer"> LCPG v0.37 - 2020.03.13</div>
+		<div id="footer"> LCPG v0.38 - 2020.03.18</div>
 	</div>
 </body>
 </html>
