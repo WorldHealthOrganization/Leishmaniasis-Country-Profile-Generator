@@ -68,8 +68,13 @@
 <!--<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.js"></script>-->
 
 <script type="text/javascript" src="../../../dhis-web-commons/javascripts/dhis2/dhis2.util.js"></script>
-<script type="text/javascript" src="../../../dhis-web-mapping/extjs/ext-all.js"></script>
-<script type="text/javascript" src="../../../dhis-web-mapping/map.js"></script>
+<!--<script type="text/javascript" src="../../../dhis-web-mapping/extjs/ext-all.js"></script>-->
+
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/7.8.3/polyfill.min.js"></script>
+<script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
+
+<script type="text/javascript" src="../../../dhis-web-maps/map.js"></script>
 
 <script type="text/javascript" src="../../../dhis-web-commons/javascripts/dhis2/dhis2.storage.ss.js"></script>
 <script type="text/javascript" src="../../../dhis-web-commons/javascripts/dhis2/dhis2.storage.ls.js"></script>
@@ -90,6 +95,7 @@
 -->
 
 <script type="text/javascript">
+
 	/*jshint esversion: 6 */
 
 	/****************************************************************************************************
@@ -360,25 +366,28 @@
 	MAP_CHECKBOXES_LABELS[ACL_INDEX] = "ACL incidence";
 	MAP_CHECKBOXES_LABELS[ZCL_INDEX] = "ZCL incidence";
 
-	var GOOGLE_STREETS = 0;
-	var GOOGLE_HYBRID = 1;
-	var OPEN_STREETS = 2;
-	var OSM_LIGHT = 3;
-	var FACILITY = 4;
+	var WHO_BASEMAP = 0;
+	var OSM_LIGHT = 1;
+	var GOOGLE_STREETS = 2;
+	var GOOGLE_HYBRID = 3;
+	var OPEN_STREETS = 4;
+	var FACILITY = 5;
 
 	var MAP_STYLE = new Array(4);
 	var MAP_STYLE_LABELS = new Array(4);
 
+	MAP_STYLE [WHO_BASEMAP] = "CeszrLmiLNq";
+	MAP_STYLE [OSM_LIGHT] = "osmLight";
 	MAP_STYLE [GOOGLE_STREETS] = "googleStreets";
 	MAP_STYLE [GOOGLE_HYBRID] = "googleHybrid";
 	MAP_STYLE [OPEN_STREETS] = "openStreetMap";
-	MAP_STYLE [OSM_LIGHT] = "osmLight";
 	MAP_STYLE [FACILITY] = "facility";
 	
+	MAP_STYLE_LABELS [WHO_BASEMAP] = "WHO Basemap";
+	MAP_STYLE_LABELS [OSM_LIGHT] = "OSM Light";
 	MAP_STYLE_LABELS [GOOGLE_STREETS] = "Google Streets";
 	MAP_STYLE_LABELS [GOOGLE_HYBRID] = "Google Hybrid";
 	MAP_STYLE_LABELS [OPEN_STREETS] = "Open Street Map";
-	MAP_STYLE_LABELS [OSM_LIGHT] = "OSM Light";
 	MAP_STYLE_LABELS [FACILITY] = "Facility";
 
 	var LEGENDS = []; 
@@ -1125,6 +1134,27 @@
 		}
 		itemsOnRow.push({id: orgUnitId});
 
+		https://extranet.who.int/dhis2-dev/api/29/externalMapLayers/CeszrLmiLNq
+
+		mapPlugin.url = '//extranet.who.int/dhis2-dev';
+		mapPlugin.load({
+			el: idHtmlElement,
+				basemap: mapStyle,
+				mapViews: [{
+					columns: [{dimension: "dx", items: [{id: dimension, dimensionItemType: dimentionType}]}],
+					rows: [{dimension: "ou", items: itemsOnRow}],
+					filters: [{
+							dimension: "pe",
+							items: [{id: year}]}],
+					valueType: "in",
+					layer: thematic,
+ 					legendSet: {id: legendSetID},
+					labels: false, // labels of the regions
+					opacity:opacityLevel/100
+				}]
+		});
+
+/*
 		Ext.onReady(	function (){
 
 			DHIS.getMap({
@@ -1158,7 +1188,7 @@
                 }
 				
 			});
-		});
+		});*/
 	}
 
 	function getDEUsedByMetadata(){
@@ -2825,7 +2855,7 @@
 		var selected_map_index =  parseInt($('#mapSelector').val()) - 1 ; //first option is the "select text"
 		var mapStyle = MAP_STYLE[$('#mapStyleSelector').val()];
 		// TODO: adapt to Maps
-		generateMap(selected_map_index, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity);
+		generateMap(selected_map_index, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic", mapStyle, map_opacity);
 		cleanUpdateMapForm();
 	}
 
@@ -2891,10 +2921,10 @@
 	function generateMaps(){
 		var mapStyle = MAP_STYLE[$('#mapStyleSelector').val()];
 		return $.when(
-				generateMap(VL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity),
-				generateMap(CL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity),
-				generateMap(ACL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity),
-				generateMap(ZCL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity)
+				generateMap(VL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic", mapStyle, map_opacity),
+				generateMap(CL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic", mapStyle, map_opacity),
+				generateMap(ACL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic", mapStyle, map_opacity),
+				generateMap(ZCL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic", mapStyle, map_opacity)
 			).done(function(result){
 				console.log("maps updated");
 			}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " maps.");}); 
@@ -3283,10 +3313,10 @@
 				update_map_levels_var(map_levels[0], WIDP_OU_SHIFT + subNationaSelectedLevel);
 				var mapStyle = MAP_STYLE[$('#mapStyleSelector').val()];
 				$.when(
-					generateMap(VL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity),
-					generateMap(CL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity),
-					generateMap(ACL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity),
-					generateMap(ZCL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity)
+					generateMap(VL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic", mapStyle, map_opacity),
+					generateMap(CL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic", mapStyle, map_opacity),
+					generateMap(ACL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic", mapStyle, map_opacity),
+					generateMap(ZCL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic", mapStyle, map_opacity)
 				).done(function(result){
 					console.log("maps updated");
 				});
@@ -3304,6 +3334,12 @@
 		$('#' + MAP_PREFIX + CL_INDEX).find(".leaflet-control-zoom").hide();
 		$('#' + MAP_PREFIX + ACL_INDEX).find(".leaflet-control-zoom").hide();
 		$('#' + MAP_PREFIX + ZCL_INDEX).find(".leaflet-control-zoom").hide();
+
+		// hides default legend button
+		$('#' + MAP_PREFIX + VL_INDEX).find(".leaflet-control-legend").hide();
+		$('#' + MAP_PREFIX + CL_INDEX).find(".leaflet-control-legend").hide();
+		$('#' + MAP_PREFIX + ACL_INDEX).find(".leaflet-control-legend").hide();
+		$('#' + MAP_PREFIX + ZCL_INDEX).find(".leaflet-control-legend").hide();
 
 	};
 
@@ -3612,7 +3648,7 @@
 		$('#' + MAP_STYLE_PREFIX + OPTION_PREFIX + GOOGLE_HYBRID).prop('disabled', function(_, attr){ return !attr});
 		$( "#mapStyleSelector" ).selectmenu( 'refresh', true);
 
-		setOptionSelectMenu("mapStyleSelector", OSM_LIGHT);
+		setOptionSelectMenu("mapStyleSelector", WHO_BASEMAP);
 		
 		generateMapConfigurationList($("#subnationalLevelSelector"), LEVEL_CONFIG_LABELS, LEVEL_PREFIX, false);
 
@@ -4232,7 +4268,7 @@
 				<a class="usermanual" target="_blank"><img class="resize" src="img/icons/pdf.png" border=0></a>
 		  </div>
 		</form>
-		<div id="footer"> LCPG v0.37 - 2020.03.13</div>
+		<div id="footer"> LCPG v0.38 - 2020.03.16</div>
 	</div>
 </body>
 </html>
