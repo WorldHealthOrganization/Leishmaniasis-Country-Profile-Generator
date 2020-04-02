@@ -36,9 +36,18 @@ body
 	margin: 0mm 0mm 0mm 0mm; /* margin you want for the content */
 }
 
+table {
+	font-size: 12px !important;
+}
+
 h4 {
 	margin-top: 20px;
   margin-bottom:5px;
+  color: #029ADE;
+  font-size: 15px;
+}
+
+.titlesBlue {
   color: #029ADE;
 }
 
@@ -69,7 +78,7 @@ h6 {
 }
 
 .footnote {
-	font-size: 11px;
+	font-size: 9px;
 }
 
 .superindex 
@@ -88,12 +97,39 @@ img.right {
     float: right;
 }
 
+.download_manual {
+  font-size: 11px;
+  color: grey;
+  font-weight: italic;
+  text-align: center;
+}
+
+img.resize {
+  height: 36px;
+  width: auto;
+}
+
+/*autocomplete list menu*/
+
+.ui-autocomplete > li > div {
+  display: block;
+  padding: 3px 20px;
+  clear: both;
+  font-weight: normal;
+  font-size: 13px;
+  line-height: 1.75;
+  color: #333333;
+  white-space: nowrap;
+}
+
 .center_text{
 	text-align: center;
 }
-/* TODO: check if needed */
 .align_to_left{
-	text-align:left;
+	text-align: left !important;
+}
+.align_to_right{
+	text-align: right !important;
 }
 
 /* Organize content of div in equal-sized colons*/
@@ -132,10 +168,6 @@ th {
   text-align: left;
 }
 
-#cgiTable6 td:nth-child(2) {
-  color: red;
-}
-
 /* for graphs */
 .sameLine
 {
@@ -160,13 +192,25 @@ th {
     margin: 5px 10px 0px 0px;
 }
 
+/* inputs */
+.chartParams {
+  width: 100px;
+  text-align: right; 
+}
+
+.table {
+  border: none;
+}
+
+/*
 .twoColumns {
     column-count:2;
     -moz-column-count:2;
     -webkit-column-count:2;
-    
+    break-inside: avoid-column;
+    -webkit-column-break-inside: avoid;
     width:900px;
-}
+}*/
 
 #tabs {
 	height:fit-content;
@@ -197,7 +241,7 @@ th {
     padding: 5px 0 0 0;
     float: left;
     margin-right: 10px;
-	min-width: 200px;
+	  min-width: 200px;
   }
 
   #sortable1 li, #sortable2 li, #sortable3 li {
@@ -214,7 +258,7 @@ th {
 .Content
 {
   display:inline-block;
-
+  max-width: 33%;
 }
 
 /* maps slider */
@@ -265,102 +309,114 @@ div.col {
 	font-size:12px;
 }
 
-#notaBene{
-	width: 200px;
-	height: 35px;	
-}
-#notaBeneMaps{
-	width: 864px;
-	height: 65px;
-}
 .notasBene{
 	font-size:10px;
 	padding: 4px;
 	border-style: solid;
-    border-width: thin;
-	margin: 0px 0px 10px 10px;
+  border-width: thin;
+  margin: 1px 10px 10px 10px;
+  width: fit-content;
+
 }
 
 #footer
 {
-	position:fixed;
-	bottom:0;
-	left:0;
-	width:100%;
-	height:30px;
-	background:#222;
-	text-align:center;
-	color:#ccc;
-	font-size:12px;
+	text-align:right;
+	color: #4CAF50;
+	font-style: italic;
 	font-family:'Open Sans', verdana;
-	padding-top:7px;
+  margin: 20px 4px 4px 4px;
+  font-size:11px;
 }
 
 input {
-	width:224px;
+  width:224px;
 }
+
 #progressbar {
-    margin-top: 20px;
-  }
- 
-  .progress-label {
-    font-weight: bold;
-    text-shadow: 1px 1px 0 #fff;
-  }
- 
-  /* dialogs */
-  .ui-dialog { z-index: 10000 !important ;}
+  margin-top: 20px;
+}
 
-  .formTitle {
-    text-align:center
-    }
-    /* The popup form - hidden by default */
-    .form-popup {
-      display: none;
-      position: fixed;
-      top: 25%;
-      left: 25%;
-      border: 3px solid #f1f1f1;
-      z-index: 9;
-      font-family: Arial, Helvetica, sans-serif;
+.progress-label {
+  font-weight: bold;
+  text-shadow: 1px 1px 0 #fff;
+}
 
-    }
-    
-    /* Add styles to the form container */
-    .form-container {
-      max-width: 300px;
-      padding: 10px;
-      background-color: white;
-    }
-    
-    /* Full-width input fields */
-    .form-container input[type=text], .form-container input[type=password] {
-      width: 100%;
-      padding: 15px;
-      margin: 5px 0 22px 0;
-      border: none;
-      background: #f1f1f1;
-    }
-    
-    /* When the inputs get focus, do something */
-    .form-container input[type=text]:focus, .form-container input[type=password]:focus {
-      background-color: #ddd;
-      outline: none;
-    }
-    
-    /* Set a style for the submit/login button */
-    .form-container .btn {
-      background-color: #4CAF50;
-      color: white;
-      padding: 16px 20px;
-      border: none;
-      cursor: pointer;
-      width: 100%;
-      margin-bottom:10px;
-      opacity: 0.8;
-    }
-    
-    /* Add some hover effects to buttons */
-    .form-container .btn:hover, .open-button:hover {
-      opacity: 1;
-    }
+/* dialogs */
+.ui-dialog { z-index: 10000 !important ;}
+
+.formTitle {
+  text-align:center;
+  color: grey;
+}
+
+/* The popup form - hidden by default */
+.form-popup {
+  display: none;
+  z-index: 9;
+  font-family: Arial, Helvetica, sans-serif;
+  background: white;
+}
+
+#country-selector{
+  top: 25%;
+  left: 25%;
+  border: 3px solid #4CAF50;
+  position: fixed;
+
+}
+
+#error-report{
+  top: 5%;
+  left: 20%;
+  border: 3px solid #F44336;
+  padding: 10px;
+  position: fixed;
+}
+
+/* Add styles to the form container */
+.form-container {
+  max-width: 300px;
+  padding: 10px;
+  background-color: white;
+  font-size:12px;
+}
+
+/* Full-width input fields */
+.form-container input[type=text], .form-container input[type=password] {
+  width: 100%;
+  padding: 15px;
+  margin: 5px 0 22px 0;
+  border: none;
+  background: #f1f1f1;
+}
+
+/* When the inputs get focus, do something */
+.form-container input[type=text]:focus, .form-container input[type=password]:focus {
+  background-color: #ddd;
+  outline: none;
+}
+
+/* Set a style for the submit/login button */
+.btn {
+  color: white;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  padding:16px;
+  margin-top: 10px;
+  opacity: 0.8;
+}
+
+.btnSafeOption {
+  background-color: #4CAF50;
+}
+
+.btnRiskyOption {
+  background-color: #F44336;
+}
+
+/* Add some hover effects to buttons */
+.btn:hover, .open-button:hover {
+  opacity: 1;
+}

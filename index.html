@@ -58,13 +58,23 @@
  <script type="text/javascript" src ="js/jquery-te-1.4.0-oms.js"></script>
  <script type="text/javascript" src ="js/tools.js"></script>
  <script type="text/javascript" src ="js/largestRemainderRound.js"></script>
-<script type="text/javascript" src ="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js">//TODO:use the cdn officiel</script>
+<!--<script type="text/javascript" src ="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js">//TODO:use the cdn officiel</script>-->
+<script
+  src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
+  integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
+  crossorigin="anonymous"></script>
 <script type="text/javascript" src="../../../dhis-web-visualizer/chart.js"></script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.js"></script>
+<script type="text/javascript" src="js/Chart-2.7.3.js"></script>
+<!--<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.js"></script>-->
 
 <script type="text/javascript" src="../../../dhis-web-commons/javascripts/dhis2/dhis2.util.js"></script>
-<script type="text/javascript" src="../../../dhis-web-mapping/extjs/ext-all.js"></script>
-<script type="text/javascript" src="../../../dhis-web-mapping/map.js"></script>
+<!--<script type="text/javascript" src="../../../dhis-web-mapping/extjs/ext-all.js"></script>-->
+
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/7.8.3/polyfill.min.js"></script>
+<script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
+
+<script type="text/javascript" src="../../../dhis-web-maps/map.js"></script>
 
 <script type="text/javascript" src="../../../dhis-web-commons/javascripts/dhis2/dhis2.storage.ss.js"></script>
 <script type="text/javascript" src="../../../dhis-web-commons/javascripts/dhis2/dhis2.storage.ls.js"></script>
@@ -86,6 +96,8 @@
 
 <script type="text/javascript">
 
+	/*jshint esversion: 6 */
+
 	/****************************************************************************************************
  	 **********                      	       CONSTANTS            	              	       **********
 	 ****************************************************************************************************/
@@ -93,10 +105,10 @@
 	var WHEN_UNDEFINED = "No data";
 	var WHEN_NO_DATA = "No data";
 	var WHEN_NON_APPLICABLE = "N/A";
-	var WHEN_DIV_0 = "-";
 	var ERROR = "Error!";
+	var ERROR_API_TEXT_START = "Error getting ";
 
-	var HISTORIC_DEFAULT_VALUE = 15;
+	var HISTORIC_DEFAULT_VALUE = 16; // includes current year
 
 	var BOTTOM_LINE_CLASS = "bottom_line";
 
@@ -112,22 +124,28 @@
 
 	/* config subnational level */
 
-	var NATIONAL_LEVEL = 3;
+	var WIDP_OU_SHIFT = 3;
+	var NATIONAL_LEVEL = 0;
 	var SUBLEVEL1 = 1;
 	var SUBLEVEL2 = 2;
 	var SUBLEVEL3 = 3;
-	var LEVEL_CONFIG_LABELS = new Array(3);
-	var LEVEL_REPORT_LABELS = new Array(3);
-	var ENDEMIC_SUBN_LEVEL_LABELS = new Array(3);
-	LEVEL_CONFIG_LABELS[SUBLEVEL1-1] = "1st sub-national administrative level";
-	LEVEL_CONFIG_LABELS[SUBLEVEL2-1] = "2nd sub-national administrative level";
-	LEVEL_CONFIG_LABELS[SUBLEVEL3-1] = "3rd sub-national administrative level";
-	LEVEL_REPORT_LABELS[SUBLEVEL1-1] = "Number of 1st sub-national administrative level divisions, name:";
-	LEVEL_REPORT_LABELS[SUBLEVEL2-1] = "Number of 2nd sub-national administrative level divisions, name:";
-	LEVEL_REPORT_LABELS[SUBLEVEL3-1] = "Number of 3rd sub-national administrative level divisions, name:";
-	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL1-1] = "Number of endemic 1st sub-national administrative level divisions (n):";
-	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL2-1] = "Number of endemic 2nd sub-national administrative level divisions (n):";
-	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL3-1] = "Number of endemic 3rd sub-national administrative level divisions (n):";
+	var MIN_OU_LEVEL = SUBLEVEL1 + WIDP_OU_SHIFT;
+	var MAX_OU_LEVEL = SUBLEVEL3 + WIDP_OU_SHIFT;
+	var LEVEL_CONFIG_LABELS = new Array(4);
+	var LEVEL_REPORT_LABELS = new Array(4);
+	var ENDEMIC_SUBN_LEVEL_LABELS = new Array(4);
+	LEVEL_CONFIG_LABELS[NATIONAL_LEVEL] = "National level";
+	LEVEL_CONFIG_LABELS[SUBLEVEL1] = "1<sup>st</sup> sub-national administrative level";
+	LEVEL_CONFIG_LABELS[SUBLEVEL2] = "2<sup>nd</sup> sub-national administrative level";
+	LEVEL_CONFIG_LABELS[SUBLEVEL3] = "3<sup>rd</sup> sub-national administrative level";
+	LEVEL_REPORT_LABELS[NATIONAL_LEVEL] = "National level, name:";
+	LEVEL_REPORT_LABELS[SUBLEVEL1] = "Number of 1<sup>st</sup> sub-national administrative level divisions, name:";
+	LEVEL_REPORT_LABELS[SUBLEVEL2] = "Number of 2<sup>nd</sup> sub-national administrative level divisions, name:";
+	LEVEL_REPORT_LABELS[SUBLEVEL3] = "Number of 3<sup>rd</sup> sub-national administrative level divisions, name:";
+	ENDEMIC_SUBN_LEVEL_LABELS[NATIONAL_LEVEL] = "Endemic divisions. National level:";
+	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL1] = "Number of endemic 1<sup>st</sup> sub-national administrative level divisions:";
+	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL2] = "Number of endemic 2<sup>nd</sup> sub-national administrative level divisions:";
+	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL3] = "Number of endemic 3<sup>rd</sup> sub-national administrative level divisions:";
 
 	/* Texts on report */
 	var PUBLISHED_TEXT = "Published in ";
@@ -135,9 +153,10 @@
 	var CL_CHART_LEGEND = "CL ";	
 	var ACL_CHART_LEGEND = "ACL ";
 	var ZCL_CHART_LEGEND = "ZCL ";
-	var TOUTCOME_TABLE_FIRST_COLUMNS = "TREATMENT OUTCOME";
+	var TOUTCOME_TABLE_FIRST_COLUMNS = "INITIAL TREATMENT OUTCOME FOR NEW CASES";
 
-	var CHART_CHECKBOXES_LABELS = ["CL monthly", "AZCL monthly", "VL monthly", "CL yearly", "AZCL yearly", "VL yearly" ];
+	var MONTHLY_CHART_LABELS = ["VL monthly", "CL monthly", "AZCL monthly"];
+	var YEARLY_CHART_LABELS = ["VL yearly", "CL yearly", "AZCL yearly"];
 
 	var TWO_VALUES_SEPARATOR = " / ";
 
@@ -178,17 +197,17 @@
 
 	var COLORS = {
 		green : 'rgba(153, 204, 0, 1)',
-		soft_green : 'rgba(153, 204, 0, 0.2)',
+		soft_green : 'rgba(153, 204, 0, 0.4)',
 		blue: 'rgba(51, 153, 255, 1)',
-		soft_blue: 'rgba(51, 153, 255, 0.2)',
+		soft_blue: 'rgba(51, 153, 255, 0.4)',
 		violet :'rgba(153, 0, 255, 1)',
-		soft_violet :'rgba(153, 0, 255, 0.2)'
-	}
+		soft_violet :'rgba(153, 0, 255, 0.4)'
+	};
 
-	CL_CASES_CHART_TITLE = "Number of new CL cases reported by month in ";
-	VL_CASES_CHART_TITLE = "Number of new (primary) VL cases reported by month in ";
+	CL_CASES_CHART_TITLE = "Cutaneous leishmaniasis";
+	VL_CASES_CHART_TITLE = "Visceral leishmaniasis";
 	CL_CASES_CHART_Y_TITLE = "Number of new CL cases";
-	VL_CASES_CHART_Y_TITLE = "Number of new (primary) VL cases";
+	VL_CASES_CHART_Y_TITLE = "Number of new VL cases";
 
 	CL_INCIDENCE_CHART_TITLE = "Number of cases and incidence rate of CL";
 	VL_INCIDENCE_CHART_TITLE = "Number of cases and incidence rate of VL";
@@ -202,7 +221,7 @@
 	var DATASID = {
 			LEFT: "left",
 			RIGHT: "right"
-	}
+	};
 
 
 	/* Country General Information Texts */
@@ -217,12 +236,12 @@
 	var CIG_ROW_DIVIS = 6;
 
 	var CGI_LABELS = [	"Total population:",
-						"Gender (%, F/M):",
+						"Gender F/M (%):",
 						"GDP (PPP int $):",
 						"Income status:",
-						"Age group <15/> 14 years, %: ",
-						"Life expectancy at birth in years (F/M):",
-						"Number of 2nd sub-national administrative level<br>divisions, name:"
+						"Population, age group <15 / ≥ 15 years (%): ",
+						"Life expectancy at birth (F/M, years):",
+						LEVEL_REPORT_LABELS[SUBLEVEL2]
 						];
 
 	var LINES_BELOW_LABELS_CGI = [true,true,true,false,true,true,true];
@@ -268,14 +287,14 @@
 
 	var rowTitles = [	"Endemicity status:",
 						"Number of new cases (incidence):",
-						"Number of relapse cases:",
+						"Number of relapses:",
 						"Total number of cases:",
 						"Imported cases (#, %):",
-						"Gender distribution (%F):",
-						"Age group distribution (%, <5/5-14/>14):",
-						"Incidence rate (cases/10 000 population in endemic areas):",
-						ENDEMIC_SUBN_LEVEL_LABELS[defaultSubnationalLevel-1],
-						"Population at risk (%, n/total):",
+						"Gender distribution (% F):",
+						"Age group distribution (%, <5 / 5-14 / >14):",
+						"Incidence rate (cases/10,000 population in endemic areas):",
+						ENDEMIC_SUBN_LEVEL_LABELS[defaultSubnationalLevel],
+						"Population at risk (%, # at risk / total population):",
 						"Was there any outbreak?",
 						"Number of new foci:"
 						];
@@ -284,25 +303,49 @@
 	var LINES_BELOW_LABELS_EPI = [true,false,false,true,true,false,true,false,false,true,false,true];
 	var array = create_2_dim_array(rowTitles.length, rowTitles, LABELS_ON_COLUMNS);
 
+	var IMPORTED_DE = new Array(7);
+	IMPORTED_DE[VL_COLUMN] = "fwoGVaxEDHW";  // VL_EPI_Type_Origin
+	IMPORTED_DE[CL_COLUMN] = "k87tHFKjlsP";  // CL_EPI_Type_Origin
+	IMPORTED_DE[ACL_COLUMN] = "KgntvjxDA5K"; // ACL_EPI_Type_Origin
+	IMPORTED_DE[ZCL_COLUMN] = "PxDoizHyyrk"; // ZCL_EPI_Type_Origin
+
+	var GENDER_DE = new Array(7);
+	GENDER_DE[VL_COLUMN] = "CaF8iMJFfkg";  // VL_EPI_Type_Gender
+	GENDER_DE[CL_COLUMN] = "tuHHLQp2GnJ";  // CL_EPI_Type_Gender
+	GENDER_DE[ACL_COLUMN] = "FYhYVWmpweT"; // ACL_EPI_Type_Gender
+	GENDER_DE[ZCL_COLUMN] = "mkmMnWroxMh"; // ZCL_EPI_Type_Gender
+	GENDER_DE[PKDL_COLUMN] = "ipWXN3NeXac"; // PKDL_EPID_sex
+	GENDER_DE[MCL_COLUMN] = "Ujpe40hXdvf"; // MCL_EPID_sex
+
+	var AGE_DE = new Array(7);
+	AGE_DE[VL_COLUMN] = "BF3faoNKOGH";  // VL_EPI_Type_Age
+	AGE_DE[CL_COLUMN] = "OWKZMKxVCnh";  // CL_EPI_Type_Age
+	AGE_DE[ACL_COLUMN] = "wKuJVK1ktpm"; // ACL_EPI_Type_Age
+	AGE_DE[ZCL_COLUMN] = "DVKZOWyoaQs"; // ZCL_EPI_Type_Age
+	AGE_DE[PKDL_COLUMN] = "rw4tu6PNGKO"; // PKDL_EPID_age
+	AGE_DE[MCL_COLUMN] = "bOqGnEVdHsf"; // MCL_EPID_age
+
+//
 	/* Monthly distribution table constants */
 	var VL_ROW = 0;
-	var CL_ROW = 1;
-	var VL_PREVIOUS_YEAR_ROW = 2;
+	var VL_PREVIOUS_YEAR_ROW = 1;
+	var CL_ROW = 2;
 	var CL_PREVIOUS_YEAR_ROW = 3;
 	var ACL_ROW = 4;
-	var ZCL_ROW = 5;
-	var ACL_PREVIOUS_YEAR_ROW = 6;
+	var ACL_PREVIOUS_YEAR_ROW = 5;
+	var ZCL_ROW = 6;
 	var ZCL_PREVIOUS_YEAR_ROW = 7;
 
-	var MONTHLY_LABELS = ["VL",
-							"CL",
-							"VL (previous year)",
-							"CL (previous year)",
-							"ACL",
-							"ZCL",
-							"ACL (previous year)",
-							"ZCL (previous year)"
-							];
+	var MONTHLY_LABELS = new Array(8);
+	MONTHLY_LABELS[VL_ROW] = "VL";
+	MONTHLY_LABELS[VL_PREVIOUS_YEAR_ROW] = "VL (previous year)";
+	MONTHLY_LABELS[CL_ROW] = "CL";
+	MONTHLY_LABELS[CL_PREVIOUS_YEAR_ROW] = "CL (previous year)";
+	MONTHLY_LABELS[ACL_ROW] = "ACL";
+	MONTHLY_LABELS[ACL_PREVIOUS_YEAR_ROW] = "ACL (previous year)";
+	MONTHLY_LABELS[ZCL_ROW] = "ZCL";
+	MONTHLY_LABELS[ZCL_PREVIOUS_YEAR_ROW] = "ZCL (previous year)";
+
 	var LINES_BELOW_LABELS_MONTHLY = [true,true,true,true,true,true,true,true];
 
 	var monthlyArray = create_2_dim_array(MONTHLY_LABELS.length, MONTHLY_LABELS, LABELS_ON_COLUMNS);
@@ -323,26 +366,25 @@
 	MAP_CHECKBOXES_LABELS[ACL_INDEX] = "ACL incidence";
 	MAP_CHECKBOXES_LABELS[ZCL_INDEX] = "ZCL incidence";
 
-	var GOOGLE_STREETS = 0;
-	var GOOGLE_HYBRID = 1;
-	var OPEN_STREETS = 2;
-	var OSM_LIGHT = 3;
-	var FACILITY = 4;
+	var WHO_BASEMAP = 0;
+	var OSM_LIGHT = 1;
+	var GOOGLE_STREETS = 2;
+	var GOOGLE_HYBRID = 3;
+	var OPEN_STREETS = 4;
 
 	var MAP_STYLE = new Array(4);
 	var MAP_STYLE_LABELS = new Array(4);
 
+	MAP_STYLE [WHO_BASEMAP] = "CeszrLmiLNq";
+	MAP_STYLE [OSM_LIGHT] = "osmLight";
 	MAP_STYLE [GOOGLE_STREETS] = "googleStreets";
 	MAP_STYLE [GOOGLE_HYBRID] = "googleHybrid";
 	MAP_STYLE [OPEN_STREETS] = "openStreetMap";
-	MAP_STYLE [OSM_LIGHT] = "osmLight";
-	MAP_STYLE [FACILITY] = "facility";
-	
+	MAP_STYLE_LABELS [WHO_BASEMAP] = "WHO Basemap";
+	MAP_STYLE_LABELS [OSM_LIGHT] = "OSM Light";
 	MAP_STYLE_LABELS [GOOGLE_STREETS] = "Google Streets";
 	MAP_STYLE_LABELS [GOOGLE_HYBRID] = "Google Hybrid";
 	MAP_STYLE_LABELS [OPEN_STREETS] = "Open Street Map";
-	MAP_STYLE_LABELS [OSM_LIGHT] = "OSM Light";
-	MAP_STYLE_LABELS [FACILITY] = "Facility";
 
 	var LEGENDS = []; 
 	LEGENDS[VL_INDEX] =  "gUOjExXros1";
@@ -352,7 +394,7 @@
 
 	var initalMapDiv = new Array(4);
 	var mapLegends = new Array(4);
-	var map_levels = [NATIONAL_LEVEL, NATIONAL_LEVEL + SUBLEVEL1];
+	var map_levels = [NATIONAL_LEVEL + WIDP_OU_SHIFT, NATIONAL_LEVEL + WIDP_OU_SHIFT + SUBLEVEL1];
 	var defaultSubnationalLevel = SUBLEVEL1;
 	var map_opacity = 80;
 	var map_height = 315;
@@ -419,13 +461,19 @@
 	var CLINICALLY_DIAGNOSED_ROW = 6;
 	var HIV_COINFECTION_ROW = 7;
 
+	var LABCLINICAL_DE = new Array(5);
+	LABCLINICAL_DE[VL_COLUMN] = "BAsexzzzJZC";  // VL_LAB_clinical
+	LABCLINICAL_DE[CL_COLUMN] = "";  // 
+	LABCLINICAL_DE[ACL_COLUMN] = ""; // 
+	LABCLINICAL_DE[ZCL_COLUMN] = ""; // 
+
 	var diagnosisLabels = [	"Number of people screened actively for:",
 							"Number of people screened passively for:",
-							"VL cases diagnosed by RDT<sup>*</sup><br>(%, RDT+/total VL cases):",
-							"Proportion of positive RDT<sup>*</sup><br>(%, RDT+/total RDT):",
-							"Cases diagnosed by direct exam<br>(parasitology) (%, # slides +/total cases):",
-							"Proportion of positive slides<br>(%, # slides +/total slides):",
-							"Cases diagnosed clinically<br>(%, # clinical cases/total cases): ",
+							"VL cases diagnosed by RDT<br>(%, # RDT+ / new VL cases):",
+							"Proportion of positive RDT<br>(%, # RDT+ / total RDT):",
+							"Cases diagnosed by direct exam<br>(parasitology) (%, # slides + / total cases):",
+							"Proportion of positive slides<br>(%, # slides + / total slides):",
+							"Cases diagnosed clinically<br>(%, # clinical cases / total cases): ",
 							"Percentage of cases with HIV-VL coinfection:"
 							];
 
@@ -453,7 +501,6 @@
 										"human immunodeficiency virus"
 										];
 
-	var DIAG_ASTERISK_RDT_COMMENT = "<span><sup>*</sup> These indicators apply only for primary VL cases</span>";
 	var PUT_NA_TEXT = true;
 
 	var LINES_BELOW_LABELS_DIAG = [false,true,false,true,false,false,true,true];
@@ -470,40 +517,49 @@
 	var tamArray = create_2_dim_array(TAM_LABELS.length, TAM_LABELS, LABELS_ON_COLUMNS);
 
 	/* Treatment outcome table */
-	
-	var INITIAL_CURE_RATE_ROW = 0;
-	var FAILURE_RATE_ROW = 1;
-	var CASE_FATALITY_ROW = 2;
-	var RELAPSE_PROPORTION_ROW = 3;
+
+	var PROPORTION_TREATED_CASES_ROW = 0;
+	var INITIAL_CURE_RATE_ROW = 1;
+	var FAILURE_RATE_ROW = 2;
+	var CASE_FATALITY_ROW = 3;
 
 	var toutcomeLabels = new Array(4);
-	toutcomeLabels[INITIAL_CURE_RATE_ROW] = "Initial cure rate:";
-	toutcomeLabels[FAILURE_RATE_ROW] = "Failure rate:";
-	toutcomeLabels[CASE_FATALITY_ROW] = "Case-fatality rate:";
-	toutcomeLabels[RELAPSE_PROPORTION_ROW] = "Proportion of relapse cases:";
+	toutcomeLabels[PROPORTION_TREATED_CASES_ROW] = "Cases that completed treatment (%, # completed treatment / new cases):";
+	toutcomeLabels[INITIAL_CURE_RATE_ROW] = "Initial cure rate (%, # cases initially cured / new cases):";
+	toutcomeLabels[FAILURE_RATE_ROW] = "Failure rate (%, # cases with treatment failure / new cases):";
+	toutcomeLabels[CASE_FATALITY_ROW] = "Case fatality rate (%, # cases who died / new cases):";
 
-	var LINES_BELOW_LABELS_TREAT = [false, false, true, true];
+	var LINES_BELOW_LABELS_TREAT = [true, false, false, true];
 	var toutcomeArray = create_2_dim_array(toutcomeLabels.length, toutcomeLabels, LABELS_ON_COLUMNS);
 	
 	var historicLength = HISTORIC_DEFAULT_VALUE;
 	var historicIncidenceChart = create_2_dim_array(5,"",LABELS_ON_ROWS);
 	var historicNewCases = create_2_dim_array(5,"",LABELS_ON_ROWS);
 
+	var ITx_TREAT_DE = new Array(5);
+	ITx_TREAT_DE[VL_COLUMN] = "PUD4SrCGSZE";  // VL_TREAT_completed
+	ITx_TREAT_DE[CL_COLUMN] = "daJVc4WMhye";  // CL_TREAT_completed
+	ITx_TREAT_DE[ACL_COLUMN] = "Msp9T50iUXO"; // ACL_TREAT_completed
+	ITx_TREAT_DE[ZCL_COLUMN] = "KYuMdxHQTqQ"; // ZCL_TREAT_completed
 
 	// stores all de assigned through DS or P
-	var de_assigned = new Array();
+	var de_assigned = new Map();
 	// stores all category option combinations assigned through DE assigned through DS 
-	var coc_assigned = new Array();
+	var coc_assigned = new Map();
 	var dsinfo = new Array(8); // key: UID of dataset. Contains its name and whether the DS is assigned to the OU.
 	var pinfo = new Array(4); // key: UID of program. Contains its name and whether the P is assigned to the OU.
 	var NAME = 0;
 	var ASSG = 1;
 	var DE_IDX = 2;
+	var indicators_info = new Map();
 
 	var SQL_COC_DS = "mejiVo59hWs";
 	var SQL_DE_DS = "oQdIVqkVlxC";
 	var SQL_DE_P = "IrawAndH02Y";
+
+	var SQL_OU_LEVELS = "ly3JqHMcHyk";
 	
+	/* DATASETS */
 	var CL_DETAILED = "tnek2LjfuIm";
 	var CL_SIMPLE = "zna8KfLMXn4";
 	var VL_DETAILED = "fdBM4sWSuPR";
@@ -511,7 +567,10 @@
 	var AZCL_DETAILED = "Uc3j0vpsfSB";
 	var AZCL_SIMPLE = "Sn0dExPzQqW";
 	var GI = "NKWbkXyfO5F";
+	var POPULATION_DATA = "deKCGAGoEHz"; // some indicators depends on some DE assigned to this DS
 	var GHO_NTDS = "p0NhuIUoeST";
+	
+	/* PROGRAMS */
 	var CL_MONTHLY = "w9hSFsNr3Vh";
 	var VL_MONTHLY = "i5JSf4ffFl2";
 	var FOOTNOTES = "NVUlJzIakuO";
@@ -524,6 +583,7 @@
 	dsinfo[AZCL_DETAILED] = ["ACL/ZCL - Detailed - Annual", false];
 	dsinfo[AZCL_SIMPLE] = ["ACL/ZCL - - Simple aggregated - Annual", false];
 	dsinfo[GI] = ["General information", false];
+	dsinfo[POPULATION_DATA] = ["Population data", false];
 	dsinfo[GHO_NTDS] = ["GHO indicators for NTDs", false];
 	pinfo[CL_MONTHLY] = ["CL_cases_by provenance", false];
 	pinfo[VL_MONTHLY] = ["VL_cases_by provenance", false];
@@ -537,15 +597,9 @@
 		ACL_EPI_Type : 	"f1bBSpuIyzD",
 		ZCL_EPI_Type : 	"Ta96pnXcAum",
 		MCL_EPI_Type : 	"K8k1LRZagmc",
-		VL_LAB_RDT_tested_type : "rFy4bKMa977",
-		VL_LAB_parasito_tested_type : "RrKpXTbayoB",
-		VL_LAB_parasito_result_type : "Qc7ujS567UL",
-		VL_LAB_clinical : "BAsexzzzJZC",
 		VL_LAB_HIVstatus_Type : "NTo887FeHdI",
 		PKDL_GEN_EPID_cases : "NdbsWSygpqz",
 		MCL_GEN_EPID_cases : "K8k1LRZagmc",
-		PKDL_EPID_sex: "ipWXN3NeXac",
-		PKDL_EPID_age : "rw4tu6PNGKO",
 		PKDL_LAB_HIV: "sxjZutF1AMx",
 		UNS_USE_PREVIOUS_DATA : "ZjIDKHFwMUw",
 		ACL_GEN_EPID_NEW_FOCUS : "TF0LMI2yPPZ",
@@ -555,15 +609,7 @@
 		ACL_GEN_EPID_outbreak :  "fW73iTXOe8r",
 		CL_GEN_EPID_outbreak :  "l0cmjII8aSl",
 		VL_GEN_EPID_outbreak :  "kH8ZxF9Biwv",
-		ZCL_GEN_EPID_outbreak :  "nfnq7idjj3Q",
-		VL_INIT_ITxO_Drug_Type : "ossDxe1C4F2",
-		CL_ITxO_Tx_drug : "OjY8uiHVetP",
-		ACL_ITxO_Tx_drug : "GXyfQMlaXEn",
-		ZCL_ITxO_Tx_drug : "GPG5qCJ65uO",
-		VL_FU_M6_FTxO_Type : "s52F14VRGTL",
-		CL_FU_TxO_type : "oDKlLMhPo2Z",
-		ACL_FU_TxO : "mjtuwvBk7Ge",
-		ZCL_FU_TxO : "PIZqvu83jfC",
+		ZCL_GEN_EPID_outbreak :  "nfnq7idjj3Q"
 	};
 
 	var SUB_ENDEMICITY = {
@@ -598,12 +644,6 @@
 	DE_SCREEN_ACTIVE[ACL_COLUMN] = "hqgnicLioSz";
 	DE_SCREEN_ACTIVE[ZCL_COLUMN] = "NDNcasRLz01";
 
-	var DE_SCREEN_PASSIVE = {};
-	DE_SCREEN_PASSIVE[VL_COLUMN] = "MRFflirvoj4";
-	DE_SCREEN_PASSIVE[CL_COLUMN] = "jdQau4rlj73";
-	DE_SCREEN_PASSIVE[ACL_COLUMN] = "gZuua8o0gNS";
-	DE_SCREEN_PASSIVE[ZCL_COLUMN] = "yEmHARyqLIk";
-
 	var DE_MONTHLY = {
 		CL_CASES : "kyMxUQqI2ed",
 		ACL_CASES : "lhxeWB8OiAG",
@@ -612,105 +652,16 @@
 	};
 
 	var DE_CGI = {
-		GEN_UN_WPP_LifeExpBirth : "xy0cDgvrg5W",
 		GEN_WB_GDP_PPP_current : "w3XqypgTDEE",
-		GEN_UN_WPP_Pop_Tot_AgeSex_1000 : "uLpIADOetw7",
-		GEN_UN_WPP_LifeExpBirth_Female : "tvvwAxsuRme",
+		GEN_UN_WPP_LifeExpBirth_Female : "P0Auj9njqhb",
 		GEN_UN_WPP_Pop_Tot_1000 : "WKJu1WytXzH",
-		GEN_UN_WPP_LifeExpBirth_Male : "PVTbouvgSzJ",
+		GEN_UN_WPP_LifeExpBirth_Male : "VLqzKAFFsh7",
 		GEN_WB_IncomeGroup : "Oov1cYM9y6o"
-	}
+	};
 
 	var CGI_MALE = 0;
 	var CGI_FEMALE = 1;
 	var CGI_GENDER_UNKNOWN = 2;
-
-	var Y_UNDER_5 = 0;
-	var Y05_09 = 1;
-	var Y10_14 = 2;
-	var Y15_19 = 3;
-	var Y20_24 = 4;
-	var Y25_29 = 5;
-	var Y30_34 = 6;
-	var Y35_39 = 7;
-	var Y40_44 = 8;
-	var Y45_49 = 9;
-	var Y50_54 = 10;
-	var Y55_59 = 11;
-	var Y60_64 = 12;
-	var Y65_69 = 13;
-	var Y70_74 = 14;
-	var Y75_79 = 15;
-	var Y80_84 = 16;
-	var Y85_89 = 17;
-	var Y90_94 = 18;
-	var Y95_99 = 19;
-	var Y100_AND_OVER = 20;
-
-	var CC_CGI = create_2_dim_array(21, "", LABELS_ON_ROWS);
-	CC_CGI[Y20_24][CGI_FEMALE] = "SobJ4FGuBRA";
-	CC_CGI[Y10_14][CGI_FEMALE] = "oic7kU2uVtJ";
-	CC_CGI[Y65_69][CGI_GENDER_UNKNOWN] = "K3xHNQJ7dfA";
-	CC_CGI[Y90_94][CGI_FEMALE] = "kH3O17Sezfp";
-	CC_CGI[Y100_AND_OVER][CGI_FEMALE] = "gkeN62eQlSA";
-	CC_CGI[Y_UNDER_5][CGI_MALE] = "gWsMlGpOSzY";
-	CC_CGI[Y45_49][CGI_FEMALE] = "irBgvZTT9zq";
-	CC_CGI[Y80_84][CGI_FEMALE] = "BO8BiFA6WZo";
-	CC_CGI[Y85_89][CGI_MALE] = "avCYQARWeei";
-	CC_CGI[Y35_39][CGI_GENDER_UNKNOWN] = "JhZibEej5Ip";
-	CC_CGI[Y30_34][CGI_GENDER_UNKNOWN] = "r9jCuRLjAyg";
-	CC_CGI[Y15_19][CGI_GENDER_UNKNOWN] = "i0GLBPlRTrP";
-	CC_CGI[Y65_69][CGI_MALE] = "a2dH289sMou";
-	CC_CGI[Y70_74][CGI_GENDER_UNKNOWN] = "vq2MeIzidDv";
-	CC_CGI[Y80_84][CGI_MALE] = "BpI46BM32FB";
-	CC_CGI[Y85_89][CGI_FEMALE] = "hI8wdaiRHaS";
-	CC_CGI[Y15_19][CGI_FEMALE] = "adEelGXyPIn";
-	CC_CGI[Y05_09][CGI_GENDER_UNKNOWN] = "zsA0z1yxCyw";
-	CC_CGI[Y40_44][CGI_MALE] = "XucrdYEMOE7";
-	CC_CGI[Y60_64][CGI_MALE] = "Ss3gp5wAYOQ";
-	CC_CGI[Y70_74][CGI_FEMALE] = "Gh29gSpSYPp";
-	CC_CGI[Y_UNDER_5][CGI_FEMALE] = "o7NkWl5xFuS";
-	CC_CGI[Y45_49][CGI_GENDER_UNKNOWN] = "mx2Vqi1H3Hb";
-	CC_CGI[Y40_44][CGI_FEMALE] = "i6rBoDsk4LE";
-	CC_CGI[Y85_89][CGI_GENDER_UNKNOWN] = "ZMMTWSNKy8h";
-	CC_CGI[Y25_29][CGI_FEMALE] = "qdWOgC6bbBi";
-	CC_CGI[Y25_29][CGI_MALE] = "AJkBK9XBytM";
-	CC_CGI[Y45_49][CGI_MALE] = "BvCWyIwIqa8";
-	CC_CGI[Y100_AND_OVER][CGI_MALE] = "ttAEJltz1yh";
-	CC_CGI[Y15_19][CGI_MALE] = "xdAhLef7xG4";
-	CC_CGI[Y70_74][CGI_MALE] = "C0VIpje6ADR";
-	CC_CGI[Y60_64][CGI_GENDER_UNKNOWN] = "C9VfB7rurrS";
-	CC_CGI[Y90_94][CGI_MALE] = "PKDfpYDkyoy";
-	CC_CGI[Y05_09][CGI_MALE] = "lptUC1gVg8o";
-	CC_CGI[Y60_64][CGI_FEMALE] = "RJDdLqVGxu8";
-	CC_CGI[Y30_34][CGI_FEMALE] = "IVFKF7NzjJa";
-	CC_CGI[Y20_24][CGI_GENDER_UNKNOWN] = "zUaD2dW8jgR";
-	CC_CGI[Y35_39][CGI_FEMALE] = "Jkrg1KI25AV";
-	CC_CGI[Y50_54][CGI_MALE] = "RwwDYedBcDl";
-	CC_CGI[Y40_44][CGI_GENDER_UNKNOWN] = "qIa4UJxA58c";
-	CC_CGI[Y55_59][CGI_MALE] = "xaMRyDOevEu";
-	CC_CGI[Y95_99][CGI_GENDER_UNKNOWN] = "lRj2b3lwwiu";
-	CC_CGI[Y75_79][CGI_FEMALE] = "zvECz1sg3sj";
-	CC_CGI[Y65_69][CGI_FEMALE] = "ECle1XHoHZ2";
-	CC_CGI[Y100_AND_OVER][CGI_GENDER_UNKNOWN] = "URAmCjBqRHW";
-	CC_CGI[Y90_94][CGI_GENDER_UNKNOWN] = "eC3COFF4SAx";
-	CC_CGI[Y25_29][CGI_GENDER_UNKNOWN] = "BPDXuG96jbx";
-	CC_CGI[Y50_54][CGI_GENDER_UNKNOWN] = "VtRt5eBh10B";
-	CC_CGI[Y55_59][CGI_FEMALE] = "nJEkgZS74Tt";
-	CC_CGI[Y75_79][CGI_MALE] = "MKDYDGdryXB";
-	CC_CGI[Y50_54][CGI_FEMALE] = "B2cV93OdJpI";
-	CC_CGI[Y95_99][CGI_FEMALE] = "nHBTtdVMe7l";
-	CC_CGI[Y05_09][CGI_FEMALE] = "xodN5e1QCp6";
-	CC_CGI[Y10_14][CGI_MALE] = "o8dMMqNDCtr";
-	CC_CGI[Y_UNDER_5][CGI_GENDER_UNKNOWN] = "Bmz5QDlUZbl";
-	CC_CGI[Y80_84][CGI_GENDER_UNKNOWN] = "zx6ELNiPAq3";
-	CC_CGI[Y30_34][CGI_MALE] = "xsUkVS0PK0u";
-	CC_CGI[Y10_14][CGI_GENDER_UNKNOWN] = "YF8UKbqPrBb";
-	CC_CGI[Y35_39][CGI_MALE] = "VwZsMBUBdR1";
-	CC_CGI[Y75_79][CGI_GENDER_UNKNOWN] = "COVvK2lp01u";
-	CC_CGI[Y55_59][CGI_GENDER_UNKNOWN] = "kmnHzx1ulIk";
-	CC_CGI[Y95_99][CGI_MALE] = "kXo51Sydk1t";
-	CC_CGI[Y20_24][CGI_MALE] = "ZYAx6PjJ2ZM";
 
 	var CC_DEFAULT = "Xr12mI7VPn3";
 	var TYPE_NEW_CASES = "psVSPLclyFj";
@@ -720,9 +671,6 @@
 	var NEW_MALE = "GpQZH8hC7jY";
 	var NEW_FEMALE = "TtoYCIVcBA3";
 	var NEW_UNKNOWN = "FaYhAlKLX16";
-	var REL_MALE = "UG7PsogfDYz";
-	var REL_FEMALE = "OmkgX8Kkurn";
-	var REL_UNKNOWN = "Ng311XPZTbv";
 	var UNS_MALE = "aWWYWv6buzp";
 	var UNS_FEMALE = "wGED4K5Bs37";
 	var UNS_UNKNOWN = "zkKbIIarKWM";
@@ -732,18 +680,14 @@
 	var UNKNOWN_SEX = "jNbFhhnUsQv";
 
 	var AGE_5 = "HDXcEOGT2s1";
-	var AGE_5_14 = "DOJartWGuff";
-	var AGE_14 = "vJEPLhdauF7";
-	var AGE_UNKNOWN = "kek1YXjDq70";
+	var AGE_5_14 = "moktBQGym51";
+	var AGE_14 = "rN9ELJVdEpo";
+	var AGE_UNKNOWN = "gPGNI7bWhDB";
 
 	var NEW_UNDER_5 = "hKq5WASZw8q";
 	var NEW_5_14 = "mTyLqDjpQ5b";
 	var NEW_OVER_14 = "DDliBAHqwGV";
 	var NEW_AGE_UNKNOWN = "dVuOzmU4xbI";
-	var REL_UNDER_5 = "NlAMTGlJ7b3";
-	var REL_5_14 = "a1GEE4dBKZ8";
-	var REL_OVER_14 = "xxrYh49wmnD";
-	var REL_AGE_UNKNOWN = "zuuSkk9CiNB";
 	var UNS_UNDER_5 = "rZwYGlqR8GG";
 	var UNS_5_14 = "P6R9XEaqQbz";
 	var UNS_OVER_14 = "UQMTeRPY2U0";
@@ -760,64 +704,83 @@
 	var ORIGIN_UNKNOWN_UNS = "EGvT9lj2BOy";
 
 	/* Diagnosis DataElements */
-	//o1smtpQE1tm
+	var VL_Lab_RDT_tested_type = "rFy4bKMa977";
+	var VL_Lab_RDT_results_type = "o1smtpQE1tm";
 	var POSITIVE_NEW = "jRcT6HVKb2t";
 	var POSITIVE_RELAPSE = "QKqVJ13mGZI";
 	var POSITIVE_UNSP = "YXktM46YiXo";
 
-	/* Treatment Category options*/
-
-	var VL_CURED_NEW = "UnXwCSYnnvT";
-	var VL_CURED_REL = "a6I7BzjrnmJ";
-	var VL_CURED_UNS = "SZiY6xiTgy6";
-	var VL_REL_NEW = "HjLmlc308bk";
-	var VL_REL_REL = "j7RGAw4zpVi";
-	var VL_REL_UNS = "D08F1WAa6x6";
-	var VL_DEAD_NEW = "SWQatS9z4sL";
-	var VL_DEAD_REL = "iML4aJx17bq";
-	var VL_DEAD_UNS = "qAneJjz2lLH";
-
-	var CL_CURED_NEW = "WHtWpXnQmS4";
-	var CL_CURED_REL = "UCFZTILyPc8";
-	var CL_CURED_UNS = "D8c6zefeJmA";
-	var CL_REL_NEW = "apmCD5hHH4O";
-	var CL_REL_REL = "ixMkSNV6pAD";
-	var CL_REL_UNS = "JyhoMuXOVNC";
-	var CL_DEAD_NEW = "ci77j9YDMmC";
-	var CL_DEAD_REL = "IkCzNFkuVzl";
-	var CL_DEAD_UNS = "L4wrPRwEvzX";
-
-	// CC for drugs failure Initial Treatment outcome
-	var FAIL_NEW_AMB = "T2MDkJzCKf7"; // VL
-	var FAIL_REL_AMB = "W9ZHKO3NeZp";
-	var FAIL_UNS_AMB = "Pr6aEN8PC5M";
-	var FAIL_NEW_GLU = "WJf6H2HVZKN"; // CL, ACL, ZCL
-	var FAIL_REL_GLU = "oefw5w6qZBo";
-	var FAIL_UNS_GLU = "hggEQ5Xm0cN";
-	var FAIL_NEW_PEN = "aeBFt3rX6NP"; // VL
-	var FAIL_REL_PEN = "ds0XBIt6PoY";
-	var FAIL_UNS_PEN = "BWqkFDITG0V";
-	var FAIL_NEW_SSG = "dzqOoSKXPKL"; // CL, ACL, ZCL
-	var FAIL_REL_SSG = "cD3SqlrJPjF";
-	var FAIL_UNS_SSG = "jFmiZOTK9rc";
-	var FAIL_NEW_SSG_PARO = "if1h2SRcku2"; // VL
-	var FAIL_REL_SSG_PARO = "fZYrDUNI6nm";
-	var FAIL_UNS_SSG_PARO = "azirNffjDgP";
-	var VL_FAIL_NEW_OTH = "WUWQqRMnWDq"; // VL
-	var VL_FAIL_REL_OTH = "EZox1NNUf3S";
-	var VL_FAIL_UNS_OTH = "yaX1pqDkpQg";
-	var VL_FAIL_NEW_UNS = "IDinKF2U3Ck"; // VL
-	var VL_FAIL_REL_UNS = "KpStyHyHmxT";
-	var VL_FAIL_UNS_UNS = "bmukoyyu4Pr";	
-	var CL_FAIL_NEW_OTH = "Cl3ZokvTdwK"; // CL, ACL, ZCL
-	var CL_FAIL_REL_OTH = "V19rqPBT5w2";
-	var CL_FAIL_UNS_OTH = "EJDj412Rxso";
-	var CL_FAIL_NEW_UNS = "SHKozECi3D8"; // CL, ACL, ZCL
-	var CL_FAIL_REL_UNS = "vnHYporLk7L";
-	var CL_FAIL_UNS_UNS = "ZmlPKopCQ4C";
-
-
 	/* Indicators*/
+	var UN_WPP = new Array(4);
+	var POP_AGE_U15 = 0;
+	var POP_AGE_OVER15 =  1;
+	var POP_GENDER_FEMALE = 2;
+	var POP_GENDER_MALE = 3;
+	UN_WPP[POP_AGE_U15] = "hB6weZHPrQs";
+	UN_WPP[POP_AGE_OVER15] = "fcvWkgE2D81";
+	UN_WPP[POP_GENDER_FEMALE] = "YqYnthOMpKZ";
+	UN_WPP[POP_GENDER_MALE] = "l8oBc9hn1OH";
+
+	var LAB_PARASITO_RESULT_NEWUNSP = new Array(4);
+	LAB_PARASITO_RESULT_NEWUNSP[VL_INDEX] = "wcQXFCgeirI"; // IA_VL_LAB_parasito_result_type_NewUnsp
+	LAB_PARASITO_RESULT_NEWUNSP[CL_INDEX] = "I0UeqrXgFP3"; // IA_CL_LAB_parasito_result_type_NewUnsp
+	LAB_PARASITO_RESULT_NEWUNSP[ACL_INDEX] = "xlKiq2a2VnC"; // IA_ACL_LAB_parasito_result_type_NewUnsp
+	LAB_PARASITO_RESULT_NEWUNSP[ZCL_INDEX] = "w0Jp3JgB4QV"; // IA_ZCL_LAB_parasito_result_type_NewUnsp
+
+	var LAB_PARASITO_TESTED_NEWUNSP = new Array(4);
+	LAB_PARASITO_TESTED_NEWUNSP[VL_INDEX] = "apw84Yy3Bmm"; // IA_VL_LAB_parasito_tested_type_NewUnsp
+	LAB_PARASITO_TESTED_NEWUNSP[CL_INDEX] = "LtmgT3l81DD"; // IA_CL_LAB_parasito_Suspects_NewUnsp
+	LAB_PARASITO_TESTED_NEWUNSP[ACL_INDEX] = "wXzlrrmB33B"; //  IA_ACL_LAB_parasito_Suspects_NewUnsp
+	LAB_PARASITO_TESTED_NEWUNSP[ZCL_INDEX] = "ZfIJmWMYXuz"; // IA_ZCL_LAB_parasito_Suspects_NewUnsp
+
+	var DIRECT_EXAM_DIAGNOSED = new Array(4);
+	DIRECT_EXAM_DIAGNOSED[VL_INDEX] = "waGzv39rlKk"; // IA_VL_directExam_diagCases
+	DIRECT_EXAM_DIAGNOSED[CL_INDEX] = "KMCo5B0frEb"; // IA_CL_directExam_diagCases
+	DIRECT_EXAM_DIAGNOSED[ACL_INDEX] = "NQcaaslXLbQ"; // IA_ACL_directExam_diagCases
+	DIRECT_EXAM_DIAGNOSED[ZCL_INDEX] = "o3OxTZj5SN9"; // IA_ZCL_directExam_diagCases
+
+	var POSITIVE_SLIDES_PROP = new Array(4);
+	POSITIVE_SLIDES_PROP[VL_INDEX] = "GacG3QWCHcd"; // IA_VL_positiveSlides_PROP
+	POSITIVE_SLIDES_PROP[CL_INDEX] = "YJJniMaZ9dy"; // IA_CL_positiveSlides_PROP
+	POSITIVE_SLIDES_PROP[ACL_INDEX] = "CsrJBUGBpuW"; // IA_ACL_positiveSlides_PROP
+	POSITIVE_SLIDES_PROP[ZCL_INDEX] = "wUoGgWWIyUP"; // IA_ZCL_positiveSlides_PROP
+
+	var NEW_AND_UNSP_CASES = new Array(4);
+	NEW_AND_UNSP_CASES[VL_INDEX] = "TAi5pNjuxmq"; // IA_VL_EPI_NewUnsp_INT
+	NEW_AND_UNSP_CASES[CL_INDEX] = "CeO5dTNMbPp"; // IA_CL_EPI_NewUnsp_INT
+	NEW_AND_UNSP_CASES[ACL_INDEX] = "ZUL3QhfRZBT"; // IA_ACL_EPI_NewUnsp_INT
+	NEW_AND_UNSP_CASES[ZCL_INDEX] = "LCa3hY8xkst"; // IA_ZCL_EPI_NewUnsp_INT
+
+	var TREAT_COMPLETED = new Array(4);
+	TREAT_COMPLETED[VL_INDEX] = "dUns9PpQ58C"; // NTD_LSH_VL_TREAT_completed_I
+	TREAT_COMPLETED[CL_INDEX] = "foObvaWTV2q"; // NTD_LSH_CL_TREAT_completed_I
+	TREAT_COMPLETED[ACL_INDEX] = "uSRDXhpcEjS"; // NTD_LSH_ACL_TREAT_completed_I
+	TREAT_COMPLETED[ZCL_INDEX] = "ZtbetBov4Nk"; // NTD_LSH_ZCL_TREAT_completed_I
+
+	var TREAT_OUTCOME_CURE = new Array(4);
+	TREAT_OUTCOME_CURE[VL_INDEX] = "Ks5Jju6anpF"; // IA_NTD_VL_ITO_cureRate
+	TREAT_OUTCOME_CURE[CL_INDEX] = "kVPOCIEBIyW"; // IA_NTD_CL_ITO_cureRate 
+	TREAT_OUTCOME_CURE[ACL_INDEX] = "IeniC1gZeI4"; // IA_NTD_ACL_ITO_cureRate
+	TREAT_OUTCOME_CURE[ZCL_INDEX] = "Gf2RLaWerOl"; // IA_NTD_ZCL_ITO_cureRate
+
+	var TREAT_OUTCOME_FAIL = new Array(4);
+	TREAT_OUTCOME_FAIL[VL_INDEX] = "jEdZE79G6KZ"; // IA_NTD_VL_ITO_failureRate
+	TREAT_OUTCOME_FAIL[CL_INDEX] = "VoqodpvVc0l"; // IA_NTD_CL_ITO_failureRate 
+	TREAT_OUTCOME_FAIL[ACL_INDEX] = "adkROLW4Kdr"; // IA_NTD_ACL_ITO_failureRate
+	TREAT_OUTCOME_FAIL[ZCL_INDEX] = "ep15GwmenJh"; // IA_NTD_ZCL_ITO_failureRate
+
+	var TREAT_OUTCOME_FATAL = new Array(4);
+	TREAT_OUTCOME_FATAL[VL_INDEX] = "RcXtqpnzUkF"; // IA_NTD_VL_ITO_fatalityRate
+	TREAT_OUTCOME_FATAL[CL_INDEX] = "h0wM7ryy0mK"; // IA_NTD_CL_ITO_fatalityRate 
+	TREAT_OUTCOME_FATAL[ACL_INDEX] = "LsjoXBjbXbL"; // IA_NTD_ACL_ITO_fatalityRate
+	TREAT_OUTCOME_FATAL[ZCL_INDEX] = "XUDNMjVo899"; // IA_NTD_ZCL_ITO_fatalityRate
+
+	var SCREEN_PASSIVE = new Array(4);
+	SCREEN_PASSIVE[VL_INDEX] = "ECAJUz3nff5"; // NTD_LSH_VL_SCREEN_passive_I
+	SCREEN_PASSIVE[CL_INDEX] = "zo5BQlapP45"; // NTD_LSH_CL_SCREEN_passive_I
+	SCREEN_PASSIVE[ACL_INDEX] = "vq1FX8vBEi1"; // NTD_LSH_ACL_SCREEN_passive_I
+	SCREEN_PASSIVE[ZCL_INDEX] = "kknHr7KtRTs"; // NTD_LSH_ZCL_SCREEN_passive_I
+
 	var INCIDENCE_FOR_MAPS = new Array(4);
 	INCIDENCE_FOR_MAPS[VL_INDEX] = "k8OBrohsSSg"; //  VL_EPI_INC_PopData_LSH_10000
 	INCIDENCE_FOR_MAPS[CL_INDEX] = "Yw3FULKBFgt"; // CL_EPI_INC_PopData_LSH_10000
@@ -910,7 +873,18 @@
 	var builtUrl;
 
 	var totalPopulation;
+	var un_wpp_data = Array(4);
 	var pop_at_risk_values = Array(6);
+	var new_and_usnp_cases = Array(5);
+	var total_treated = Array(5);
+	var screen_passive = Array(5);
+	var lab_parasito_result = Array(4);
+	var lab_parasito_tested = Array(4);
+	var direct_exam_diagnosed = Array(4);
+	var positive_slides_prop = Array(4);
+	var toutcome_cure = Array(5);
+	var toutcome_fail = Array(5);
+	var toutcome_fatal = Array(5);
 
 	var editingElement;
 
@@ -929,13 +903,7 @@
 	var SORTABLE_LIST_2_NAME = "sortable2";
 	var SORTABLE_LIST_3_NAME = "sortable3";
 
-	var newCLCasesChartID = "chart0";	
-	var newAZCLCasesChartID = "chart1";
-	var newVLCasesChartID = "chart2";
-
-	var newCLAndHistoricIncidenceID = "chart3";
-	var newAZCLAndHistoricIncidenceID = "chart4";
-	var newVLAndHistoricIncidenceID = "chart5";
+	var charts_array = [];
 
 	/* HTML elements */
 
@@ -948,7 +916,12 @@
 	var TOUTCOME_TABLE_NAME = "toutcomeTable";
 
 	var BUTTON_PREFIX = '_BUTTON_';
-	var CHART_PREFIX = "chart";
+	var DIV = "divFor";
+	var CHART = "chart";
+	var MONTHLY = "monthly";
+	var YEARLY = "yearly";
+
+	var LEGENDSET_POOL = "legendPool";
 	var LEGENDSET_PREFIX = "legendSet";
 	var LEGEND_PREFIX = "legend";
 	var LEISH_COLUMN_DETAIL_PREFIX = "LeishDetail";
@@ -964,6 +937,10 @@
 
 
 	var dialog, editor;
+	var addingFootnote = false;
+
+	var minCases, maxCases, minIncd, maxIncd;
+	var defaultMinCases, defaultMaxCases, defaultMinIncd, defaultMaxIncd;
 
 	var ds = {};
 
@@ -971,7 +948,7 @@
  	 **********                    	     STATIC CONTENT FUNCTIONS         	           	       **********
 	 ****************************************************************************************************/
 	function fillTableHead(tableName, extName, firstColumn, headObjects){
-		var html = '<th>'+firstColumn+'</th>';
+		var html = '<th class="align_to_left titlesBlue">'+firstColumn+'</th>';
 		
 		for (var i=0; i<headObjects.length;i++){
 			html +='<th class="'+CLASS_EDITABLE_ELEMENT+'">'+headObjects[i]+'</th>';
@@ -982,34 +959,38 @@
 	function generateCheckboxes(htmlObject, labels, title, prefix, newLineOn){
 		var html = '<legend>'+title+'</legend>';
 		for (var i=0; i<labels.length; i++){
-			html+='<input id="' + prefix + BUTTON_PREFIX + i + '" type="checkbox" class="' + prefix + '" checked="checked" />'
-			html+='<label for="' + prefix + BUTTON_PREFIX + i + '">' + labels[i] + '</label>'
+			html+='<input id="' + prefix + BUTTON_PREFIX + i + '" type="checkbox" class="' + prefix + '" checked="checked" />';
+			html+='<label for="' + prefix + BUTTON_PREFIX + i + '">' + labels[i] + '</label>';
 			if(i===newLineOn){
 				html+='<br>';
 			}
 		}
 		    
-		htmlObject.append(html);
+		htmlObject.html(html);
 	}
 
-	function generateMapConfigurationList(htmlObject, labels, prefix){
+	function generateMapConfigurationList(htmlObject, labels, prefix, keepHTML){
 		var html = '';
+
+		if (keepHTML) {
+			html = htmlObject.html();
+		}
 		
 		for (var i=0; i<labels.length; i++){
 			html+='<option id="' + prefix + OPTION_PREFIX + i + '" value="' + i + '" >';
 			html+=labels[i];
 			html+='</option>';
 		}
-		htmlObject.append(html);
+		htmlObject.html(html);
 	}
 
 	function setTextUnderTables(elementId, idprefi, labels, labelsDesc, firstText){
 
 		var html = '';
 
-		if (firstText === true){
+		if (firstText == true){
 			html +='<span class="' + CLASS_EDITABLE_ELEMENT + '">N/A not applicable</span>';
-		} else if (firstText === false){
+		} else if (firstText == false){
 			html +='';
 		} else {
 			html +=firstText;
@@ -1018,7 +999,7 @@
 			html +='<span id="'  +idprefi + i + '" class="' + CLASS_EDITABLE_ELEMENT+'">' + labels[i] + ' = ' + labelsDesc[i] + '</span>';
 		}
 
-		$("#"+elementId).append(html);
+		$("#"+elementId).html(html);
 	}
 
 
@@ -1028,49 +1009,65 @@
  	 **********                    	    FUNCTIONS CALLING THE API         	           	       **********
 	 ****************************************************************************************************/
 
-	function getFootnotes(){
+	function getFootnotes(subNationalLevel){
+
 		var params = {
 			skipPaging : true
-		} 
+		}; 
 		return $.when(getParents(ds.countryID)).then(function(data){
-			var orgUnitArray = [];
+			var orgUnits = "";
 			if (typeof data.organisationUnits !== 'undefined' ) {
-				var orgUnitArray = data.organisationUnits[0].path.replace(/^\/|\/$/, "").split("/");
+				orgUnits = data.organisationUnits[0].path.replace(/^\/|\/$/, "").replace(/\//g, ";");
 			}
-			return getAndFillEventsFor(FOOTNOTES, orgUnitArray, params);
-		});
+			storedFootnotes = [];
+			activeFootnotesPage1 = [];
+			activeFootnotesPage2 = [];
+			
+			var dimensions = [];
+			dimensions.push([RG_footnote_page]);
+			dimensions.push([RG_footnote_text]);
+			dimensions.push([RG_footnote_active]);
+			dimensions.push(["ou",orgUnits]);
+
+			var filters = [];
+
+			extraParams = "&ouMode=SELECTED&startDate=2010-01-01&endDate=2030-12-31&page=1&pageSize=10000";
+
+
+			return getQueryEvents(FOOTNOTES, dimensions, filters, OUTPUT_TYPE.EVENT, extraParams);
+		}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " footnotes.");}); 
+		
 	}
 
-	function getAndFillEventsFor(program, orgUnitArray, params){
-		return $.when(getEventsFor(program, orgUnitArray[0], params), orgUnitArray).then(function(eventRes, orgUnitArray){
-					for (var i = 0; i<eventRes[0].events.length; i++) {
-						var event = eventRes[0].events[i];
-						var  footnote = getValueForKey(event.dataValues, DE_KEY, RG_footnote_text, VALUE_KEY);
-						if (getValueForKey(event.dataValues, DE_KEY, RG_footnote_active, VALUE_KEY).localeCompare("true")==0) {
-							var page = getValueForKey(event.dataValues, DE_KEY, RG_footnote_page, VALUE_KEY);
-							if (page.localeCompare("2")==0) {
-								activeFootnotesPage2.push(footnote);
-							} else {
-								activeFootnotesPage1.push(footnote);
-							}
-						} else {
-							storedFootnotes.push(footnote);
-						}
-					}
-					
-					if (orgUnitArray.length <= 1) {
-						return;
-					} else {
-						return getAndFillEventsFor(program, orgUnitArray.slice(1), params)
-					}
-				});
+	function fillFootNotes(data){
+		var pageIndex = getHeaderIndex(data.headers, RG_footnote_page);
+		var fnIndex = getHeaderIndex(data.headers, RG_footnote_text);
+		var activeIndex = getHeaderIndex(data.headers, RG_footnote_active);
+
+		var page, active, fnText;
+		for (var i = 0; i<data.rows.length; i++) {
+			active = data.rows[i][activeIndex];
+			fnText = data.rows[i][fnIndex];
+
+			if (!!parseInt(active)){ // !! converts int to boolean
+				page = data.rows[i][pageIndex];
+				if (page.localeCompare("2")==0) {
+					activeFootnotesPage2.push(fnText);
+				} else {
+					activeFootnotesPage1.push(fnText);
+				}
+			} else {
+				storedFootnotes.push(fnText);
+			}
+		}
 	}
+
 
 	function getParents(id){
 		var params = {
 			fields: "path",
 			paging: false
-		}
+		};
 
 		var builtUrl = buildAPIUrl(ORG_UNITS, params);
 		builtUrl += "&filter=id:eq:"+id;
@@ -1080,20 +1077,6 @@
 			return data;
 		}).fail(function(data) {
 			console.log ("ERROR. getParents");
-			console.log (data);
-		});
-	}
-
-	function getEventsFor(program, orgUnit, params) {
-		params.orgUnit = orgUnit;
-		params.program = program;
-		var builtUrl = buildAPIUrl(EVENTS, params);
-		return $.ajax({
-			url: builtUrl
-		}).done(function(data) {
-			return data;
-		}).fail(function(data) {
-			console.log ("ERROR. getEventsFor");
 			console.log (data);
 		});
 	}
@@ -1119,9 +1102,9 @@
 					mapLegends[index][i].endValue = data.legends[i].endValue;
 				}
 				mapLegends[index] =  reOrderLegendSet(mapLegends[index]);
-			});
+			}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " legends for " + legendSetName);}); 
 			
-		});
+		}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " legendSets: " + LEGENDS[index]);}); 
 	}
 
 	function generateMap(index, dimentionType, levels, orgUnitId, year, thematic, mapStyle, opacityLevel){
@@ -1129,64 +1112,86 @@
 		var base = "../../..";
 		var idHtmlElement = MAP_PREFIX+(index);
 		var dimension = INCIDENCE_FOR_MAPS[index];
+		var legendSetID = 	LEGENDS[index];
 
 		// Resizes the map contener
 		$("#" + MAP_PREFIX + index).height(map_height);
 		$("#" + MAP_PREFIX + index).width(map_width);
 	
 		// Move back the legend to the legendPool
-		$("#legendPool").append($('#'+LEGENDSET_PREFIX+index));
+		$("#" + LEGENDSET_POOL).append($('#'+LEGENDSET_PREFIX+index));
 		
 		//restore map to its initial value
 		$('#'+idHtmlElement).html(initalMapDiv[index]);
 		
 
 		var itemsOnRow = [];
-		for(var i=0; i<levels.length; i++){$
+		for(var i=0; i<levels.length; i++){
 			itemsOnRow.push({id: "LEVEL-"+levels[i]});
 		}
 		itemsOnRow.push({id: orgUnitId});
 
-		Ext.onReady(	function (){
+		// url has to be defined outside
+		mapPlugin.url = base;
 
-			DHIS.getMap({
-				url: base,
-				el: idHtmlElement,
-				basemap: mapStyle,
-				mapViews: [{
-					columns: [{dimension: "dx", items: [{id: dimension, dimensionItemType: dimentionType}]}],
-					rows: [{dimension: "ou", items: itemsOnRow}],
-					filters: [{
-							dimension: "pe",
-							items: [{id: year}]}],
-					valueType: "in",
-					layer: thematic,
- 					legendSet: {id: "gUOjExXros1"},
-					labels: false, // labels of the regions
-					opacity:opacityLevel/100
-				}],
-				onReady: function() {
-                    console.log('map '+index +'is ready!');
-					// Removes zoom and legend
-					$('#'+idHtmlElement).find(".leaflet-control-zoom").remove();
-					$('#'+idHtmlElement).find(".leaflet-control-legend").remove();
-					
-					// Removes openmaps signature
-					$('#'+idHtmlElement).find(".leaflet-bottom.leaflet-right").empty();
-
-					// Adds the legend
-					//$('#'+idHtmlElement).find(".leaflet-bottom.leaflet-right").append($('#'+LEGENDSET_PREFIX+index));
-					moveLegend(index, $('#'+idHtmlElement).find(LEGEND_POSITIONS[BOTTOM_RIGHT]), LEGEND_TO_REPORT);
-
-                }
-				
-			});
+		mapPlugin.load({
+			el: idHtmlElement,
+			basemap: mapStyle,
+			mapViews: [{
+				columns: [{dimension: "dx", items: [{id: dimension, dimensionItemType: dimentionType}]}],
+				rows: [{dimension: "ou", items: itemsOnRow}],
+				filters: [{
+						dimension: "pe",
+						items: [{id: year}]}],
+				valueType: "in",
+				layer: thematic,
+				legendSet: {id: legendSetID},
+				labels: false, // labels of the regions
+				opacity:opacityLevel/100
+			}]
 		});
+
 	}
+
+	// Callback function when changes occurs
+	function onMapReady(mutationRecord, observer) {
+		var id = mutationRecord[mutationRecord.length-1].target.id;
+		console.log("map ready " + id);
+
+		// gets the last number of the DIV id, e.g. "3" for "map3"
+		var index = parseInt(id.slice(-1));
+
+		// hides default legend button
+		$('#' + MAP_PREFIX + index).find(".leaflet-control-legend").hide();
+
+		// moves custom legend on top of the map
+		moveLegend(index, $('#'+id).find(LEGEND_POSITIONS[BOTTOM_RIGHT]), LEGEND_TO_REPORT);
+	}
+
+	function prepareMapListeners() {
+		const target0 = document.getElementById("map0");
+		const target1 = document.getElementById("map1");
+		const target2 = document.getElementById("map2");
+		const target3 = document.getElementById("map3");
+
+		// Create a new instance of MutationObserver with callback in params
+		const observer = new MutationObserver(onMapReady);
+
+		// Setup config
+		const config = {
+			childList: true
+		};
+
+		observer.observe(target0, config);
+		observer.observe(target1, config);
+		observer.observe(target2, config);
+		observer.observe(target3, config);
+	}
+
 
 	function getDEUsedByMetadata(){
 
-
+		console.log ("getDEUsedByMetadata");
 		var promises = [];
 		var ds_indexes = [];
 		var p_indexes = [];
@@ -1197,7 +1202,7 @@
 				ds_indexes.push(uid);
 			}
 		}
-		for (var uid in pinfo) {
+		for (uid in pinfo) {
 			if (pinfo[uid][ASSG]){
 				promises.push(getDEusedByProgram(uid));
 				p_indexes.push(uid);
@@ -1218,73 +1223,253 @@
 			for (var i = 0; i < ds_indexes.length; i++) {
 				// *2 since we have generated two promises per dataset, first one for DE
 				dsinfo[ds_indexes[i]][DE_IDX] = [...result[i*2].listGrid.rows];
-				de_assigned = de_assigned.concat(result[i*2].listGrid.rows);
+				de_assigned = new Map([...de_assigned, ...new Map(result[i*2].listGrid.rows)]); //converts array into a set and merges two sets into one
 				// *2+1 since we have generated two promises per dataset, second one for COC
-				coc_assigned = coc_assigned.concat(result[i*2+1].listGrid.rows);
+				coc_assigned = new Map([...coc_assigned, ...new Map(result[i*2+1].listGrid.rows)]);
 			}
 
 			var shift = ds_indexes.length;
 			for (i = shift; i < shift + p_indexes.length; i++) {
-				pinfo[p_indexes[i-shift]][DE_IDX] = [...result[i].listGrid.rows];
-				de_assigned = de_assigned.concat(result[i].listGrid.rows);
+				pinfo[p_indexes[i-shift]][DE_IDX] = [...result[i+shift].listGrid.rows];
+				de_assigned = new Map([...de_assigned, ...new Map(result[i+shift].listGrid.rows)]); //converts array into a set and merges two sets into one
+
 			}
 			return;
-		});
-
+		}); 
 	}
 
 	function getCOCusedByDataSet(dsuid){
-		var params = {
-			var: "datasetuid:" + dsuid,
-			paging: false
-		}
+		return new Promise((resolve, reject) => {
+			console.log("getCOCusedByDataSet: " + dsuid);
 
-		return $.when(getv3(SQLVIEWS + "/" + SQL_COC_DS + "/data", params))
-		.done(function(result){
-			// not interested in store COC in dsinfo array
-			return;
-		});
+			var params = {
+				var: "datasetuid:" + dsuid,
+				paging: false
+			};
+
+			return $.when(getv3(SQLVIEWS + "/" + SQL_COC_DS + "/data", params))
+			.done(function(result){
+				console.log("got getCOCusedByDataSet: " + dsuid);
+
+				// not interested in store COC in dsinfo array
+				return resolve(result);
+			}).fail( function(){
+				addToErrorFeedback(ERROR_API_TEXT_START + " COC used by dataSet " + dsuid);
+				return reject();
+			}); 
+		})
+
+
 	}
 
 	function getDEusedByDataSet(dsuid){
-		var params = {
-			var: "datasetuid:" + dsuid,
-			paging: false
-		}
+		return new Promise((resolve, reject) => {
+			console.log("getDEusedByDataSet: " + dsuid);
+			var params = {
+				var: "datasetuid:" + dsuid,
+				paging: false
+			};
 
-		return $.when(getv3(SQLVIEWS + "/" + SQL_DE_DS + "/data", params))
-		.done(function(result){
-			dsinfo[dsuid][DE_IDX] = result.dataelements;
-		});
+			return $.when(getv3(SQLVIEWS + "/" + SQL_DE_DS + "/data", params))
+			.done(function(result){
+				console.log("got getDEusedByDataSet: " + dsuid);
+
+				dsinfo[dsuid][DE_IDX] = result.dataelements;
+				return resolve(result);
+			}).fail( function(){
+				addToErrorFeedback(ERROR_API_TEXT_START + " DE used By dataSet " + dsuid);
+				return reject();
+			}); 
+		})
 	}
 
 	function getDEusedByProgram(puid){
-		var params = {
-			var: "programuid:" + puid,
-			paging: false
-		}
+		return new Promise((resolve, reject) => {
+			console.log("getDEusedByProgram: " + puid);
 
-		return $.when(getv3(SQLVIEWS + "/" +SQL_DE_P + "/data", params))
-		.done(function(result){
-			pinfo[puid][DE_IDX] = result.dataelements;
-		});
+			var params = {
+				var: "programuid:" + puid,
+				paging: false
+			};
+
+			return $.when(getv3(SQLVIEWS + "/" +SQL_DE_P + "/data", params))
+			.done(function(result){
+				console.log("got getDEusedByProgram: " + puid);
+
+				pinfo[puid][DE_IDX] = result.dataelements;
+				return resolve(result);
+			}).fail( function(){
+				addToErrorFeedback(ERROR_API_TEXT_START + " DE used by program " + puid);
+				return reject();
+		}); 
+	})
+
 	}
+
+	
+	function getOULevels(min, max){
+		var params = {
+			var: "ouid:" + ds.countryID,
+			paging: false
+		};
+
+		var extraParams = "&var=minLevel:" + min + "&var=maxLevel:" + max;
+
+		return $.when(getv3(SQLVIEWS + "/" + SQL_OU_LEVELS + "/data", params, extraParams))
+		.done(function(result){
+			console.log(result);
+			var widp_level, ou_qty, ou_name;
+			$("#subnationalLevelSelector option").prop('disabled',true); // disables all
+			for(var i=0; i< result.listGrid.rows.length; i++){
+				widp_level = result.listGrid.rows[i][0];
+				$("#subnationalLevelSelector option:eq("+(widp_level - WIDP_OU_SHIFT)+")").prop('disabled',false);
+			}
+			$("#subnationalLevelSelector option:eq("+NATIONAL_LEVEL+")").prop('disabled',false);
+			$( "#subnationalLevelSelector" ).selectmenu( 'refresh', true);
+		}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " ou levels");}); 
+	}
+
+	function getIndicatorInfo(arrayOfArrays, indType, field1, field2){
+
+		var params = {
+			paging: false,
+			fields: "id,"+field1+","+field2,
+			filter: ["id:in:["+arrayOfArrays.join()+"]"], 
+		};
+		builtUrl = buildAPIUrl(indType, params);
+		return $.ajax({
+			url: builtUrl
+		}).then(function(data) {
+				
+			var field1Array, field2Array, id, indInfo;
+			for (var i = 0; i< data[indType].length; i++){
+				id = data[indType][i].id;
+				field1Array = data[indType][i][field1].split("{"); // e.g. data.indicators[4].numerator
+				field2Array = data[indType][i][field2].split("{"); // e.g. data.programIndicators[4].filter
+				indInfo = {};
+				indInfo.de = new Set(); 
+				indInfo.i = new Set(); 
+				indicators_info.set(id, indInfo);
+
+				fillIndicatorInfo(id, field1Array, field1);
+				fillIndicatorInfo(id, field2Array, field1);
+
+			}
+
+			var notReadyIndicators = getNotPresentIndicators();
+			console.log(notReadyIndicators);
+
+			if (notReadyIndicators.length > 0){
+				return 	$.when(	getIndicatorInfo(notReadyIndicators, "programIndicators", "filter", "expression"))
+								.then( function(){return getIndicatorInfo(notReadyIndicators, "indicators", "numerator", "denominator");});
+			} else {
+				return;
+			}
+		}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " indicators information");}); 
+	}
+
+
+	function fillIndicatorInfo(id, array, field1){
+		var type, de_start, de_end;
+
+		if (field1.localeCompare("numerator") == 0){ // indicator
+			de_start = 0;
+			de_end = 11;
+		} else if (field1.localeCompare("filter") == 0){ // programIndicator
+			de_start = 12;
+			de_end = 23;
+		} else {
+			console.log ("ERROR in fillIndicatorInfo. Field type not expected.");
+		}
+		
+		for (var n=1; n < array.length; n++){
+			type = array[n-1][array[n-1].length-1]; // gets the last character of the previous element (to get the #, I, D or N)
+			switch (type){
+				case "#": // dataElement
+					indicators_info.get(id).de.add(array[n].substring(de_start,de_end)); // gets the ID of an string type A0123456789.B0123456789} *...
+					break;
+				case "D":
+					indicators_info.get(id).de.add(array[n].substring(12,23)); // gets the second ID of an string type A0123456789.B0123456789} *...
+					break;
+				case "I":
+					indicators_info.get(id).i.add(array[n].substring(0,11)); // gets the ID of an string type A0123456789.B0123456789} *...
+					break;
+			}
+		}
+	}
+
+	function allDEInIndicatorAreReachable(ind_id){
+		var ind_object = indicators_info.get(ind_id);
+		var reachable = true;
+		ind_object.de.forEach(de => {
+			if(!de_assigned.has(de)){
+
+				//console.log ("DE " + de + " NOT FOUND")
+				reachable = false;
+			} else {
+				//console.log ("DE " + de + " OK")
+			}
+		});
+
+		ind_object.i.forEach(i => {
+			//console.log ("reachable " + reachable + " i " + i + ": " + allDEInIndicatorAreReachable(i));
+			reachable = reachable && allDEInIndicatorAreReachable(i);
+		});
+
+		return reachable;
+	}
+
+	function getNotPresentIndicators() {
+		var notPresentIndicators = [];
+		for (let [index, ind_object] of indicators_info.entries()) {
+			ind_object.i.forEach(i => {
+				if(!indicators_info.has(i)){
+					notPresentIndicators.push(i);
+				}
+			});
+		}
+		return notPresentIndicators;
+	}
+
+
+	function test_ind_info(){			
+		console.log("********** TEST INDICATOR INFO *****************");
+		for (let [index, ind_object] of indicators_info.entries()) {
+			console.log("*** TEST OF " + index);
+
+			if (allDEInIndicatorAreReachable(index)){
+				console.log (index + " I OK");
+
+			} else {
+				console.log (index + " I has DE that are not in the list");
+			}
+			
+			console.log("*** - *** ");
+
+		}
+	}
+
 
 	/* getting country General Information from API */
 	function get_cgi() {
-
+		console.log("get_cgi" + defaultSubnationalLevel);
 		var params = {
 			dataSet: GI,
 			period: ds.year,
 			orgUnit: ds.countryID
-		}
+		};
 
 		builtUrl = buildAPIUrl(DATAVALUESETS, params);
 		return $.ajax({
 			url: builtUrl
 		}).then(function(data) {
-				fillCountryGeneralInformation(data);
-		});
+			console.log("get_cgi then" + defaultSubnationalLevel);
+
+				return fillCountryGeneralInformation(data);
+		}).fail( function(){
+			console.log("get_cgi fail" + defaultSubnationalLevel);
+			addToErrorFeedback(ERROR_API_TEXT_START + " Country General Information.");
+		}); 
 	}
 
 	function get_gho_ntds() {
@@ -1293,14 +1478,14 @@
 			dataSet: GHO_NTDS,
 			period: ds.year,
 			orgUnit: ds.countryID
-		}
+		};
 
 		builtUrl = buildAPIUrl(DATAVALUESETS, params);
 		return $.ajax({
 			url: builtUrl
 		}).then(function(data) {
-				fillGHO(data);
-		});
+				return fillGHO(data);
+		}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " GHO data.");}); 
 	}
 
 	function get_subnational_endemicity_for(program, year, level, ind, column) {
@@ -1315,8 +1500,8 @@
 		return $.when(getAggregateEvents(program, dimensions, NULL_VALUE, filters, NULL_AGGR_TYPE, SKIP_PAGING, SKIP_META, OUTPUT_TYPE.EVENT))
 			.done(function(result){
 				var data = getAnalyticValueForKey(result, YEARLY_MODE);
-				array[THIRD_LEVEL_ROW][column] =  data[0] || WHEN_NO_DATA ;
-			});
+				array[THIRD_LEVEL_ROW][column] =  formatIntValue((data[0] || WHEN_NO_DATA), SAME, LOCALE_FORMAT);
+			}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " subnational Endemicity.");}); 
 	}
 	
 	function get_monthly_cases_for(program, year, de, row) {
@@ -1331,8 +1516,8 @@
 			return $.when(getAggregateEvents(program, dimensions, de, NULL_FILTER, AGGR_TYPE.SUM, SKIP_PAGING, SKIP_META, OUTPUT_TYPE.EVENT))
 				.done(function(result){
 					var data = getAnalyticValueForKey(result, MONTHLY_MODE);
-					fillMonthlyArray(row, data);
-				});
+					return fillMonthlyArray(row, data);
+				}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " monthly cases for " + program + " " + year + " DE: " + de);}); 
 	}
 
 
@@ -1343,17 +1528,14 @@
 			dataSet: CL_DETAILED,
 			period: ds.year,
 			orgUnit: ds.countryID
-
-		}
+		};
 
 		builtUrl = buildAPIUrl(DATAVALUESETS, params);
 		return $.ajax({
 			url: builtUrl
 		}).then(function(data) {
-			//	decide_cl_or_aclzcl_mode(data.dataValues);
-				fillArray(data.dataValues, CL_COLUMN, DE.CL_EPI_Type, ""); 
-				fillArray(data.dataValues, MCL_COLUMN, DE.MCL_EPI_Type, "", DE.MCL_GEN_EPID_cases); 
-		});
+			return data;
+		}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " CL cases.");}); 
 	}
 
 
@@ -1363,96 +1545,85 @@
 			dataSet: AZCL_DETAILED,
 			period: ds.year,
 			orgUnit: ds.countryID
-		}
+		};
 
 		builtUrl = buildAPIUrl(DATAVALUESETS, params);
 		return $.ajax({
 			url: builtUrl
 		}).then(function(data) {
-				fillArray(data.dataValues, ACL_COLUMN, DE.ACL_EPI_Type, "", ""); 
-				fillArray(data.dataValues, ZCL_COLUMN, DE.ZCL_EPI_Type, "", ""); 
-		});
+			return data;
+		}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " ACL/ZCL cases.");}); 
 	}
 
 
 	/* getting vl cases from API */
 	function get_vl_cases() {
-
 		var params = {
 			dataSet: VL_DETAILED,
 			period: ds.year,
 			orgUnit: ds.countryID
-		}
+		};
 
 		builtUrl = buildAPIUrl(DATAVALUESETS, params);
 		return $.ajax({
 			url: builtUrl
 		}).then(function(data) {
-				fillArray(data.dataValues, VL_COLUMN, DE.VL_EPI_Type, DE.VL_LAB_RDT_tested_type, "");
-				fillArray(data.dataValues, PKDL_COLUMN, DE.VL_EPI_Type, DE.VL_LAB_RDT_tested_type, DE.PKDL_GEN_EPID_cases);
-
-				//TODO: move to a proper place
-				fillControlAndSurveillance(data.dataValues);
-				fillTreatmentAndMedicines(data.dataValues);
-		});
-	}
-
-	function getNewCases(dimension, column){
-		var params = {
-			dimension: ["dx:"+dimension,"pe:"+ds.year, "B9bBfRcF6jb:aD1KD82UFB1"],
-			filter: ["ou:"+ds.countryID],
-			displayProperty : "NAME",
-			skipMeta:"true"
-		}
-		for (var i=1; i<historicLength; i++){
-			params.dimension[1] +=";"+(ds.year-i);
-		}
-		var builtUrl = buildAPIUrl(ANALYTICS, params);
-		return $.ajax({
-			url: builtUrl
-		}).then(function(data) {
-				fillNewCasesArray(data, column);
-		});
+			return data;
+		}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " VL cases.");}); 
 	}
 
 	/**
-	* thenFunction(data, column)
+	* gets analytics data from dx for pe ds.year
+	* filter: ou: ds.countryID
+	* yearsToInclude: number of years to include starting by the current year
+	* thenFunction(data, thenFParams)
 	*/
-	function getIncidenceForCharts(indicator, column){
+	function getAnalyticsDataForDX(dx_dimension, yearsToInclude, thenFunction, thenFParams){
+		console.log ("getAnalyticsDataForDX " + dx_dimension.toString());
+		var dx_dimension_treated = "";
+		if (Array.isArray(dx_dimension)){
+			for (var i = 0; i<dx_dimension.length; i++){
+				dx_dimension_treated = dx_dimension_treated + dx_dimension[i] + ";";
+			}
+			dx_dimension_treated = dx_dimension_treated.slice(0, -1);
+		} else {
+			dx_dimension_treated = dx_dimension;
+		}
 
 		var params = {
-			dimension: ["dx:"+indicator,"pe:"+ds.year],
+			dimension: ["dx:"+dx_dimension_treated,"pe:"+ds.year],
 			filter: ["ou:"+ds.countryID],
 			displayProperty : "NAME",
 			skipMeta:"true"
-		}
-		for (var i=1; i<historicLength; i++){
+		};
+
+		for (var i=0; i<yearsToInclude; i++){
 			params.dimension[1] +=";"+(ds.year-i);
 		}
 		var builtUrl = buildAPIUrl(ANALYTICS, params);
 		return $.ajax({
 			url: builtUrl
 		}).then(function(data) {
-			fillIncidenceChartArray(data, column);
-		});
+			return thenFunction(data, thenFParams)
+		}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " analytics data:" + dx_dimension.toString());}); 
 	}
 
 	function getPopulationAtRiskFor(indicator, column, subNationalLevel){
 
-		var absolute_level = NATIONAL_LEVEL + subNationalLevel
+		var absolute_level =  WIDP_OU_SHIFT + subNationalLevel
 
 		var params = {
-			dimension: ["dx:"+indicator,"pe:"+ds.year, "ou:"+ds.countryID+";LEVEL-4"], //TODO: adapt to each country
+			dimension: ["dx:"+indicator,"pe:"+ds.year, "ou:"+ds.countryID+";LEVEL-"+absolute_level], //TODO: adapt to each country
 			displayProperty : "NAME",
 			skipMeta:"true"
-		}
+		};
 
 		var builtUrl = buildAPIUrl(ANALYTICS, params);
 		return $.ajax({
 			url: builtUrl
 		}).then(function(data) {
-				fillPopulationAtRiskArray(data, column);
-		});
+				return fillPopulationAtRiskArray(data, column);
+		}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " Population at Risk.");}); 
 	}
 
 
@@ -1465,33 +1636,74 @@
 	 */
 	function fillMonthlyArray(row, data) {
 
-		Object.keys(data).forEach(function (key) {
-			monthlyArray[row][key] = parseInt(data[key]);
-		});
+		for (var i= 1; i<=12; i++){
+			monthlyArray[row][i] = formatIntValue((data[i] || WHEN_NO_DATA), SAME, INTEGER_FORMAT);
+		}
+		
+		//Object.keys(data).forEach(function (key) {
+		//});
 		
 	}	 
 
-	function fillNewCasesArray(data, column){
+	function fillNewCasesArray(data, params){
+		var column = params[0];
 		historicNewCases[column] = getAnalyticValueForKey(data, YEARLY_MODE);
+	}	
+				
+	function fillIndicatorArray(data, extraFParams){
+		var arrayReference = extraFParams[0];
+		var arrayName = extraFParams[1];
+		var dx_header = getHeaderIndex(data.headers, "dx"); 
+		var value_header = getHeaderIndex(data.headers, "value"); 
+
+		if(Array.isArray(data.rows)) {
+
+			for (var i = 0; i<data.rows.length; i++){
+				id = data.rows[i][dx_header];
+				index = arrayReference.indexOf(id);
+				if(WHEN_NON_APPLICABLE.localeCompare(checkI(id))==0){
+					//console.log("N/A: index "+index+ " - id: "+id);
+					arrayName[index] = WHEN_NON_APPLICABLE;
+				} else if (typeof data.rows != "undefined" && i < data.rows.length){
+					arrayName[index] = parseFloat(data.rows[i][value_header]);
+				} else {
+					console.log("Unexpected error on fillIndicatorArray");
+					console.log("id: "+data.rows[i][dx_header] + "value_header: " + data.rows[i][value_header]);
+				}
+			} 
+		} else {
+			console.log("Unexpected error on fillIndicatorArray. data.rows is not an array");
+			console.log(data.rows);
+		}
+
 	}
-	function fillIncidenceChartArray(data, column){
+
+
+	function fillIncidenceChartArray(data, params){
+		var column = params[0];
 		historicIncidenceChart[column] = getAnalyticValueForKey(data, YEARLY_MODE);
 	}
 
 	function fillPopulationAtRiskArray(data, column){
 		index = column - 1;
 		headerIndex = getHeaderIndex(data.headers, "value");
-		pop_at_risk_values[index] = sumValueForHeader(data, headerIndex);
-		percentage =  percentageText(pop_at_risk_values[index], totalPopulation, 0, true);
+		pop_at_risk_values[index] = parseInt(sumValueForHeader(data, headerIndex));
+		if (!isNaN(pop_at_risk_values[index])) {
 
-		array[RISK_ROW][column] = percentage + " " + pop_at_risk_values[index] + " / " + (totalPopulation || WHEN_NO_DATA);
+			percentage =  percentageText(pop_at_risk_values[index], totalPopulation, 0, true);
+
+			array[RISK_ROW][column] = percentage + ", " + formatIntValue(pop_at_risk_values[index], SAME, LOCALE_FORMAT) 
+									+ " / " + formatIntValue((totalPopulation || WHEN_NO_DATA), SAME, LOCALE_FORMAT);
+		} else {
+			array[RISK_ROW][column] = WHEN_NO_DATA; // This is a workaround related with indicators. Ideally, indicator should return blank but it's returning NaN when no data.
+		}
 	}
 
 	function fillArray_IncidenceRow(){
 		var incidence, incidence_text;
 		for (var i = VL_INDEX; i<= ZCL_INDEX ; i++) {
 			// array[row][col], col = index + 1
-			incidence = percentageText(array[NEW_ROW][i+1] / 100, pop_at_risk_values[i], 2, false); 
+			incidence = percentageText(new_and_usnp_cases[i] * 100, pop_at_risk_values[i], 2, false); // incd = 10000 * cases / pop_at_risk. 2 decimal places
 			incidence_text = (!isNaN(incidence) || typeof incidence === 'string' ) ? incidence : WHEN_NO_DATA; // shows No data if denominator = 0 or no data
 			array[INCD_ROW][i+1] = incidence_text;
 		}
@@ -1506,32 +1718,55 @@
 	function fillGHO(data){
 
 		var dataValues = data.dataValues;
-		var endemicty_code, endemicity_name;
+		var endemicty_code, endemicity_text;
 
 		for (var i = 0; i<COUNTRY_ENDEMICITY.length; i++){
 			endemicty_code = getValueForKey(dataValues, DE_KEY, COUNTRY_ENDEMICITY[i], VALUE_KEY);
 			switch (endemicty_code){
 				case ENDEMICITY_OS.ENDEMIC_OPTION_CODE:
-					endemicity_name = ENDEMICITY_OS.ENDEMIC_OPTION_NAME;
+					endemicity_text = ENDEMICITY_OS.ENDEMIC_OPTION_NAME;
 					break;				
 				case ENDEMICITY_OS.PREVIOUSLY_REPORTED_OPTION_CODE:
-					endemicity_name = ENDEMICITY_OS.PREVIOUSLY_REPORTED_OPTION_NAME;
+					endemicity_text = ENDEMICITY_OS.PREVIOUSLY_REPORTED_OPTION_NAME;
 					break;				
 				case ENDEMICITY_OS.NO_ENDEMIC_OPTION_CODE:
-					endemicity_name = ENDEMICITY_OS.NO_ENDEMIC_OPTION_NAME;
+					endemicity_text = ENDEMICITY_OS.NO_ENDEMIC_OPTION_NAME;
+					break;
+				case WHEN_NO_DATA:
+					endemicity_text = WHEN_NO_DATA;
+					break;
+				case WHEN_NON_APPLICABLE:
+					endemicity_text = WHEN_NON_APPLICABLE;
 					break;
 				default:
-					endemicity_name = ERROR;
+					endemicity_text = ERROR;
 			}
-			array[COUNTRY_ENDEMICITY_ROW][i+1] = endemicity_name;
+			array[COUNTRY_ENDEMICITY_ROW][i+1] = endemicity_text;
 		}
 	}
+	
+	function fillUN_WPP(){
+
+		generalInformationArray[CIG_ROW_SEX][1] = (percentageText(un_wpp_data[POP_GENDER_FEMALE], 100, 1, false) || WHEN_NO_DATA) + " / " + (percentageText(un_wpp_data[POP_GENDER_MALE], 100, 1, false) || WHEN_NO_DATA);
+		generalInformationArray[CIG_ROW_AGEG][1] = (percentageText(un_wpp_data[POP_AGE_U15], 100, 0, false) || WHEN_NO_DATA) + " / " + (percentageText(un_wpp_data[POP_AGE_OVER15], 100, 0, false)  || WHEN_NO_DATA);
+	
+	}
+
+	// work around instead of using indicators, due to 
+	// https://jira.dhis2.org/browse/DHIS2-8059
+    // https://jira.dhis2.org/browse/DHIS2-8060
+	 
+	function fillNewAndUnspCasesWorkaround(column, new_cases, unspecified){
+		if (column == VL_COLUMN || column == CL_COLUMN || column == ACL_COLUMN || column == ZCL_COLUMN){
+			new_and_usnp_cases[column-1] = add([new_cases, unspecified]);
+		}
+	}
+
 	/*
 		column :
 		epiDE : Epidemiology Data getElement
-		diagDE : diagnosis DataElement
 	*/
-	function fillArray(dataValues, column, epiDE, diagDE, epiPKDLMCLCases) {
+	function fillArray(dataValues, column, epiDE, epiPKDLMCLCases) {
 		/* Edidemiology table */
 	
 		// type of cases
@@ -1539,49 +1774,44 @@
 		var relapse = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_RELAPSE,epiDE], VALUE_KEY);
 		var unspecified = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED,epiDE], VALUE_KEY);
 		var total_cases_type = add([new_cases, relapse, unspecified]);
+
+		fillNewAndUnspCasesWorkaround(column, new_cases, unspecified);
 		
-		array[NEW_ROW][column] = new_cases;
-		array[RELAPSE_ROW][column] = relapse;
-		array[TOTAL_ROW][column] = total_cases_type;
+		array[NEW_ROW][column] = formatIntValue((new_cases || WHEN_NO_DATA), SAME, LOCALE_FORMAT);
+		array[RELAPSE_ROW][column] = formatIntValue((relapse || WHEN_NO_DATA), SAME, LOCALE_FORMAT);
+		array[TOTAL_ROW][column] = formatIntValue((total_cases_type || WHEN_NO_DATA), SAME, LOCALE_FORMAT);
 
 		// sex distribution 
-		var new_unknown = getValueForKey(dataValues, CC_KEY, NEW_UNKNOWN, VALUE_KEY);
-		var rel_unknown = getValueForKey(dataValues, CC_KEY, REL_UNKNOWN, VALUE_KEY);
-		var uns_unknown = getValueForKey(dataValues, CC_KEY, UNS_UNKNOWN, VALUE_KEY);
-		var unknown = add([new_unknown, rel_unknown, uns_unknown]);
+		var new_unknown = getValueForKey(dataValues, [CC_KEY, DE_KEY],[NEW_UNKNOWN, GENDER_DE[column]], VALUE_KEY);
+		var uns_unknown = getValueForKey(dataValues, [CC_KEY, DE_KEY],[UNS_UNKNOWN, GENDER_DE[column]], VALUE_KEY);
+		var unknown = add([new_unknown, uns_unknown]);
 
-		var new_male = getValueForKey(dataValues, CC_KEY, NEW_MALE, VALUE_KEY);
-		var rel_male = getValueForKey(dataValues, CC_KEY, REL_MALE, VALUE_KEY);
-		var uns_male = getValueForKey(dataValues, CC_KEY, UNS_MALE, VALUE_KEY);
-		var male = add([new_male, rel_male, uns_male]);
+		var new_male = getValueForKey(dataValues, [CC_KEY, DE_KEY],[NEW_MALE, GENDER_DE[column]], VALUE_KEY);
+		var uns_male = getValueForKey(dataValues, [CC_KEY, DE_KEY],[UNS_MALE, GENDER_DE[column]], VALUE_KEY);
+		var male = add([new_male, uns_male]);
 
-		var new_female = getValueForKey(dataValues, CC_KEY, NEW_FEMALE, VALUE_KEY);
-		var rel_female = getValueForKey(dataValues, CC_KEY, REL_FEMALE, VALUE_KEY);
-		var uns_female = getValueForKey(dataValues, CC_KEY, UNS_FEMALE, VALUE_KEY);
-		var female = add([new_female, rel_female, uns_female]);
+		var new_female = getValueForKey(dataValues, [CC_KEY, DE_KEY],[NEW_FEMALE, GENDER_DE[column]], VALUE_KEY);
+		var uns_female = getValueForKey(dataValues, [CC_KEY, DE_KEY],[UNS_FEMALE, GENDER_DE[column]], VALUE_KEY);
+		var female = add([new_female, uns_female]);
 
-		array[SEX_ROW][column] = percentageText(female, add([male, female, unknown]), 0, true);
+		array[SEX_ROW][column] = percentageText(female, add([male, female, unknown]), 0, false);
 		
 		//age distribution 
-		var new_under_5 = getValueForKey(dataValues, CC_KEY, NEW_UNDER_5, VALUE_KEY);
-		var rel_under_5 = getValueForKey(dataValues, CC_KEY, REL_UNDER_5, VALUE_KEY);
-		var uns_under_5 = getValueForKey(dataValues, CC_KEY, UNS_UNDER_5, VALUE_KEY);
-		var under_5 =  add([new_under_5, rel_under_5, uns_under_5]);
+		var new_under_5 = getValueForKey(dataValues, [CC_KEY, DE_KEY],[NEW_UNDER_5, AGE_DE[column]], VALUE_KEY);
+		var uns_under_5 = getValueForKey(dataValues, [CC_KEY, DE_KEY],[UNS_UNDER_5, AGE_DE[column]], VALUE_KEY);
+		var under_5 =  add([new_under_5, uns_under_5]);
 
-		var new_5_14 = getValueForKey(dataValues, CC_KEY, NEW_5_14, VALUE_KEY);
-		var rel_5_14 = getValueForKey(dataValues, CC_KEY, REL_5_14, VALUE_KEY);
-		var uns_5_14 = getValueForKey(dataValues, CC_KEY, UNS_5_14, VALUE_KEY);
-		var _5_14 =  add([new_5_14, rel_5_14, uns_5_14]);
+		var new_5_14 = getValueForKey(dataValues, [CC_KEY, DE_KEY],[NEW_5_14, AGE_DE[column]], VALUE_KEY);
+		var uns_5_14 = getValueForKey(dataValues, [CC_KEY, DE_KEY],[UNS_5_14, AGE_DE[column]], VALUE_KEY);
+		var _5_14 =  add([new_5_14, uns_5_14]);
 
-		var new_over_14 = getValueForKey(dataValues, CC_KEY, NEW_OVER_14, VALUE_KEY);
-		var rel_over_14 = getValueForKey(dataValues, CC_KEY, REL_OVER_14, VALUE_KEY);
-		var uns_over_14 = getValueForKey(dataValues, CC_KEY, UNS_OVER_14, VALUE_KEY);
-		var over_14 =  add([new_over_14, rel_over_14, uns_over_14]);
+		var new_over_14 = getValueForKey(dataValues, [CC_KEY, DE_KEY],[NEW_OVER_14, AGE_DE[column]], VALUE_KEY);
+		var uns_over_14 = getValueForKey(dataValues, [CC_KEY, DE_KEY],[UNS_OVER_14, AGE_DE[column]], VALUE_KEY);
+		var over_14 =  add([new_over_14, uns_over_14]);
 
-		var new_age_unknown = getValueForKey(dataValues, CC_KEY, NEW_AGE_UNKNOWN, VALUE_KEY);
-		var rel_age_unknown = getValueForKey(dataValues, CC_KEY, REL_AGE_UNKNOWN, VALUE_KEY);
-		var uns_age_unknown = getValueForKey(dataValues, CC_KEY, UNS_AGE_UNKNOWN, VALUE_KEY);
-		var age_unknown =  add([new_age_unknown, rel_age_unknown, uns_age_unknown]);
+		var new_age_unknown = getValueForKey(dataValues, [CC_KEY, DE_KEY],[NEW_AGE_UNKNOWN, AGE_DE[column]], VALUE_KEY);
+		var uns_age_unknown = getValueForKey(dataValues, [CC_KEY, DE_KEY],[UNS_AGE_UNKNOWN, AGE_DE[column]], VALUE_KEY);
+		var age_unknown =  add([new_age_unknown, uns_age_unknown]);
 
 		var total_age_cases = add([under_5, _5_14, over_14, age_unknown]);
 
@@ -1589,24 +1819,24 @@
 
 		//origin distribution
 		var origin_autoc = add([
-			getValueForKey(dataValues,CC_KEY, ORIGIN_AUTOC_NEW, VALUE_KEY),
-			getValueForKey(dataValues,CC_KEY, ORIGIN_AUTOC_REL, VALUE_KEY),
-			getValueForKey(dataValues,CC_KEY, ORIGIN_AUTOC_UNS, VALUE_KEY)
+			getValueForKey(dataValues,[CC_KEY, DE_KEY],[ORIGIN_AUTOC_NEW, IMPORTED_DE[column]], VALUE_KEY),
+			getValueForKey(dataValues,[CC_KEY, DE_KEY],[ORIGIN_AUTOC_REL, IMPORTED_DE[column]], VALUE_KEY),
+			getValueForKey(dataValues,[CC_KEY, DE_KEY],[ORIGIN_AUTOC_UNS, IMPORTED_DE[column]], VALUE_KEY)
 		]);
 		var origin_imported = add([
-			getValueForKey(dataValues,CC_KEY, ORIGIN_IMPORT_NEW, VALUE_KEY),
-			getValueForKey(dataValues,CC_KEY, ORIGIN_IMPORT_REL, VALUE_KEY),
-			getValueForKey(dataValues,CC_KEY, ORIGIN_IMPORT_UNS, VALUE_KEY)
+			getValueForKey(dataValues,[CC_KEY, DE_KEY],[ORIGIN_IMPORT_NEW, IMPORTED_DE[column]], VALUE_KEY),
+			getValueForKey(dataValues,[CC_KEY, DE_KEY],[ORIGIN_IMPORT_REL, IMPORTED_DE[column]], VALUE_KEY),
+			getValueForKey(dataValues,[CC_KEY, DE_KEY],[ORIGIN_IMPORT_UNS, IMPORTED_DE[column]], VALUE_KEY)
 		]);
 		var origin_unknown = add([
-			getValueForKey(dataValues,CC_KEY, ORIGIN_UNKNOWN_NEW, VALUE_KEY),
-			getValueForKey(dataValues,CC_KEY, ORIGIN_UNKNOWN_REL, VALUE_KEY),
-			getValueForKey(dataValues,CC_KEY, ORIGIN_UNKNOWN_UNS, VALUE_KEY)
+			getValueForKey(dataValues,[CC_KEY, DE_KEY],[ORIGIN_UNKNOWN_NEW, IMPORTED_DE[column]], VALUE_KEY),
+			getValueForKey(dataValues,[CC_KEY, DE_KEY],[ORIGIN_UNKNOWN_REL, IMPORTED_DE[column]], VALUE_KEY),
+			getValueForKey(dataValues,[CC_KEY, DE_KEY],[ORIGIN_UNKNOWN_UNS, IMPORTED_DE[column]], VALUE_KEY)
 		]);
 		var total_origin_cases = add([origin_autoc, origin_imported, origin_unknown]);
-		array[IMPORTED_ROW][column] = origin_imported 
-									+ ", "
-									+	percentageText(origin_imported, total_origin_cases, 0, true);
+		array[IMPORTED_ROW][column] = origin_imported +
+									", " +
+									percentageText(origin_imported, total_origin_cases, 0, true);
 
 		// Data to retrive depending on Leish type
 		switch(epiDE){
@@ -1631,21 +1861,24 @@
 		
 		/* only PKDL and MCL TODO: place that if that's true */
 
-		if (column === PKDL_COLUMN || column === MCL_COLUMN){
-			var cases = getValueForKey(dataValues, DE_KEY, epiPKDLMCLCases, VALUE_KEY);
-			array[NEW_ROW][column] = cases;
+		if (column == PKDL_COLUMN || column == MCL_COLUMN){
+			var pkdl_cases = getValueForKey(dataValues, DE_KEY, epiPKDLMCLCases, VALUE_KEY);
+			array[NEW_ROW][column] = formatIntValue((pkdl_cases || WHEN_NO_DATA), SAME, LOCALE_FORMAT);
 			array[RELAPSE_ROW][column] = WHEN_NON_APPLICABLE;
-			array[TOTAL_ROW][column] = cases;
+			array[TOTAL_ROW][column] = array[NEW_ROW][column];
 			array[IMPORTED_ROW][column] = WHEN_NON_APPLICABLE; 
 
-			var male = getValueForKey(dataValues, CC_KEY, MALE, VALUE_KEY);
-			var female = getValueForKey(dataValues, CC_KEY, FEMALE, VALUE_KEY);
-			array[SEX_ROW][column] = percentageText(female, add([male, female]), 0, true);
+			var male = getValueForKey(dataValues, [CC_KEY, DE_KEY],[MALE, GENDER_DE[column]], VALUE_KEY);
+			var female = getValueForKey(dataValues, [CC_KEY, DE_KEY],[FEMALE, GENDER_DE[column]], VALUE_KEY);
+			var unknown_sex = getValueForKey(dataValues, [CC_KEY, DE_KEY],[UNKNOWN_SEX, GENDER_DE[column]], VALUE_KEY);
+			var total_sex_cases = add([male, female, unknown_sex]);
+			array[SEX_ROW][column] = percentageText(female, total_sex_cases, 0, false);
 
-			var age_5 = getValueForKey(dataValues, CC_KEY, AGE_5, VALUE_KEY);
-			var age_5_14 = getValueForKey(dataValues, CC_KEY, AGE_5_14, VALUE_KEY);
-			var age_14 = getValueForKey(dataValues, CC_KEY, AGE_14, VALUE_KEY);
-			var total_age_cases = add([age_5, age_5_14, age_14]);
+			var age_5 = getValueForKey(dataValues, [CC_KEY, DE_KEY],[AGE_5, AGE_DE[column]], VALUE_KEY);
+			var age_5_14 = getValueForKey(dataValues, [CC_KEY, DE_KEY],[AGE_5_14, AGE_DE[column]], VALUE_KEY);
+			var age_14 = getValueForKey(dataValues, [CC_KEY, DE_KEY],[AGE_14, AGE_DE[column]], VALUE_KEY);
+			var age_unknown = getValueForKey(dataValues, [CC_KEY, DE_KEY],[AGE_UNKNOWN, AGE_DE[column]], VALUE_KEY);
+			var total_age_cases = add([age_5, age_5_14, age_14, age_unknown]); //gPGNI7bWhDB
 
 			array[AGE_ROW][column] = threePercentages(age_5, age_5_14, age_14, total_age_cases);	
 
@@ -1661,28 +1894,28 @@
 		/* Diagnosis table */
 		
 		// active and passive screening
-		if (column === PKDL_COLUMN || column === MCL_COLUMN) {
+		if (column == PKDL_COLUMN || column == MCL_COLUMN) {
 			diagnosisArray[SCREENED_ACTIVELY_ROW][column] = WHEN_NON_APPLICABLE;
 			diagnosisArray[SCREENED_PASSIVELY_ROW][column] = WHEN_NON_APPLICABLE;
 		} else {
 			var screen_active = getValueForKey(dataValues, DE_KEY, DE_SCREEN_ACTIVE[column] , VALUE_KEY);
-			var screen_passive = getValueForKey(dataValues, DE_KEY, DE_SCREEN_PASSIVE[column] , VALUE_KEY);
-			diagnosisArray[SCREENED_ACTIVELY_ROW][column] = screen_active;
-			diagnosisArray[SCREENED_PASSIVELY_ROW][column] = screen_passive;
+			diagnosisArray[SCREENED_ACTIVELY_ROW][column] = formatIntValue((screen_active || WHEN_NO_DATA), SAME, LOCALE_FORMAT);
+			diagnosisArray[SCREENED_PASSIVELY_ROW][column] = formatIntValue((screen_passive[column-1] || WHEN_NO_DATA), SAME, LOCALE_FORMAT);
 		}
 		
 
-		if (column === VL_COLUMN) {
+		if (column == VL_COLUMN) {
+
 			// cases diagnosed by RDT and %positive RDT
-			var new_rdt = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_NEW_CASES,diagDE], VALUE_KEY);
-			var unsp_rdt = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED,diagDE], VALUE_KEY);
+			var new_rdt = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_NEW_CASES,VL_Lab_RDT_tested_type], VALUE_KEY);
+			var unsp_rdt = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED, VL_Lab_RDT_tested_type], VALUE_KEY);
 			var total_rdt = add([new_rdt, unsp_rdt]);
 
-			var positive_new_rdt = getValueForKey(dataValues, CC_KEY, POSITIVE_NEW,  VALUE_KEY);
-			var positive_unsp_rdt = getValueForKey(dataValues, CC_KEY, POSITIVE_UNSP,  VALUE_KEY);
+			var positive_new_rdt = getValueForKey(dataValues, [CC_KEY, DE_KEY], [POSITIVE_NEW,VL_Lab_RDT_results_type],  VALUE_KEY);
+			var positive_unsp_rdt = getValueForKey(dataValues, [CC_KEY, DE_KEY], [POSITIVE_UNSP,VL_Lab_RDT_results_type],  VALUE_KEY);
 			var total_positive_rdt = add([positive_new_rdt, positive_unsp_rdt]);
 			
-			diagnosisArray[VL_CASES_DIAGNOSED_ROW][column] = percentageCasesAndTotal(total_positive_rdt, total_cases_type, 0, true);
+			diagnosisArray[VL_CASES_DIAGNOSED_ROW][column] = percentageCasesAndTotal(total_positive_rdt, new_and_usnp_cases[VL_INDEX], 0, true);
 			diagnosisArray[POSITIVE_RDT_ROW][column] = percentageCasesAndTotal(total_positive_rdt, total_rdt, 0, true);
 
 			// percentage of cases with HIV-VL coinfection
@@ -1699,7 +1932,7 @@
 			diagnosisArray[HIV_COINFECTION_ROW][column] = WHEN_NON_APPLICABLE;
 		}
 
-		if (column === PKDL_COLUMN || column === MCL_COLUMN) {
+		if (column == PKDL_COLUMN || column == MCL_COLUMN) {
 			diagnosisArray[DIRECT_EXAM_DIAGNOSED_ROW][column] = WHEN_NON_APPLICABLE;
 			diagnosisArray[POSITIVE_DIRECT_EXAM_ROW][column] = WHEN_NON_APPLICABLE;
 			diagnosisArray[CLINICALLY_DIAGNOSED_ROW][column] = WHEN_NON_APPLICABLE;
@@ -1707,157 +1940,38 @@
 		else {
 		
 			// Direct exam
-			var direct_exam_new = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_NEW_CASES, DE.VL_LAB_parasito_tested_type], VALUE_KEY);
-			var direct_exam_rel = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_RELAPSE, DE.VL_LAB_parasito_tested_type], VALUE_KEY);
-			var direct_exam_uns = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED, DE.VL_LAB_parasito_tested_type], VALUE_KEY);
-			var direct_exam_total = add([direct_exam_new, direct_exam_rel, direct_exam_uns]);
-
-			diagnosisArray[DIRECT_EXAM_DIAGNOSED_ROW][column] = percentageCasesAndTotal(direct_exam_total, total_cases_type, 0, true);
+			diagnosisArray[DIRECT_EXAM_DIAGNOSED_ROW][column] = percentageCasesAndTotal(lab_parasito_result[column-1], new_and_usnp_cases[column-1], 0, true, direct_exam_diagnosed[column-1]);
 
 			//Positive slides
-			var positive_slides_new = getValueForKey(dataValues,[CC_KEY, DE_KEY],[POSITIVE_NEW, DE.VL_LAB_parasito_result_type], VALUE_KEY); 
-			var positive_slides_rel = getValueForKey(dataValues,[CC_KEY, DE_KEY],[POSITIVE_RELAPSE, DE.VL_LAB_parasito_result_type], VALUE_KEY); 
-			var positive_slides_uns = getValueForKey(dataValues,[CC_KEY, DE_KEY],[POSITIVE_UNSP, DE.VL_LAB_parasito_result_type], VALUE_KEY); 
-			var positive_slides_total = add([positive_slides_new, positive_slides_rel, positive_slides_uns]);
-
-			diagnosisArray[POSITIVE_DIRECT_EXAM_ROW][column] = percentageCasesAndTotal(positive_slides_total, direct_exam_total, 0, true);
+			diagnosisArray[POSITIVE_DIRECT_EXAM_ROW][column] = percentageCasesAndTotal(lab_parasito_result[column-1], lab_parasito_tested[column-1], 0, true, positive_slides_prop[column-1]);
 
 			//Cases diagnosed clinically
-			var clinical_cases_new = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_NEW_CASES, DE.VL_LAB_clinical], VALUE_KEY);
-			var clinical_cases_rel = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_RELAPSE, DE.VL_LAB_clinical], VALUE_KEY);
-			var clinical_cases_uns = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED, DE.VL_LAB_clinical], VALUE_KEY);
+			var clinical_cases_new = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_NEW_CASES, LABCLINICAL_DE[column]], VALUE_KEY);
+			var clinical_cases_rel = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_RELAPSE, LABCLINICAL_DE[column]], VALUE_KEY);
+			var clinical_cases_uns = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED, LABCLINICAL_DE[column]], VALUE_KEY);
 			var clinical_cases_total = add([clinical_cases_new, clinical_cases_rel, clinical_cases_uns]);
 
 			diagnosisArray[CLINICALLY_DIAGNOSED_ROW][column] = percentageCasesAndTotal(clinical_cases_total, total_cases_type, 0, true);
 		}
 
-		/* Treatment table */
-		var drug_ito_fail, txo_cases;
-		
+		/* Treatment table */	
 
-		if (column === VL_COLUMN || column == CL_COLUMN || column == ACL_COLUMN || column == ZCL_COLUMN){
+		if (column == VL_COLUMN || column == CL_COLUMN || column == ACL_COLUMN || column == ZCL_COLUMN){
 			
-			switch (column){
-				case VL_COLUMN:
-					drug_ito_fail = DE.VL_INIT_ITxO_Drug_Type;
-					txo_cases = DE.VL_FU_M6_FTxO_Type;	
-					break;
-				case CL_COLUMN:
-					drug_ito_fail = DE.CL_ITxO_Tx_drug;
-					txo_cases = DE.CL_FU_TxO_type;
-					break;
-				case ACL_COLUMN:
-					drug_ito_fail = DE.ACL_ITxO_Tx_drug;
-					txo_cases = DE.ACL_FU_TxO;
-					break;
-				case ZCL_COLUMN:
-					drug_ito_fail = DE.ZCL_ITxO_Tx_drug;
-					txo_cases = DE.ZCL_FU_TxO;
-					break;
-			}
-			if (column == VL_COLUMN) {
-				cured_new = VL_CURED_NEW;
-				cured_rel = VL_CURED_REL;
-				cured_uns = VL_CURED_UNS;
-				rel_new = VL_REL_NEW;
-				rel_rel = VL_REL_REL;
-				rel_uns = VL_REL_UNS;
-				dead_new = VL_DEAD_NEW;
-				dead_rel = VL_DEAD_REL;
-				dead_uns = VL_DEAD_UNS;
-				fail_new_oth = VL_FAIL_NEW_OTH ;
-				fail_rel_oth =  VL_FAIL_REL_OTH;
-				fail_uns_oth =  VL_FAIL_UNS_OTH;
-				fail_new_uns =  VL_FAIL_NEW_UNS;
-				fail_rel_uns =  VL_FAIL_REL_UNS;
-				fail_uns_uns =  VL_FAIL_UNS_UNS;	
-			} else {
-				// CL_COLUMN, ACL_COLUMN, ZCL_COLUMN
-				cured_new = CL_CURED_NEW;
-				cured_rel = CL_CURED_REL;
-				cured_uns = CL_CURED_UNS;
-				rel_new = CL_REL_NEW;
-				rel_rel = CL_REL_REL;
-				rel_uns = CL_REL_UNS;
-				dead_new = CL_DEAD_NEW;
-				dead_rel = CL_DEAD_REL;
-				dead_uns = CL_DEAD_UNS;
-				fail_new_oth = CL_FAIL_NEW_OTH ;
-				fail_rel_oth =  CL_FAIL_REL_OTH;
-				fail_uns_oth =  CL_FAIL_UNS_OTH;
-				fail_new_uns =  CL_FAIL_NEW_UNS;
-				fail_rel_uns =  CL_FAIL_REL_UNS;
-				fail_uns_uns =  CL_FAIL_UNS_UNS;	
-			}
-
-
-			// Number of VL cases followed-up at 6 months	
-			var new_rel = getValueForKey(dataValues, [CC_KEY, DE_KEY], [rel_new, txo_cases], VALUE_KEY);
-			var rel_rel_t = getValueForKey(dataValues, [CC_KEY, DE_KEY], [rel_rel, txo_cases], VALUE_KEY);
-			var uns_rel = getValueForKey(dataValues, [CC_KEY, DE_KEY], [rel_uns, txo_cases], VALUE_KEY);
-			var total_rel6_cases = add([new_rel, rel_rel_t, uns_rel]);
-		
-			var new_cured = getValueForKey(dataValues, [CC_KEY, DE_KEY], [cured_new, txo_cases], VALUE_KEY);
-			var rel_cured = getValueForKey(dataValues, [CC_KEY, DE_KEY], [cured_rel, txo_cases], VALUE_KEY);
-			var uns_cured = getValueForKey(dataValues, [CC_KEY, DE_KEY], [cured_uns, txo_cases], VALUE_KEY);
-			var total_cured = add([new_cured, rel_cured, uns_cured]);
-
-			var new_dead = getValueForKey(dataValues, [CC_KEY, DE_KEY], [dead_new, txo_cases], VALUE_KEY);
-			var rel_dead = getValueForKey(dataValues, [CC_KEY, DE_KEY], [dead_rel, txo_cases], VALUE_KEY);
-			var uns_dead = getValueForKey(dataValues, [CC_KEY, DE_KEY], [dead_uns, txo_cases], VALUE_KEY);
-			var total_dead = add([new_dead, rel_dead, uns_dead]);
-
-			var fail_new_amb = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_NEW_AMB, drug_ito_fail], VALUE_KEY);
-            var fail_rel_amb = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_REL_AMB, drug_ito_fail], VALUE_KEY);
-            var fail_uns_amb = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_UNS_AMB, drug_ito_fail], VALUE_KEY);
-			var fail_new_glu = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_NEW_GLU, drug_ito_fail], VALUE_KEY);
-            var fail_rel_glu = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_REL_GLU, drug_ito_fail], VALUE_KEY);
-            var fail_uns_glu = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_UNS_GLU, drug_ito_fail], VALUE_KEY);
-            var fail_new_pen = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_NEW_PEN, drug_ito_fail], VALUE_KEY);
-            var fail_rel_pen = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_REL_PEN, drug_ito_fail], VALUE_KEY);
-            var fail_uns_pen = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_UNS_PEN, drug_ito_fail], VALUE_KEY);
-			var fail_new_ssg = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_NEW_SSG, drug_ito_fail], VALUE_KEY);
-            var fail_rel_ssg = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_REL_SSG, drug_ito_fail], VALUE_KEY);
-            var fail_uns_ssg = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_UNS_SSG, drug_ito_fail], VALUE_KEY);
-            var fail_new_ssg_paro = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_NEW_SSG_PARO, drug_ito_fail], VALUE_KEY);
-            var fail_rel_ssg_paro = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_REL_SSG_PARO, drug_ito_fail], VALUE_KEY);
-            var fail_uns_ssg_paro = getValueForKey(dataValues,[CC_KEY, DE_KEY],[FAIL_UNS_SSG_PARO, drug_ito_fail], VALUE_KEY);
-            var fail_new_oth_t = getValueForKey(dataValues,[CC_KEY, DE_KEY],[fail_new_oth, drug_ito_fail], VALUE_KEY);
-            var fail_rel_oth_t = getValueForKey(dataValues,[CC_KEY, DE_KEY],[fail_rel_oth, drug_ito_fail], VALUE_KEY);
-            var fail_uns_oth_t = getValueForKey(dataValues,[CC_KEY, DE_KEY],[fail_uns_oth, drug_ito_fail], VALUE_KEY);
-            var fail_new_uns_t = getValueForKey(dataValues,[CC_KEY, DE_KEY],[fail_new_uns, drug_ito_fail], VALUE_KEY);
-            var fail_rel_uns_t = getValueForKey(dataValues,[CC_KEY, DE_KEY],[fail_rel_uns, drug_ito_fail], VALUE_KEY);
-            var fail_uns_uns_t = getValueForKey(dataValues,[CC_KEY, DE_KEY],[fail_uns_uns, drug_ito_fail], VALUE_KEY);
-
-
-			total_fail = add([fail_new_amb, fail_rel_amb, fail_uns_amb,
-								fail_new_glu, fail_rel_glu, fail_uns_glu,
-								fail_new_pen, fail_rel_pen, fail_uns_pen,
-								fail_new_ssg, fail_rel_ssg, fail_uns_ssg,
-								fail_new_ssg_paro, fail_rel_ssg_paro, fail_uns_ssg_paro,
-								fail_new_oth_t, fail_rel_oth_t, fail_uns_oth_t,
-								fail_new_uns_t, fail_rel_uns_t, fail_uns_uns_t]);
-
-			toutcomeArray[INITIAL_CURE_RATE_ROW][column] = percentageCasesAndTotal(total_cured, total_cases_type, 0, true);
-			toutcomeArray[FAILURE_RATE_ROW][column] = percentageCasesAndTotal(total_fail, total_cases_type, 0, true);
-			toutcomeArray[CASE_FATALITY_ROW][column] = percentageCasesAndTotal(total_dead, total_cases_type, 0, true);
-			toutcomeArray[RELAPSE_PROPORTION_ROW][column] = percentageCasesAndTotal(total_rel6_cases, total_cases_type, 0, true);
+			toutcomeArray[PROPORTION_TREATED_CASES_ROW][column] = percentageCasesAndTotal(total_treated[column-1], new_and_usnp_cases[column-1], 0, true);
+			toutcomeArray[INITIAL_CURE_RATE_ROW][column] = percentageCasesAndTotal(toutcome_cure[column-1], new_and_usnp_cases[column-1], 0, true);
+			toutcomeArray[FAILURE_RATE_ROW][column] = percentageCasesAndTotal(toutcome_fail[column-1], new_and_usnp_cases[column-1], 0, true);
+			toutcomeArray[CASE_FATALITY_ROW][column] = percentageCasesAndTotal(toutcome_fatal[column-1], new_and_usnp_cases[column-1], 0, true);
 
 		}
-
-
-
-	
-
 
 	}
 
 	function update_map_levels_var(min, max){
 
 		map_levels = [];
-		for(var i = min; i<=max; i++){
-			map_levels.push(i);
-		}
+		map_levels.push(min);
+		map_levels.push(max);
 	}
 
 	
@@ -1914,57 +2028,33 @@
 
 		// gets population in miles, transforms it in units and adds local separators
 		var popIn1000 = getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_Pop_Tot_1000, CC_DEFAULT], VALUE_KEY);
-		totalPopulation = parseInt(popIn1000) * 1000 ;
-		generalInformationArray[CIG_ROW_POP][1] = (totalPopulation || WHEN_NO_DATA).toLocaleString();
-
-		// gets all population age slices and adds its by sex 
-		var popm = 0, popf = 0;
-		for (var i = Y_UNDER_5; i<= Y100_AND_OVER; i++ ) {
-			popf = add([popf, getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_Pop_Tot_AgeSex_1000, CC_CGI[i][CGI_FEMALE]], VALUE_KEY)]);
-			popm = add([popm, getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_Pop_Tot_AgeSex_1000, CC_CGI[i][CGI_MALE]], VALUE_KEY)]);
-		}
-		console.log( "popf " + popf);
-		console.log( "popm " + popm);
-		generalInformationArray[CIG_ROW_SEX][1] = (percentageText(popf, totalPopulation, 1, true) || WHEN_NO_DATA) + " / " + (percentageText(popm, totalPopulation, 1, true) || WHEN_NO_DATA);
+		totalPopulation = parseInt(popIn1000 * 1000) ;
+		generalInformationArray[CIG_ROW_POP][1] = formatIntValue((totalPopulation || WHEN_NO_DATA), SAME, LOCALE_FORMAT);
 
 		// gets GDP
-		generalInformationArray[CIG_ROW_GDP][1] = getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_WB_GDP_PPP_current, CC_DEFAULT], VALUE_KEY);
-		
+		generalInformationArray[CIG_ROW_GDP][1] = formatIntValue(
+													getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_WB_GDP_PPP_current, CC_DEFAULT], VALUE_KEY), 
+													ROUND, LOCALE_FORMAT);
+
 		// gets income group codes to show code rather than a number
 		var ressource = "dataElements/"+DE_CGI.GEN_WB_IncomeGroup;
 		var fields = "optionSet[options[name,code]]";
 		$.when(get(ressource,fields)).done(function(result){
-			console.log(result);
 			var incomeCode = getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_WB_IncomeGroup, CC_DEFAULT], VALUE_KEY);
 			var incomeName = getValueForKey(result.optionSet.options, CODE_KEY, incomeCode, NAME_KEY);
 			generalInformationArray[CIG_ROW_INCOME][1] = incomeName;
 		});
 		
-		// calculates 
-		var pop_under15 = 0, pop_over15 = 0;
-		for (var i = Y_UNDER_5; i<= Y10_14; i++ ) {
-			pop_under15 = add([pop_under15, 
-					getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_Pop_Tot_AgeSex_1000, CC_CGI[i][CGI_FEMALE]], VALUE_KEY),
-					getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_Pop_Tot_AgeSex_1000, CC_CGI[i][CGI_MALE]], VALUE_KEY),
-					getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_Pop_Tot_AgeSex_1000, CC_CGI[i][CGI_GENDER_UNKNOWN]], VALUE_KEY),
-							]);
-		}
-		for (var i = Y15_19; i<= Y100_AND_OVER; i++ ) {
-			pop_over15 = add([pop_over15, 
-					getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_Pop_Tot_AgeSex_1000, CC_CGI[i][CGI_FEMALE]], VALUE_KEY),
-					getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_Pop_Tot_AgeSex_1000, CC_CGI[i][CGI_MALE]], VALUE_KEY),
-					getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_Pop_Tot_AgeSex_1000, CC_CGI[i][CGI_GENDER_UNKNOWN]], VALUE_KEY),
-							]);
-		}
-		console.log( "pop_under15 " + pop_under15);
-		console.log( "pop_over15 " + pop_over15);
-		generalInformationArray[CIG_ROW_AGEG][1] = (percentageText(pop_under15, totalPopulation, 1, true) || WHEN_NO_DATA) + " / " + (percentageText(pop_over15, totalPopulation, 1, true)  || WHEN_NO_DATA);
-
-		generalInformationArray[CIG_ROW_LIFE][1] = getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_LifeExpBirth_Female, CC_DEFAULT], VALUE_KEY) +  
+		generalInformationArray[CIG_ROW_LIFE][1] = formatIntValue(
+														getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_LifeExpBirth_Female, CC_DEFAULT], VALUE_KEY), 
+														ROUND, INTEGER_FORMAT)  +
 													" / " +
-													getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_LifeExpBirth_Male, CC_DEFAULT], VALUE_KEY)	;
+													formatIntValue(
+														getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_LifeExpBirth_Male, CC_DEFAULT], VALUE_KEY),
+														ROUND, INTEGER_FORMAT)  ;
 
-		setOptionSelectMenu("subnationalLevelSelector", defaultSubnationalLevel-1);
+
+		setOptionSelectMenu("subnationalLevelSelector", defaultSubnationalLevel);
 		return updateNumberOfDivisions(defaultSubnationalLevel); // so it waits to have the information
 	}
 
@@ -1975,17 +2065,20 @@
 					get_subnational_endemicity_for(SUBN_ENDEMCTY, ds.year, subNationalLevel, SUB_ENDEMICITY.ACL, ACL_COLUMN),
 					get_subnational_endemicity_for(SUBN_ENDEMCTY, ds.year, subNationalLevel, SUB_ENDEMICITY.ZCL, ZCL_COLUMN),
 					get_subnational_endemicity_for(SUBN_ENDEMCTY, ds.year, subNationalLevel, SUB_ENDEMICITY.CL, CL_COLUMN),
-					get_subnational_endemicity_for(SUBN_ENDEMCTY, ds.year, subNationalLevel, SUB_ENDEMICITY.VL, VL_COLUMN)
-				).done(function(result){
-			var numberOfDivisions = result.organisationUnits.length;
-			var aDivisionName = result.organisationUnits[0].name;
-			generalInformationArray[CIG_ROW_DIVIS][0] = LEVEL_REPORT_LABELS[subNationalLevel-1];
-			generalInformationArray[CIG_ROW_DIVIS][1] = numberOfDivisions + ", " + aDivisionName;
+					get_subnational_endemicity_for(SUBN_ENDEMCTY, ds.year, subNationalLevel, SUB_ENDEMICITY.VL, VL_COLUMN))	
+				.done(function(result){
+					var numberOfDivisions = result.organisationUnits.length;
+					ds.divisionName = result.organisationUnits[0].name;
+					generalInformationArray[CIG_ROW_DIVIS][0] = LEVEL_REPORT_LABELS[subNationalLevel];
+					generalInformationArray[CIG_ROW_DIVIS][1] = numberOfDivisions + ", " + ds.divisionName;
 
-			// updates endemicity text at epi table
-			array[THIRD_LEVEL_ROW][0] = ENDEMIC_SUBN_LEVEL_LABELS[subNationalLevel-1];
+					// updates endemicity text at epi table
+					array[THIRD_LEVEL_ROW][0] = ENDEMIC_SUBN_LEVEL_LABELS[subNationalLevel];
 
-		});
+				}).fail(function(result, aaaaa,bbbb,cccc,ddd,eee,ffff,ggg,hhh){
+					addToErrorFeedback("Error updating NumberOfDivisions"); //TODO: review double notification
+					return true;
+				});
 
 	}
 
@@ -2007,12 +2100,22 @@
 		}
 	}
 
+	function getThisYear(){
+		var d = new Date();
+		return d.getFullYear();
+	}
+
+	function getThisMonth(){
+		var d = new Date();
+    	return d.getMonth();
+	}
+
 	/* return a text about publishing date with the current month and year*/
 	function getDatePublished(){
 		var d = new Date();
     	var thisMonth = d.getMonth();
 		var thisYear = d.getFullYear();
-		return PUBLISHED_TEXT+" "+MONTHS[thisMonth]+" "+thisYear;
+		return PUBLISHED_TEXT+" "+MONTHS[getThisMonth()]+" "+getThisYear();
 	}
 	/*
 		linesOnRows : An array with the number of the rows which must have a line below
@@ -2122,6 +2225,7 @@
 	function getAnalyticValueForKey(dataObject, mode){
 		periodColumn = 0;
 		valueColumn = 0;
+		dxColumn = 0;
 
 		for (var j=0;j<dataObject.headers.length;j++){
 			if(dataObject.headers[j].name==="pe"){
@@ -2129,9 +2233,12 @@
 			}
 			if(dataObject.headers[j].name==="value"){
 				valueColumn = j;
+			}			
+			if(dataObject.headers[j].name==="dx"){
+				dxColumn = j;
 			}
 		}
-		var returnValues = new Array(historicLength);
+		var returnValues = new Array(historicLength); 
 
 		switch(mode){
 			case YEARLY_MODE:
@@ -2162,8 +2269,8 @@
 		}
 		if (typeof keyName === 'string') {
 			// checks if DE or COD is assigned to one DS or P
-			if ((keyName == DE_KEY && de_assigned.filter(obj => { return obj[0] === keyValue}).length == 0)
-			|| (keyName == CC_KEY && coc_assigned.filter(obj => { return obj[0] === keyValue}).length == 0))
+			if ((keyName == DE_KEY && !de_assigned.has(keyValue)) ||
+			 	(keyName == CC_KEY && !coc_assigned.has(keyValue)))
 			{
 				return WHEN_NON_APPLICABLE;
 			} else {
@@ -2177,10 +2284,10 @@
 			}
 		} else if (keyName.length > 1 && keyValue.length > 1) {
 			// checks if DE is assigned
-			if ((keyName[0] == DE_KEY && de_assigned.filter(obj => { return obj[0] === keyValue[0]}).length == 0) 
-			|| (keyName[1] == DE_KEY && de_assigned.filter(obj => { return obj[0] === keyValue[1]}).length == 0)
-			|| (keyName[0] == CC_KEY && coc_assigned.filter(obj => { return obj[0] === keyValue[0]}).length == 0) 
-			|| (keyName[1] == CC_KEY && coc_assigned.filter(obj => { return obj[0] === keyValue[1]}).length == 0))
+			if ((keyName[0] == DE_KEY && !de_assigned.has(keyValue[0])) || 
+				(keyName[1] == DE_KEY && !de_assigned.has(keyValue[1])) || 
+				(keyName[0] == CC_KEY && !coc_assigned.has(keyValue[0])) || 
+				(keyName[1] == CC_KEY && !coc_assigned.has(keyValue[1])))
 			{
 				return WHEN_NON_APPLICABLE;
 			} else {
@@ -2238,12 +2345,26 @@
 		return returnValue;
 	}
 
+	/*
+	returns WHEN_NON_APPLICABLE if DE in the indicator not assigned to this country
+	returns false otherwise (to be able to do = checkI(idx) || getValue(...))
+	*/
+	function checkI(ind_id){
+		if (!allDEInIndicatorAreReachable(ind_id)){
+			return WHEN_NON_APPLICABLE;
+		} else {
+			return false;
+		}
+	}
 
 	/*	Returns three percentages with no decimals, between parenthesis
 
 	*/
 	function threePercentages(cases1, cases2, cases3, total){
-		
+		cases1 = parseInt(cases1) || cases1; // converts to int if possible
+		cases2 = parseInt(cases2) || cases2; // converts to int if possible
+		cases3 = parseInt(cases3) || cases3; // converts to int if possible
+
 		if (total === WHEN_UNDEFINED || total === WHEN_NON_APPLICABLE || total === undefined){
 			return total || WHEN_UNDEFINED;
 		} else {
@@ -2254,20 +2375,18 @@
 				return cases1 || cases2 || cases3 || WHEN_UNDEFINED;
 			}
 			else if (cases1 + cases2 + cases3 != total){
-				return 	"(" + 
-							percentageText(cases1, total, 0, false) + ", " +
-							percentageText(cases2, total, 0, false) + ", " +
-							percentageText(cases3, total, 0, false) + ")" + ". WARN. Cases do not add up to total.";
+				return 	percentageText(cases1, total, 0, false) + ", " +
+						percentageText(cases2, total, 0, false) + ", " +
+						percentageText(cases3, total, 0, false) + ". WARN. Original values do not add up to total.";
 			}
 			else {
 
 				var dataset = [cases1/total*100, cases2/total*100, cases3/total*100];
 				var percentages100 = largestRemainderRound(dataset, 100);
 				
-				return 	"(" + 
-							percentageText(percentages100[0], 100, 0, false) + ", " +
-							percentageText(percentages100[1], 100, 0, false) + ", " +
-							percentageText(percentages100[2], 100, 0, false) + ")";
+				return 	percentageText(percentages100[0], 100, 0, false) + ", " +
+						percentageText(percentages100[1], 100, 0, false) + ", " +
+						percentageText(percentages100[2], 100, 0, false);
 
 			}
 		}
@@ -2281,7 +2400,7 @@
 	/*	Returns a percentage with no decimals, the #cases and the total between parenthesis
 
 	*/
-	function percentageCasesAndTotal(numerator, denominator, precision, percentageSymbol){
+	function percentageCasesAndTotal(numerator, denominator, precision, percentageSymbol, percentageValue){
 
 		if (numerator === WHEN_NON_APPLICABLE  ||
 			denominator === WHEN_NON_APPLICABLE) {
@@ -2291,9 +2410,16 @@
 			denominator === WHEN_UNDEFINED || denominator === undefined) {
 			return WHEN_UNDEFINED;
 		}
+		else if (typeof percentageValue !== "undefined" && percentageValue !== null ) {
+			// userprovides calculated percentage
+			return 	percentageText(percentageValue, 1, precision, percentageSymbol) + "  (" +
+					formatIntValue(numerator, SAME, LOCALE_FORMAT) + "/" + 
+					formatIntValue(denominator, SAME, LOCALE_FORMAT) + ")";
+		}
 		else {
 			return 	percentageText(numerator, denominator, precision, percentageSymbol) + "  (" +
-			numerator + " / " + denominator + ")";
+					formatIntValue(numerator, SAME, LOCALE_FORMAT) + "/" + 
+					formatIntValue(denominator, SAME, LOCALE_FORMAT) + ")";
 		}
 	}
 
@@ -2307,7 +2433,7 @@
 		if (isNaN(numerator)){
 			return numerator; // It's not a number. Return numerator
 		} else if (denominator === 0 || isNaN(denominator)){
-			return WHEN_DIV_0;
+			return WHEN_NO_DATA;
 		} else if (denominator === WHEN_UNDEFINED){
 			return WHEN_UNDEFINED;
 		}
@@ -2322,14 +2448,14 @@
 		var error = "";
 		for (var number of arrayOfNumbers) {
 			if (typeof number !== "undefined" && number != WHEN_UNDEFINED && number != WHEN_NON_APPLICABLE){
-				addition = addition + +number;
+				addition = addition + Number(number);
 				counter++;
 			} else {
-				error = number;
+				error = number || WHEN_UNDEFINED;
 			}
 		}
 		if (error.length != 0 && counter == 0){
-			return error || willWHEN_UNDEFINED;
+			return error;
 		} else {
 			return addition;
 		}
@@ -2341,7 +2467,7 @@
 		mode : the place for labels in array. Options : LABELS_ON_COLUMNS or LABELS_ON_ROWS
 	*/
 	function  create_2_dim_array(rowsNum, rowsTitles, mode) {
-		var array = []
+		var array = [];
 		
 		if(mode === LABELS_ON_ROWS) {
 			array[0] = [];
@@ -2368,22 +2494,21 @@
 			$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(CL_COLUMN-1)).trigger('click');
 
 			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+CL_ROW).trigger('click');
-			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+CL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
+
 			// CL charts
-			$('#'+CHART_PREFIX+BUTTON_PREFIX+"0").trigger('click');
-			$('#'+CHART_PREFIX+BUTTON_PREFIX+"3").trigger('click');
-			$('#'+MAP_PREFIX+BUTTON_PREFIX+ CL_INDEX ).trigger('click');
+			$('#'+MONTHLY + CHART + BUTTON_PREFIX + CL_INDEX).trigger('click');
+			$('#'+YEARLY + CHART + BUTTON_PREFIX + CL_INDEX).trigger('click');
+			$('#'+MAP_PREFIX + BUTTON_PREFIX + CL_INDEX ).trigger('click');
 		}
 
 		// deactivates VL content if no VL dataset is assigned to the country
 		if (!dsinfo[VL_DETAILED][ASSG] && !dsinfo[VL_SIMPLE][ASSG]){
 			$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(VL_COLUMN-1)).trigger('click');
 
-			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+VL_ROW).trigger('click');//.prop('checked', false);
-			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+VL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
-			$('#'+CHART_PREFIX+BUTTON_PREFIX+"2").trigger('click');
-			$('#'+CHART_PREFIX+BUTTON_PREFIX+"5").trigger('click');
-			$('#'+MAP_PREFIX+BUTTON_PREFIX+ VL_INDEX ).trigger('click');
+			$('#'+ MONTHLY_TABLE_NAME + BUTTON_PREFIX + VL_ROW).trigger('click');//.prop('checked', false);
+			$('#'+ MONTHLY + CHART + BUTTON_PREFIX + VL_INDEX).trigger('click');
+			$('#'+ YEARLY + CHART + BUTTON_PREFIX + VL_INDEX).trigger('click');
+			$('#'+ MAP_PREFIX+BUTTON_PREFIX + VL_INDEX ).trigger('click');
 		}
 
 		// deactivates AZCL content if no AZCL dataset is assigned to the country
@@ -2393,23 +2518,63 @@
 
 			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+ACL_ROW).trigger('click');
 			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+ZCL_ROW).trigger('click');
-			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+ACL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
-			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+ZCL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
 			
-			$('#'+CHART_PREFIX+BUTTON_PREFIX+"1").trigger('click');
-			$('#'+CHART_PREFIX+BUTTON_PREFIX+"4").trigger('click');
+			$('#'+ MONTHLY + CHART + BUTTON_PREFIX + ACL_INDEX).trigger('click');
+			$('#'+ YEARLY + CHART + BUTTON_PREFIX + ACL_INDEX).trigger('click');
 			$('#'+MAP_PREFIX+BUTTON_PREFIX+ ACL_INDEX ).trigger('click');
 			$('#'+MAP_PREFIX+BUTTON_PREFIX+ ZCL_INDEX ).trigger('click');
 
 		}
 
-		// PKDL and MCL always deactivated
-		 $('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(PKDL_COLUMN-1)).trigger('click');
-		 $('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(MCL_COLUMN-1)).trigger('click');
+		updateMapsTitle();
 
+		// PKDL and MCL always deactivated
+		$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(PKDL_COLUMN-1)).trigger('click');
+		$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(MCL_COLUMN-1)).trigger('click');
+		
+		// Monthly previous year rows, always deactivated by default
+		$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+VL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
+		$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+CL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
+		$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+ACL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
+		$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+ZCL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
 
 		$(':checkbox').button( "refresh" );
 
+	}
+
+	function updateMapsTitle(){
+		var text = [];
+		var separator = " and ";
+
+		if ($('#'+MAP_PREFIX+BUTTON_PREFIX+ ZCL_INDEX ).prop( "checked")){
+			text.push(COLUMNS_LABELS[ZCL_INDEX]);
+			text.push(separator);
+			separator = ", ";
+		}
+		if ($('#'+MAP_PREFIX+BUTTON_PREFIX+ ACL_INDEX ).prop( "checked")){
+			text.push(COLUMNS_LABELS[ACL_INDEX]);
+			text.push(separator);
+			separator = ", ";
+		}
+		if ($('#'+MAP_PREFIX+BUTTON_PREFIX+ CL_INDEX ).prop( "checked")){
+			text.push(COLUMNS_LABELS[CL_INDEX]);
+			text.push(separator);
+			separator = ", ";
+		}
+		if ($('#'+MAP_PREFIX+BUTTON_PREFIX+ VL_INDEX ).prop( "checked")){
+			text.push(COLUMNS_LABELS[VL_INDEX]);
+			text.push(separator);
+			separator = ", ";
+		}
+		text.pop();
+		text = text.reverse();
+
+		$('#mapsTitleDis').html(text.join(""));
+		$('#mapsTitleLvl').html(ds.divisionName + " level");
+		$('#mapsTitleYear').html("(" + ds.year + ")");
+		$('#chartTitleFirstYear').html( ds.year - (historicLength - 1)); // historicLength includes current year
+		$('#chartTitleLastYear').html( ds.year );
+ 
 	}
 
 	/* jQueryUI auxiliary functions */
@@ -2436,7 +2601,7 @@
 
 		}
 
-		$("#"+htmlElementID).append(html);
+		$("#"+htmlElementID).html(html);
 	}
 
 	/****************************************************************************************************
@@ -2447,8 +2612,7 @@
 	*/
 	function generate_cl_vl_new_monthly_charts (){
 	
-		var yearsText = (ds.year-1) + " and " + ds.year;
-		var colors = [COLORS.blue, COLORS.blue, COLORS.green, COLORS.green];
+		var colors = [COLORS.blue, COLORS.soft_blue, COLORS.green, COLORS.soft_green];
 		var labels = [ACL_CHART_LEGEND +ds.year, ACL_CHART_LEGEND +(ds.year-1), ZCL_CHART_LEGEND + ds.year, ZCL_CHART_LEGEND  + (ds.year-1)];
 		
 		var acl_current_year = monthlyArray[ACL_ROW].slice(1,monthlyArray[ACL_ROW].length);
@@ -2456,22 +2620,22 @@
 		var acl_previous_year = monthlyArray[ACL_PREVIOUS_YEAR_ROW].slice(1,monthlyArray[ACL_PREVIOUS_YEAR_ROW].length);
 		var zcl_previous_year = monthlyArray[ZCL_PREVIOUS_YEAR_ROW].slice(1,monthlyArray[ZCL_PREVIOUS_YEAR_ROW].length);
 		var dataarrays = [acl_current_year, acl_previous_year, zcl_current_year, zcl_previous_year];
-		lineChart(newAZCLCasesChartID, CL_CASES_CHART_TITLE + yearsText, MONTHS_ABBREV, CL_CASES_CHART_Y_TITLE, labels, dataarrays, colors, true);
+		lineChart(MONTHLY+CHART+ACL_INDEX, CL_CASES_CHART_TITLE, MONTHS_ABBREV, CL_CASES_CHART_Y_TITLE, labels, dataarrays, colors, true);
 
-		colors = [COLORS.blue, COLORS.blue];
+		colors = [COLORS.blue, COLORS.soft_blue];
 		labels = [CL_CHART_LEGEND + ds.year, CL_CHART_LEGEND + (ds.year-1)];
 		var cl_current_year = monthlyArray[CL_ROW].slice(1,monthlyArray[CL_ROW].length);
 		var cl_previous_year = monthlyArray[CL_PREVIOUS_YEAR_ROW].slice(1,monthlyArray[CL_PREVIOUS_YEAR_ROW].length);
 		var dataarrays = [cl_current_year, cl_previous_year];
-		lineChart(newCLCasesChartID, CL_CASES_CHART_TITLE + yearsText, MONTHS_ABBREV, CL_CASES_CHART_Y_TITLE, labels, dataarrays, colors, true);
+		lineChart(MONTHLY+CHART+CL_INDEX, CL_CASES_CHART_TITLE, MONTHS_ABBREV, CL_CASES_CHART_Y_TITLE, labels, dataarrays, colors, true);
 
 		var vl_current_year = monthlyArray[VL_ROW].slice(1,monthlyArray[VL_ROW].length);
 		var vl_previous_year = monthlyArray[VL_PREVIOUS_YEAR_ROW].slice(1,monthlyArray[VL_PREVIOUS_YEAR_ROW].length);
 		var vl_data_arrays = [vl_current_year, vl_previous_year];
-		var vl_colors = [COLORS.violet, COLORS.violet];
+		var vl_colors = [COLORS.violet, COLORS.soft_violet];
 		var vl_labels = [VL_CHART_LEGEND + ds.year, VL_CHART_LEGEND + (ds.year-1)];
 
-		lineChart(newVLCasesChartID, VL_CASES_CHART_TITLE + yearsText, MONTHS_ABBREV, VL_CASES_CHART_Y_TITLE, vl_labels, vl_data_arrays, vl_colors, true);
+		lineChart(MONTHLY+CHART+VL_INDEX, VL_CASES_CHART_TITLE, MONTHS_ABBREV, VL_CASES_CHART_Y_TITLE, vl_labels, vl_data_arrays, vl_colors, true);
 
 	}
 
@@ -2484,7 +2648,7 @@
 		var dataArray = [historicIncidenceChart[ACL_COLUMN], historicIncidenceChart[ZCL_COLUMN], historicNewCases[ACL_COLUMN], historicNewCases[ZCL_COLUMN]];
 		var colorArray = [COLORS.blue, COLORS.green, COLORS.soft_blue, COLORS.soft_green];
 		var dataChartIDs= [DATASID.RIGHT, DATASID.RIGHT, DATASID.LEFT, DATASID.LEFT];
-		lineBarChart(newAZCLAndHistoricIncidenceID, CL_INCIDENCE_CHART_TITLE, dataLabelArray, CL_INCIDENCE_CHART_Y1_TITLE, CL_INCIDENCE_CHART_Y2_TITLE, charType, dataArray, colorArray, dataChartIDs);
+		lineBarChart(YEARLY+CHART+ACL_INDEX, CL_INCIDENCE_CHART_TITLE, dataLabelArray, CL_INCIDENCE_CHART_Y1_TITLE, CL_INCIDENCE_CHART_Y2_TITLE, charType, dataArray, colorArray, dataChartIDs);
 
 
 
@@ -2493,7 +2657,7 @@
 		dataArray = [historicIncidenceChart[VL_COLUMN], historicNewCases[VL_COLUMN]];
 		colorArray = [COLORS.violet, COLORS.soft_violet];
 		dataChartIDs= [DATASID.RIGHT, DATASID.LEFT];
-		lineBarChart(newVLAndHistoricIncidenceID, VL_INCIDENCE_CHART_TITLE, dataLabelArray, VL_INCIDENCE_CHART_Y1_TITLE, VL_INCIDENCE_CHART_Y2_TITLE, charType, dataArray, colorArray, dataChartIDs);
+		lineBarChart(YEARLY+CHART+VL_INDEX, VL_INCIDENCE_CHART_TITLE, dataLabelArray, VL_INCIDENCE_CHART_Y1_TITLE, VL_INCIDENCE_CHART_Y2_TITLE, charType, dataArray, colorArray, dataChartIDs);
 
 
 		dataLabelArray = [CL_CHART_INCIDENCE_LEGEND, CL_CHART_CASES_LEGEND];
@@ -2501,14 +2665,14 @@
 		dataArray = [historicIncidenceChart[CL_COLUMN], historicNewCases[CL_COLUMN]];
 		colorArray = [COLORS.blue, COLORS.green];
 		dataChartIDs= [DATASID.RIGHT, DATASID.LEFT];
-		lineBarChart(newCLAndHistoricIncidenceID, CL_INCIDENCE_CHART_TITLE, dataLabelArray, CL_INCIDENCE_CHART_Y1_TITLE, CL_INCIDENCE_CHART_Y2_TITLE, charType, dataArray, colorArray, dataChartIDs);
+		lineBarChart(YEARLY+CHART+CL_INDEX, CL_INCIDENCE_CHART_TITLE, dataLabelArray, CL_INCIDENCE_CHART_Y1_TITLE, CL_INCIDENCE_CHART_Y2_TITLE, charType, dataArray, colorArray, dataChartIDs);
 
 	}
 
 
 
-	/* 	Generates an any-lines-number line graph. 
-		htmlElementID: the id of the canvas/html element where put the graph
+	/* 	Generates an any-lines-number line Chart. 
+		htmlElementID: the id of the canvas/html element where put the Chart
 		x_labels: The labels for the x-axis  
 		dataLabelArray: an array with the label of each data line
 		dataArray: the data
@@ -2531,17 +2695,17 @@
 			aDataSet.borderColor = colorArray[i];
 			aDataSet.borderWidth = 2;
 			aDataSet.lineTension = 0;
-			aDataSet.pointRadius = 0;
+			aDataSet.pointRadius = 2;
+			aDataSet.spanGaps = false;
 			if (previousYearMode && i%2 == 1){
 				// previousYearMode Enabled
-				aDataSet.borderDash = [5];
-				aDataSet.backgroundColor = aDataSet.backgroundColor.slice(0, -2)+"0.2)";
+				aDataSet.borderDash = [4];
 			}
 			theDataSets[i] = aDataSet;
 		}
 		
 		var ctx = document.getElementById(htmlElementID);
-		var myChart = new Chart(ctx, {
+		charts_array[htmlElementID] = new Chart(ctx, {
 		type: 'line',
 		data: {
 			labels: x_labels,
@@ -2580,7 +2744,8 @@
 			aDataSet.borderColor = colorArray[i];
 			aDataSet.borderWidth = 2;
 			aDataSet.lineTension = 0;
-			aDataSet.pointRadius = 0;
+			aDataSet.pointRadius = 2;
+			aDataSet.spanGaps = false;
 			aDataSet.type = charType[i];
 			aDataSet.yAxisID = dataChartIDs[i];
 			theDataSets[i] = aDataSet;
@@ -2593,7 +2758,7 @@
 
 
 		var ctx = document.getElementById(htmlElementID);
-		var myChart = new Chart(ctx, {
+		charts_array[htmlElementID] = new Chart(ctx, {
 			type: 'bar',
 			data: {
 				labels: yearLabels,
@@ -2603,9 +2768,12 @@
 				scales: {
 					yAxes: [{
 						id: DATASID.LEFT,
-						stacked: true,
 						type: 'linear',
 						position: 'left',
+						stacked: true,
+						ticks: {
+							beginAtZero:true
+						},
 						scaleLabel:{
 							display: true,
 							labelString: y1Title
@@ -2615,14 +2783,16 @@
 						type: 'linear',
 						position: 'right',
 						ticks: {
-							max: 2,
-							min: 0
+							beginAtZero:true
 						},
 						scaleLabel:{
 							display: true,
 							labelString: y2Title
 						}
-					}]
+					}],
+					xAxes: [{
+                            stacked: true
+                        }],
 				},
 				title:{
 						display: true,
@@ -2631,6 +2801,21 @@
 				responsive: false
 			}
 		});
+	}
+
+	function updateScale(chart, minCases, maxCases, minIncd, maxIncd) {
+
+		charts_array[chart].options.scales.yAxes[0].ticks = {
+				min: minCases,
+				max: maxCases,
+			};
+		if (charts_array[chart].options.scales.yAxes.length > 1) {
+			charts_array[chart].options.scales.yAxes[1].ticks = {
+				min: minIncd,
+				max: maxIncd,
+			};
+		}
+		charts_array[chart].update();
 	}
 
 	/****************************************************************************************************
@@ -2652,7 +2837,7 @@
 
 	function updateLegend(event) {
 		event.preventDefault();
-		var legend_index =  $('#legendSelector').val();
+		var legend_index =   parseInt($('#legendSelector').val()) -1 ; //first option is the "select text"
 		var position_index =  $('#positionLegendSelector').val();
 
 		moveLegend(legend_index, $('#'+MAP_PREFIX+ legend_index).find(LEGEND_POSITIONS[position_index]), LEGEND_TO_REPORT);
@@ -2665,37 +2850,137 @@
 
 	function updateMap(event) {
 		event.preventDefault();
-		var selected_map_index =  $('#mapSelector').val();
+		var selected_map_index =  parseInt($('#mapSelector').val()) - 1 ; //first option is the "select text"
 		var mapStyle = MAP_STYLE[$('#mapStyleSelector').val()];
-		// TODO: adapt to Maps
-		generateMap(selected_map_index, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity);
+
+		// saves the legend in the pool
+		moveLegend(selected_map_index, $("#" + LEGENDSET_POOL), LEGEND_TO_LEGEND_POOL);
+
+		// removes the loaded map
+		mapPlugin.unmount(MAP_PREFIX + selected_map_index);
+
+		// generates a new map
+		generateMap(selected_map_index, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic", mapStyle, map_opacity);
+		cleanUpdateMapForm();
+	}
+
+	function updateChart(event){
+		event.preventDefault();
+		if($("#chartPreview").html()){
+			var min_value = 0;
+			var type = $("#chartPreview").children()[0].id.split(CHART)[0];
+			var id_num = $("#chartPreview").children()[0].id.split(CHART)[1];
+			minCases = Number($("#minCases").val());
+			maxCases = Number($("#maxCases").val());				
+			minIncd = Number($("#minIncd").val());
+			maxIncd = Number($("#maxIncd").val());
+			updateScale(type+CHART+id_num, minCases, maxCases, minIncd, maxIncd);
+			$("#chartPreview").contents().appendTo("#"+DIV+type+CHART+id_num);
+
+		}
+		cleanUpdateChartForm();
+	
+	}
+
+	function cancelUpdateChart(event){
+		if($("#chartPreview").html()){
+			var min_value = 0;
+			var type = $("#chartPreview").children()[0].id.split(CHART)[0];
+			var id_num = $("#chartPreview").children()[0].id.split(CHART)[1];
+			updateScale(type+CHART+id_num, defaultMinCases, defaultMaxCases, defaultMinIncd, defaultMaxIncd);
+			$("#chartPreview").contents().appendTo("#"+DIV+type+CHART+id_num);
+		}	
+		cleanUpdateChartForm();
+	}
+
+	function cleanUpdateChartForm(){
+		$("#minIncd").val(null);
+		$("#maxIncd").val(null);
+		$("#minCases").val(null);
+		$("#maxCases").val(null);
+		$( "#chartSelector" ).prop("selectedIndex", 0);
+		$( "#chartSelector" ).selectmenu( 'refresh', true);
+		setButtonDisabledTo("updateChartButton",true);
+		setButtonDisabledTo("cancelChartButton",true);
+	}
+
+	function cleanUpdateMapForm(){
+		setButtonDisabledTo("updateMapButton", true);
+		$( "#mapSelector" ).val(0);
+		$( "#mapSelector" ).selectmenu( 'refresh', true);
 	}
 	
-	function generateMapAndLegend(index){
+	function generateLegends(){
 
-		return $.when(getLegendSet(index)).done(function(result){
-			initalMapDiv[index] = $('#map'+index).html();
-			var mapStyle = MAP_STYLE[$('#mapStyleSelector').val()];
-			drawLegendSet("legendSet"+index, index);
-			generateMap(index, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity);
-
+		return $.when(getLegendSet(VL_INDEX),
+				getLegendSet(CL_INDEX),
+				getLegendSet(ACL_INDEX),
+				getLegendSet(ZCL_INDEX)
+		).done(function(result){
+			drawLegendSet(LEGENDSET_PREFIX + VL_INDEX, VL_INDEX);
+			drawLegendSet(LEGENDSET_PREFIX + CL_INDEX, CL_INDEX);
+			drawLegendSet(LEGENDSET_PREFIX + ACL_INDEX, ACL_INDEX);
+			drawLegendSet(LEGENDSET_PREFIX + ZCL_INDEX, ZCL_INDEX);
 		});
+	}
+
+	function recreateDIV(parent, id, classes){
+		if ($("#" + id).length > 0) {
+			$("#" + id).html('<div id="'+id+'" class="'+classes+'" ></div>');
+		} else {
+			$("#" + parent).append('<div id="'+id+'" class="'+classes+'" ></div>');
+		}
+	}
+
+	function resetLegends(){
+		recreateDIV(LEGENDSET_POOL, LEGENDSET_PREFIX + VL_INDEX, "legendSet");
+		recreateDIV(LEGENDSET_POOL, LEGENDSET_PREFIX + CL_INDEX, "legendSet");
+		recreateDIV(LEGENDSET_POOL, LEGENDSET_PREFIX + ACL_INDEX, "legendSet");
+		recreateDIV(LEGENDSET_POOL, LEGENDSET_PREFIX + ZCL_INDEX, "legendSet");
+
+		// move recreated legends that have an active map
+		for (var i=0; i<MAP_CHECKBOXES_LABELS.length; i++){
+			if ( $('#'+ MAP_PREFIX+BUTTON_PREFIX + i ).prop( "checked") && 
+			$("#" + LEGENDSET_POOL).find('#' + LEGENDSET_PREFIX + i).length > 0) {
+				moveLegend(i, $('#' + MAP_PREFIX + i).find(LEGEND_POSITIONS[BOTTOM_RIGHT]), LEGEND_TO_REPORT);	
+			}
+		}
+
+		// generate legend content
+		generateLegends();
+	}
+
+	function generateMaps(){
+
+		var mapStyle = MAP_STYLE[$('#mapStyleSelector').val()];
+		return $.when(
+			mapPlugin.unmount(MAP_PREFIX + VL_INDEX),
+			mapPlugin.unmount(MAP_PREFIX + CL_INDEX),
+			mapPlugin.unmount(MAP_PREFIX + ACL_INDEX),
+			mapPlugin.unmount(MAP_PREFIX + ZCL_INDEX),
+			generateMap(VL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic", mapStyle, map_opacity),
+			generateMap(CL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic", mapStyle, map_opacity),
+			generateMap(ACL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic", mapStyle, map_opacity),
+			generateMap(ZCL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic", mapStyle, map_opacity)
+		).done(function(result){
+			console.log("maps updated");
+		}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " maps.");}); 
 
 	}
 
 	function fillNotaBene(){
-		var text = "Data source: Ministry of Health, "
-					+ ds.countryName +
-					"<br>WHO " + ds.year + ". All rights reserved.";
+		var text = "Data source: Ministry of Health, " +
+					ds.countryName +
+					"<br>WHO " + getThisYear() + ". All rights reserved.";
 		$('#notaBene div').html(text);
 		
 	}
 
 	function fillNotaBeneMaps(){
-		var text = "The boundaries and names shown and the designations used on this map do not imply the expression of any opinion whatsoever "
-					+ "on the part of the World Health Organization concerning the legal status of any country, territory, city or area or of "
-					+ "its authorities, or concerning the delimitation of its frontiers or boundaries. Dotted and dashed lines on maps represent "
-					+ "approximate border lines for which there may not yet be full agreement. <br>Map production: WHO/HTM/NTD/IDM";
+		var text = "The boundaries and names shown and the designations used on this map do not imply the expression of any opinion whatsoever " +
+					"on the part of the World Health Organization concerning the legal status of any country, territory, city or area or of " +
+					"its authorities, or concerning the delimitation of its frontiers or boundaries. Dotted and dashed lines on maps represent " +
+					"approximate border lines for which there may not yet be full agreement. <br>Map production: WHO/UCN/NTD";
 		$('#notaBeneMaps div').html(text);
 		
 	}
@@ -2711,15 +2996,13 @@
 	var activeFootnotesPage2 = [];
 
 	function addNewFootnote(){
-		if($("#newFootnoteText").html()){
-			var liClass = "ui-state-default";
-			var html='';
-			html+='<li class="'+liClass+' '+CLASS_EDITABLE_ELEMENT+'">'
-			html+= $("#newFootnoteText").html();
-			html+= '</li>';
-			document.getElementById(SORTABLE_LIST_1_NAME).innerHTML += html;
+		var liClass = "ui-state-default";
+		var html='';
+		html+='<li class="'+liClass+' '+CLASS_EDITABLE_ELEMENT+'">';
+		html+= $("#newFootnoteText").html();
+		html+= '</li>';
+		document.getElementById(SORTABLE_LIST_1_NAME).innerHTML += html;
 
-		}
 		deleteNewFootnote();
 	}
 
@@ -2728,7 +3011,7 @@
 	}
 
 
-	function fillFootnotes(){
+	function writeFootnotes(){
 		var footnotesZone1 = $("#footnotes1");
 		var footnotesZone2 = $("#footnotes2");
 
@@ -2738,7 +3021,6 @@
 		var elements = $("#sortable2 li");
         var html = '';
 		for (var i=0; i<elements.length; i++){
-		//	zone = getFootnotesZoneObject("#footNoteNumber"+(i+1));
 			html+='<div class="footnote"><span class="superindex">'+(i+1)+'</span><span class="'+CLASS_EDITABLE_ELEMENT+'">'
 			html+= elements[i].innerHTML;
 			html+= '</span></div>';
@@ -2749,7 +3031,6 @@
     	html = '';
 		var base = i;
 		for (var i=0; i<elements.length; i++){
-		//	zone = getFootnotesZoneObject("#footNoteNumber"+(i+1));
 			html+='<div class="footnote"><span class="superindex">'+(i+base+1)+'</span><span class="'+CLASS_EDITABLE_ELEMENT+'">'
 			html+= elements[i].innerHTML;
 			html+= '</span></div>';
@@ -2757,28 +3038,6 @@
 		footnotesZone2.append(html);
 	}
 
-	function getFootnotesZoneObject(footNote){
-		if ($(footNote).length<=0){
-			return 1;
-		}
-
-		console.log("footNote.offset().top"+$(footNote).offset().top);
-		console.log("$(footnotes1).offset().top"+$("#footnotes1").offset().top);
-
-		if($(".page-break").length){
-			console.log($(".page-break"));
-		} else {
-			console.log("no pages breaks");
-
-		}
-
-		if($(footNote).offset().top<$("#footnotes1").offset().top){
-			return 0;
-		} else {
-			return 1;
-		}
-
-	}
 
 	/****************************************************************************************************
 	 **********                            COUNTRY-SELECTOR                                    **********
@@ -2788,9 +3047,22 @@
 		document.getElementById("country-selector").style.display = "block";
 	}
 
-	function country_selector_close(){
+	function country_selector_relocate(){
 		Pace.restart();
-		document.getElementById("country-selector").style.display = "none";
+		document.getElementById('tabs-6').appendChild(
+			document.getElementById("country-selector")
+		);
+		$("#country-selector").css({width: 'fit-content', position: 'relative'});
+
+	}
+
+	function error_report_open(){
+		document.getElementById("error-report").style.display = "block";
+	}
+
+	function error_report_close(){
+		cleanErrorFeedback();
+		document.getElementById("error-report").style.display = "none";
 	}
 	
 	function initializeDialogs (){
@@ -2807,28 +3079,31 @@
 			title: "Edit field",
 			position: { my: "center", at: "center", collision: "none" },
 			buttons: {
-				"Save changes": saveChanges,
+				//"Save changes": saveChanges,
 				"Save changes and close": saveChangesAndClose,
 				Cancel: function() {
 					deleteNewFootnote();
+					addingFootnote = false;
 					dialog.dialog( "close" );
 				}
 			},
 			close: function(event) {
 				event.preventDefault();
+				addingFootnote = false;
 				return false;
 				//allFields.removeClass( "ui-state-error" );
 			}
 		});
 	}
 
-	function saveChanges(){
-		editingElement.innerHTML = editor.jqteVal();
-		addNewFootnote();
-	}
+
 	function saveChangesAndClose(){
-		editingElement.innerHTML = editor.jqteVal();
-		addNewFootnote();
+		if(addingFootnote){
+			editingElement.innerHTML = editor.jqteVal();
+			addNewFootnote();
+		} else {
+			editingElement.outerHTML = editor.jqteVal();
+		}
 		dialog.dialog( "close" );
 	}
 
@@ -2856,15 +3131,15 @@
 		$(":checkbox."+LEISH_COLUMN_DETAIL_PREFIX).change(function() {
 				var index = Number(this.id.slice(this.id.length-1, this.id.length));
 				$('#epiTable tr, #diagTable tr, #toutcomeTable tr').each(function() {
-					$(this).find("td,th").eq(index+1).toggle();
+					$(this).find("td,th").eq(index+1).toggle(); // +1 since first column are texts
 				});
 
 				// text descriptions under tables
 				$('#textUnderEpiTable').each(function() {
-					$(this).find("span").eq(index+1).toggle();
+					$(this).find("span").eq(index+1).toggle(); // +1 since N/A is at first position
 				});
 				$('#textUnderDiagTable1').each(function() {
-					$(this).find("span").eq(index+1).toggle();
+					$(this).find("span").eq(index).toggle();
 				});
 			}
 		);
@@ -2877,33 +3152,55 @@
 			
 		});
 		
-		// Listener graph buttons
-		$(":checkbox."+CHART_PREFIX).change(function() {
+		// Listener chart buttons
+		$(":checkbox."+MONTHLY+CHART+", "+":checkbox."+YEARLY+CHART).change(function() {
 			var index = Number(this.id.slice(this.id.length-1, this.id.length));
-			var startingid = this.id.slice(0, -1-BUTTON_PREFIX.length);
-			var theCanvas = $('#'+startingid+index);
-			theCanvas.toggleClass('sameLine');
-			theCanvas.toggleClass('notShown');
+			var type = this.id.split(CHART+BUTTON_PREFIX)[0];
+			//var chartSelectorIndex = index + 1;
+
+			// enables or disables the updatedMapButton
+			var selected_chart_index = parseInt($('#chartSelector').val());
+			var selected_chart_type = $("#chartSelector option:selected" ).text().split(" ")[1];
+
+			if(selected_chart_index == index && selected_chart_type.localeCompare(type) == 0 ){
+				var checked = $("#"+type+CHART+BUTTON_PREFIX+index).prop('checked');			
+				cleanUpdateChartForm();
+			}
 			
+			// enables or disables the options of the list
+			var changeOption = $('#' + type + CHART + OPTION_PREFIX + index);
+			changeOption.prop('disabled', function(_, attr){ return !attr});
+
+			// togles the chart
+			$("#"+type+CHART+index).toggle();
+
+			var theCanvas = $('#'+type + CHART + index);
+			theCanvas.toggleClass('sameLine');
+			theCanvas.toggleClass('notShown');			
+
+			$( "#chartSelector" ).selectmenu( 'refresh', true);
 		});
 
 		//Listener for maps
 		$(":checkbox."+MAP_PREFIX).change(function() {
 			var index = Number(this.id.slice(this.id.length-1, this.id.length));
+			var mapSelectorIndex = index + 1;
 			var startingid = this.id.slice(0, -1-BUTTON_PREFIX.length);
+
+			// enables or disables the updatedMapButton
+			var selected_map =  parseInt($('#mapSelector').val()) - 1 ; //first option is the "select text"
+			if(selected_map==index){
+				var checked = $("#"+MAP_PREFIX+BUTTON_PREFIX+index).prop('checked');			
+				cleanUpdateMapForm();
+			}
 
 			// enables or disables the options of the list
 			$("#"+MAP_PREFIX+index).toggle();
-			var changeOption = $('#' + startingid + OPTION_PREFIX + index);
+			var changeOption = $('#' + startingid + OPTION_PREFIX + mapSelectorIndex);
 			changeOption.prop('disabled', function(_, attr){ return !attr});
 			$( "#mapSelector" ).selectmenu( 'refresh', true);
 
-			// enables or disables the updatedMapButton
-			var selected_map = $("#mapSelector").val();
-			if(selected_map==index){
-				var checked = $("#"+MAP_PREFIX+BUTTON_PREFIX+index).prop('checked');			
-				setButtonDisabledTo("updateMapButton", !checked);
-			}
+			updateMapsTitle();
 
 		});
 
@@ -2926,88 +3223,173 @@
 		});
 
 		// enables the updatedMapButton
-		 $('#mapSelector').on('selectmenuchange', function() {
-			setButtonDisabledTo("updateMapButton", false);
+		$('#mapSelector').on('selectmenuchange', function() {
+			var selected_map = parseInt($("#mapSelector").val()) - 1 ; // first option is the "select map"
+
+			if (selected_map >= 0) { 
+				setButtonDisabledTo("updateMapButton", false);
+			} else  { // "Select map" option
+				setButtonDisabledTo("updateMapButton", true);
+			}
+
 		}).change();
 
+		// enables the updatedChartButton
+		$('#chartSelector').on('selectmenuchange', function() {
+			setButtonDisabledTo("updateChartButton",false);
+			setButtonDisabledTo("cancelChartButton",false);
+			var index = parseInt($('#chartSelector').val());
+			var type = $("#chartSelector option:selected" ).text().split(" ")[1];
+
+			// puts back the already present chart
+			if($("#chartPreview").html()){
+				var old_type = $("#chartPreview").children()[0].id.split(CHART)[0];
+				var old_index = $("#chartPreview").children()[0].id.split(CHART)[1];
+				$("#chartPreview").contents().appendTo("#"+DIV+old_type+CHART+old_index);
+			}
+			
+			// puts the selected one in the chartPreview
+			$("#"+DIV+type+CHART+index).contents().appendTo("#chartPreview");
+			
+			// retrieves current values from chart
+			if (typeof  charts_array[type+CHART+index].scales.right != 'undefined'){
+
+				defaultMinCases = charts_array[type+CHART+index].scales.left.min;
+				defaultMaxCases = charts_array[type+CHART+index].scales.left.max;
+				defaultMinIncd = charts_array[type+CHART+index].scales.right.min;
+				defaultMaxIncd = charts_array[type+CHART+index].scales.right.max;
+				
+				$("#minIncd").val(defaultMinIncd);
+				$("#maxIncd").val(defaultMaxIncd);
+			} else {
+				defaultMinCases = charts_array[type+CHART+index].scales["y-axis-0"].min;
+				defaultMaxCases = charts_array[type+CHART+index].scales["y-axis-0"].max;
+			
+			}
+			$("#minCases").val(defaultMinCases);
+			$("#maxCases").val(defaultMaxCases);
+		
+		}).change();
+
+		$(".chartParams").change(function(){
+			
+			if($("#chartPreview").html()){
+				var min_value = 0;
+				var type = $("#chartPreview").children()[0].id.split(CHART)[0];
+				var id_num = $("#chartPreview").children()[0].id.split(CHART)[1];
+				minCases = Number($("#minCases").val());
+				maxCases = Number($("#maxCases").val());				
+				minIncd = Number($("#minIncd").val());
+				maxIncd = Number($("#maxIncd").val());
+				updateScale(type+CHART+id_num, minCases, maxCases, minIncd, maxIncd);
+			}
+		});
+
+	
+
+
+
 		 $('#legendSelector').on('selectmenuchange', function() {
-			var selected_legend = $("#legendSelector").val();
-			setButtonDisabledTo("updateLegendButton", false);
-
-
+			var selected_legend = parseInt($("#legendSelector").val()) - 1 ; // first option is the "select legend"
+		
 			// move back the legend to it map
 			var position_index =  $('#positionLegendSelector').val();
 			for (var i=0; i<MAP_CHECKBOXES_LABELS.length; i++){
-				if ( $("#legendPool").find('#' + LEGENDSET_PREFIX + i).length > 0) {
+				if ( $("#" + LEGENDSET_POOL).find('#' + LEGENDSET_PREFIX + i).length > 0) {
 					moveLegend(i, $('#' + MAP_PREFIX + i).find(LEGEND_POSITIONS[position_index]), LEGEND_TO_REPORT);	
 				}
 			}
 
-			lastLegendPosition = getLastPosition(selected_legend);
-			setOptionSelectMenu("positionLegendSelector", lastLegendPosition);
+			if (selected_legend >= 0) {
+				setButtonDisabledTo("updateLegendButton", false);
 
-			moveLegend(selected_legend, $("#legendPool"), LEGEND_TO_LEGEND_POOL);
+				lastLegendPosition = getLastPosition(selected_legend);
+				setOptionSelectMenu("positionLegendSelector", lastLegendPosition);
 
+				moveLegend(selected_legend, $("#" + LEGENDSET_POOL), LEGEND_TO_LEGEND_POOL);
+			} else { // "select legend" option
+				setButtonDisabledTo("updateLegendButton", true);
+			}
 
 		}).change();
 
 		$("#subnationalLevelSelector").on('selectmenuchange', function() {
-			var subNationaSelectedLevel = parseInt($("#subnationalLevelSelector").val()) + 1;
+			var subNationaSelectedLevel = parseInt($("#subnationalLevelSelector").val());
 
-			var get_pops_at_risk = $.when(
-				getPopulationAtRiskFor(POP_AT_RISK[VL_INDEX], VL_COLUMN, defaultSubnationalLevel),
-				getPopulationAtRiskFor(POP_AT_RISK[CL_INDEX], CL_COLUMN, defaultSubnationalLevel),
-				getPopulationAtRiskFor(POP_AT_RISK[ACL_INDEX], ACL_COLUMN, defaultSubnationalLevel),
-				getPopulationAtRiskFor(POP_AT_RISK[ZCL_INDEX], ZCL_COLUMN, defaultSubnationalLevel)
+			$.when(
+				getPopulationAtRiskFor(POP_AT_RISK[VL_INDEX], VL_COLUMN, subNationaSelectedLevel),
+				getPopulationAtRiskFor(POP_AT_RISK[CL_INDEX], CL_COLUMN, subNationaSelectedLevel),
+				getPopulationAtRiskFor(POP_AT_RISK[ACL_INDEX], ACL_COLUMN, subNationaSelectedLevel),
+				getPopulationAtRiskFor(POP_AT_RISK[ZCL_INDEX], ZCL_COLUMN, subNationaSelectedLevel)
 				)
-			.then( function(){return fillArray_IncidenceRow();} ); // recalculates EPI table incidence
+			.then( function(){
+				return $.when( //DELETE update_epi_and_cgi_tables+
+					fillArray_IncidenceRow(),
+					updateNumberOfDivisions(subNationaSelectedLevel)
+				).done(function(result){
+					writeTable(CGI_TABLE_NAME, "Body", generalInformationArray, LINES_BELOW_LABELS_CGI);
+					underlineDivisionName();
+					writeTable(EPI_TABLE_NAME, "Body", array, LINES_BELOW_LABELS_EPI);
+					// It writes the entire table data, so put also the headers
+					fillTableHead(EPI_TABLE_NAME, "Head", '', COLUMNS_LABELS);
 
-			var update_epi_and_cgi_tables = $.when(
-					get_pops_at_risk,
-					updateNumberOfDivisions(subNationaSelectedLevel),
-			).done(function(result){
-				writeTable(CGI_TABLE_NAME, "Body", generalInformationArray, LINES_BELOW_LABELS_CGI);
-				writeTable(EPI_TABLE_NAME, "Body", array, LINES_BELOW_LABELS_EPI);
-				// It writes the entire table data, so put also the headers
-				fillTableHead(EPI_TABLE_NAME, "Head", '', COLUMNS_LABELS);
+					// rewrites also DiagTable and Toutcome table since buttons are going to be clicked
+					writeTable(DIAG_TABLE_NAME, "Body", diagnosisArray, LINES_BELOW_LABELS_DIAG);
+					writeTable(TOUTCOME_TABLE_NAME, "Body", toutcomeArray, LINES_BELOW_LABELS_TREAT);
+					fillTableHead(DIAG_TABLE_NAME, "Head", '', COLUMNS_LABELS);
+					fillTableHead(TOUTCOME_TABLE_NAME, "Head", TOUTCOME_TABLE_FIRST_COLUMNS, COLUMNS_LABELS.slice(0,4));
 
-				// rewrites also DiagTable and Toutcome table since buttons are going to be clicked
-				writeTable(DIAG_TABLE_NAME, "Body", diagnosisArray, LINES_BELOW_LABELS_DIAG);
-				writeTable(TOUTCOME_TABLE_NAME, "Body", toutcomeArray, LINES_BELOW_LABELS_TREAT);
-				fillTableHead(DIAG_TABLE_NAME, "Head", '', COLUMNS_LABELS);
-				fillTableHead(TOUTCOME_TABLE_NAME, "Head", TOUTCOME_TABLE_FIRST_COLUMNS, COLUMNS_LABELS.slice(0,4));
-
-				refreshToggleStatus();
+					refreshToggleStatus();
+					removeAllFootnotesMarks(); // removes all footnotes marks since refreshed elements will lost its footnote mark
+				});
 			});
 
 
-			var update_maps;
 			// recalculates maps to selected subnational level
 			if ($("#maps_to_selectedSubLevel").prop('checked')){
-				update_map_levels_var(map_levels[0], NATIONAL_LEVEL + subNationaSelectedLevel);
-				var mapStyle = MAP_STYLE[$('#mapStyleSelector').val()];
-				update_maps = $.when(
-					generateMap(VL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity),
-					generateMap(CL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity),
-					generateMap(ACL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity),
-					generateMap(ZCL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic1", mapStyle, map_opacity)
-				).done(function(result){
-					console.log("maps updated");
-				});
+				update_map_levels_var(map_levels[0], WIDP_OU_SHIFT + subNationaSelectedLevel);
+				generateMaps();
 			}
-
-			// removes all footnotes marks since refreshed elements will lost its footnote mark
-			$.when(
-					update_epi_and_cgi_tables,
-					update_epi_and_cgi_tables,
-					update_maps
-				).done(function(result){
-					removeAllFootnotesMarks();
-			});
 
 		}).change();
 
 	 }
+
+
+	/* AFTER AND BEFORE printing actions */
+	var beforePrint = function() {
+		// hides zoom buttons on maps
+		$('#' + MAP_PREFIX + VL_INDEX).find(".leaflet-control-zoom").hide();
+		$('#' + MAP_PREFIX + CL_INDEX).find(".leaflet-control-zoom").hide();
+		$('#' + MAP_PREFIX + ACL_INDEX).find(".leaflet-control-zoom").hide();
+		$('#' + MAP_PREFIX + ZCL_INDEX).find(".leaflet-control-zoom").hide();
+	};
+
+	var afterPrint = function() {
+		// restores zoom buttons on maps
+		$('#' + MAP_PREFIX + VL_INDEX).find(".leaflet-control-zoom").show();
+		$('#' + MAP_PREFIX + CL_INDEX).find(".leaflet-control-zoom").show();
+		$('#' + MAP_PREFIX + ACL_INDEX).find(".leaflet-control-zoom").show();
+		$('#' + MAP_PREFIX + ZCL_INDEX).find(".leaflet-control-zoom").show();
+	};
+
+	if (window.matchMedia) {
+		var mediaQueryList = window.matchMedia('print');
+		mediaQueryList.addListener(function(mql) {
+			if (mql.matches) {
+				beforePrint();
+			} else {
+				afterPrint();
+			}
+		});
+	}
+
+	window.onbeforeprint = beforePrint;
+	window.onafterprint = afterPrint;
+	/* END AFTER AND BEFORE printing actions */
+
+
+	/* AUX functions  */
 
 	 function getLastPosition(selectedlegend){
 		for (var i=0; i<LEGEND_POSITIONS.length; i++){
@@ -3020,16 +3402,13 @@
 			}
 		}
 	 }
-
-
-
 	
     function fillOrgUnits(data, length, start){
         var orgUnit;
         for(var i=0;i<length;i++){
-            orgUnit = new Object();
+            orgUnit = {};
             orgUnit.value = data[i].id;
-            orgUnit.label = data[i].displayName;
+            orgUnit.label = data[i].shortName;
             organisationUnits.push(orgUnit);
         }
 	}
@@ -3038,11 +3417,10 @@
 	* Generates a list of years from next year until 1900 and stores in generatedYears
 	*/
 	function generateYears(){
-		var years = [];
 		var year;
 		for (i = new Date().getFullYear() + 1; i > 1900; i--)
 		{
-			year = new Object();
+			year = {};
 			year.value = i;
 			year.label = i;
 			generatedYears.push(year);
@@ -3062,10 +3440,12 @@
 		editor.jqte();	
 
 		initializeDialogs();
-
+		generateUserManualUrl();
+		
 		/* Listeners */
 		// Editor for footnotes
 		$("#newfootnote").click(function() {
+			addingFootnote = true;
 			editingElement = $("#newFootnoteText")[0];
 			editor.jqteVal(editingElement.innerHTML);
 
@@ -3075,15 +3455,26 @@
 		});
 		
 		$( "#updateLegendButton" ).on( 'click', event, updateLegend);
+		$( "#resetLegendButton" ).on( 'click', event, resetLegends);
 		$( "#updateMapButton" ).on( 'click', event, updateMap);
+		$( "#updateChartButton" ).on( 'click', event, updateChart);
+		$( "#cancelChartButton" ).on( 'click', event, cancelUpdateChart);
+		
+		// save initial map state
+		initalMapDiv[VL_INDEX] = $('#map' + VL_INDEX).html();
+		initalMapDiv[CL_INDEX] = $('#map' + CL_INDEX).html();
+		initalMapDiv[ACL_INDEX] = $('#map' + ACL_INDEX).html();
+		initalMapDiv[ZCL_INDEX] = $('#map' + ZCL_INDEX).html();
 
+		prepareMapListeners();
+		
 		// New footnote arrives 
 		$( "#sortable2" ).on( "sortupdate", function( event, ui ) {
-			fillFootnotes();
+			writeFootnotes();
 		} );	
 		// New footnote arrives 
 		$( "#sortable3" ).on( "sortupdate", function( event, ui ) {
-			fillFootnotes();
+			writeFootnotes();
 		} );
 
 		//TODO: fix contextmenu
@@ -3093,14 +3484,7 @@
 				return false;
 		});
 
-
-
-		var thisYear = parseInt(getCurrentDate(true, false, false));
-		
-
-
-
-		$.when(getNumberOfDivisions(3, "id,displayName"), generateYears())
+		$.when(getNumberOfDivisions(3, "id,shortName"), generateYears())
 			.done(function(nbOfDivisions){
 
 				fillOrgUnits(nbOfDivisions.organisationUnits, nbOfDivisions.organisationUnits.length);
@@ -3109,18 +3493,22 @@
 				autocompleteSearcher("targetCountry", organisationUnits, doNothing, 2, 200);
 
 				country_selector_open();
-				DEBUG_AutomaticallyfillInitialForm();
+				//DEBUG_AutomaticallyfillInitialForm();
 
 			});
 		
 	});
+
+	function generateUserManualUrl(){
+		$(".usermanual").attr("href", "files/user_manual.pdf?antiCache="+ new Date().getTime());
+	}
 
 	function checkMetadataAssignedToThisCountry(){
 		saveSelectedYearAndCountry();
 
 		var datasets = [];
 		datasets.push(CL_DETAILED, CL_SIMPLE, VL_DETAILED, VL_SIMPLE, 
-						AZCL_DETAILED, AZCL_SIMPLE, GI, GHO_NTDS);
+						AZCL_DETAILED, AZCL_SIMPLE, GI, POPULATION_DATA, GHO_NTDS);
 
 		var programs = [];
 		programs.push(CL_MONTHLY, VL_MONTHLY, FOOTNOTES, SUBN_ENDEMCTY);
@@ -3159,7 +3547,10 @@
 			var IS_NOT_ASSG = " is not assigned to this country.</br>";
 			if (!dsinfo[GI][ASSG] ){
 				notAssginedMtd += dsinfo[GI][NAME] + IS_NOT_ASSG;
-			}			
+			}		
+			if (!dsinfo[POPULATION_DATA][ASSG] ){
+				notAssginedMtd += dsinfo[POPULATION_DATA][NAME] + IS_NOT_ASSG;
+			}
 			if (!dsinfo[GHO_NTDS][ASSG] ){
 				notAssginedMtd += dsinfo[GHO_NTDS][NAME] + IS_NOT_ASSG;
 			}
@@ -3184,16 +3575,32 @@
 	function DEBUG_AutomaticallyfillInitialForm()
 	{
 
-		$( "#targetCountry" ).val("Algeria"); //val("Federal Democratic Republic of Nepal");//
-		$( "#targetCountry" ).text("mNa42CHbkO7"); //text("pZZriU4sY0l");//
+		$( "#targetCountry" ).val("Algeria"); //val("Federal Democratic Republic of Nepal");///val("Burkina Faso"); //val("Algeria");
+		$( "#targetCountry" ).text("mNa42CHbkO7"); //text("pZZriU4sY0l");//  .text("hmZE3mVAZFf");text("mNa42CHbkO7");
 		$( "#yearField" ).val(2017); // val(2016);
 
 		checkMetadataAssignedToThisCountry();
 
 	}
 
+	// underlines provisional text with a red underline
+	function underlineDivisionName(){
+		$( "#cgiTable6 > td:nth-child(2) > span").css( "text-decoration","underline red");
+	}
+
 	function showFeedbackToUser(text){
 		$("#metadataFeedback").html(text);
+	}
+
+	function cleanErrorFeedback(){
+		$("#errorFeedback").html('');
+
+	}
+
+	function addToErrorFeedback(text){
+		$("#errorFeedback").append("<li>" + text + "</li>");
+		console.log ("added to errorFeedback: " + text);
+		error_report_open();
 	}
 
 	function saveSelectedYearAndCountry() {
@@ -3205,7 +3612,7 @@
 
 	function startPreparingReport() {
 	
-		country_selector_close();
+		cleanErrorFeedback();
 
 		$( "#country_name" ).text(ds.countryName);
 		$( "#year" ).text(ds.year);
@@ -3213,7 +3620,8 @@
 
 		generateCheckboxes($("#leish_detail_checkboxes"), COLUMNS_LABELS, "Leishmaniasis types to show:", LEISH_COLUMN_DETAIL_PREFIX, -1);
 		generateCheckboxes($("#monthlyCheckboxes"), MONTHLY_LABELS, "Leishmaniasis types to show in monthly table:", MONTHLY_TABLE_NAME, -1);
-		generateCheckboxes($("#chartCheckboxes"), CHART_CHECKBOXES_LABELS, "Graphs to show", CHART_PREFIX, 2);
+		generateCheckboxes($("#monthlyChartCheckboxes"), MONTHLY_CHART_LABELS, "Monthly charts to show", MONTHLY+CHART, -1);
+		generateCheckboxes($("#yearlyChartCheckboxes"), YEARLY_CHART_LABELS, "Yearly charts to show", YEARLY+CHART, -1);
 		generateCheckboxes($("#mapCheckboxes"), MAP_CHECKBOXES_LABELS, "Maps to show", MAP_PREFIX, -1);
 
 		addListenersToCheckboxes();
@@ -3223,39 +3631,52 @@
 		}).disableSelection();
 		$('input[type=checkbox]').checkboxradio();
 		$( "#tabs" ).tabs({heightStyle: "content"});
+		$( "#tabs" ).tabs( "option", "active", 0); // activates first tab (important when regenerating the report from other tab)
+		country_selector_relocate();
+
 		// corrects bug on checkboxes
 		$( ".ui-state-hover" ).removeClass( "ui-state-hover" );
 
 
 		// maps jqueryui    
 		$( "#mapSelector" ).selectmenu();
+		$( "#chartSelector" ).selectmenu();
 		$( "#legendSelector" ).selectmenu();
 		$( "#positionLegendSelector" ).selectmenu();
 		$( "#subnationalLevelSelector" ).selectmenu();
 		$( "#mapStyleSelector" ).selectmenu();
 		$( "#updateMapButton").button();
+		$( "#updateChartButton").button();
+		$( "#cancelChartButton").button();
 		$( "#updateLegendButton").button();
+		$( "#resetLegendButton").button();
 		$( ".radioButton" ).checkboxradio();
 
 
 
 		setButtonDisabledTo("updateMapButton", true);
+		setButtonDisabledTo("updateChartButton", true);
+		setButtonDisabledTo("cancelChartButton", true);
 		setButtonDisabledTo("updateLegendButton", true);
 		setOptionSelectMenu("positionLegendSelector", BOTTOM_RIGHT);
 
-		generateMapConfigurationList($("#mapSelector"), MAP_CHECKBOXES_LABELS, MAP_PREFIX);
-		generateMapConfigurationList($("#legendSelector"), MAP_CHECKBOXES_LABELS, LEGENDSET_PREFIX);
-		generateMapConfigurationList($("#positionLegendSelector"), LEGEND_POSITION_LABELS, LEGEND_PREFIX);
-		generateMapConfigurationList($("#mapStyleSelector"), MAP_STYLE_LABELS, MAP_STYLE_PREFIX);
+		var mapOptions =  ["Select map"].concat(MAP_CHECKBOXES_LABELS);
+		var legendOptions = ["Select legend"].concat(MAP_CHECKBOXES_LABELS);
+		generateMapConfigurationList($("#mapSelector"), mapOptions, MAP_PREFIX, false);
+		generateMapConfigurationList($("#chartSelector"), MONTHLY_CHART_LABELS, MONTHLY+CHART, true);
+		generateMapConfigurationList($("#chartSelector"), YEARLY_CHART_LABELS, YEARLY+CHART, true);
+		generateMapConfigurationList($("#legendSelector"), legendOptions, LEGENDSET_PREFIX, false);
+		generateMapConfigurationList($("#positionLegendSelector"), LEGEND_POSITION_LABELS, LEGEND_PREFIX, false);
+		generateMapConfigurationList($("#mapStyleSelector"), MAP_STYLE_LABELS, MAP_STYLE_PREFIX, false);
 
 		// Disables Google options
-		$('#' + MAP_STYLE_PREFIX + OPTION_PREFIX + GOOGLE_STREETS).prop('disabled', function(_, attr){ return !attr});
-		$('#' + MAP_STYLE_PREFIX + OPTION_PREFIX + GOOGLE_HYBRID).prop('disabled', function(_, attr){ return !attr});
+		// $('#' + MAP_STYLE_PREFIX + OPTION_PREFIX + GOOGLE_STREETS).prop('disabled', function(_, attr){ return !attr});
+		// $('#' + MAP_STYLE_PREFIX + OPTION_PREFIX + GOOGLE_HYBRID).prop('disabled', function(_, attr){ return !attr});
 		$( "#mapStyleSelector" ).selectmenu( 'refresh', true);
 
-		setOptionSelectMenu("mapStyleSelector", OSM_LIGHT);
+		setOptionSelectMenu("mapStyleSelector", WHO_BASEMAP);
 		
-		generateMapConfigurationList($("#subnationalLevelSelector"), LEVEL_CONFIG_LABELS, LEVEL_PREFIX);
+		generateMapConfigurationList($("#subnationalLevelSelector"), LEVEL_CONFIG_LABELS, LEVEL_PREFIX, false);
 
 		fillNotaBene();
 		fillNotaBeneMaps();
@@ -3264,8 +3685,8 @@
 		setTextUnderTables("textUnderDiagTable1", TEXT_UNDER_DIAG1, 
 								DIAG_LEGEND_LABELS, 
 								DIAG_LEGEND_LABELS_DESC, 
-								PUT_NA_TEXT);
-		setTextUnderTables("textUnderDiagTable2", TEXT_UNDER_DIAG2, DIAG_LEGEND_LABELS_2, DIAG_LEGEND_LABELS_DESC_2, DIAG_ASTERISK_RDT_COMMENT);
+								false);
+		setTextUnderTables("textUnderDiagTable2", TEXT_UNDER_DIAG2, DIAG_LEGEND_LABELS_2, DIAG_LEGEND_LABELS_DESC_2, PUT_NA_TEXT);
 		
 		text_values = [
 			"WHO Global",
@@ -3355,7 +3776,7 @@
 		
 		
 		fillTableHead(EPI_TABLE_NAME, "Head", '', COLUMNS_LABELS);
-		fillTableHead(MONTHLY_TABLE_NAME, "Head", '', MONTHS_ABBREV);
+		fillTableHead(MONTHLY_TABLE_NAME, "Head", ds.year, MONTHS_ABBREV);
 		fillTableHead(DIAG_TABLE_NAME, "Head", '', COLUMNS_LABELS);
 		fillTableHead(TOUTCOME_TABLE_NAME, "Head", TOUTCOME_TABLE_FIRST_COLUMNS, COLUMNS_LABELS.slice(0,4));
 
@@ -3372,54 +3793,98 @@
 		// http://stackoverflow.com/questions/3709597/wait-until-all-jquery-ajax-requests-are-done
 //        var async2 = $.when( a3() ).then(function(){ return a4(); });
 
-		
-		var getDEUsedByMetadataPromise = $.when(getDEUsedByMetadata()) // gets totalPopulation var who is neeeded for popAtRisk
-			.then( function(){return;});
+	
+		$.when(	getDEUsedByMetadata(), 
+				getIndicatorInfo([...UN_WPP, ...LAB_PARASITO_RESULT_NEWUNSP, ...LAB_PARASITO_TESTED_NEWUNSP, ...DIRECT_EXAM_DIAGNOSED, 
+									...POSITIVE_SLIDES_PROP, ...NEW_AND_UNSP_CASES, ...TREAT_COMPLETED, ...TREAT_OUTCOME_CURE, 
+									...TREAT_OUTCOME_FAIL, ...TREAT_OUTCOME_FATAL, ...SCREEN_PASSIVE, ...INCIDENCE_FOR_MAPS, 
+									...INCIDENCE_FOR_CHARTS, ...POP_AT_RISK, ],
+									"indicators", "numerator", "denominator"))
+		.then( function(){
+			return $.when(
+			get_cgi(), // gets totalPopulation var who is neeeded for popAtRisk
+			getOULevels(MIN_OU_LEVEL, MAX_OU_LEVEL),
 			
-		var get_pops_at_risk = $.when(get_cgi(), getDEUsedByMetadataPromise) // gets totalPopulation var who is neeeded for popAtRisk
-			.then( function(){return getPopulationAtRiskFor(POP_AT_RISK[VL_INDEX], VL_COLUMN, defaultSubnationalLevel);} )
-			.then( function(){return getPopulationAtRiskFor(POP_AT_RISK[CL_INDEX], CL_COLUMN, defaultSubnationalLevel);} )
-			.then( function(){return getPopulationAtRiskFor(POP_AT_RISK[ACL_INDEX], ACL_COLUMN, defaultSubnationalLevel);} )
-			.then( function(){return getPopulationAtRiskFor(POP_AT_RISK[ZCL_INDEX], ZCL_COLUMN, defaultSubnationalLevel);} );
-
-		var epi_incidence_async = $.when(
+			).done( function(){
+				return;
+			})
+		}) 
+		.then( function(){
+		 	return $.when(
 			get_cl_cases(), // gets cl cases who is needed for EPI incidence
 			get_vl_cases(), 
-			get_azcl_cases(),	
-			get_pops_at_risk) // gets popAtRisks who is needed for EPI incidence
-			//.then(function(){ return fillArray_IncidenceRow(VL_COLUMN); });
-			.then( function(){return fillArray_IncidenceRow();} );
+			get_azcl_cases(),
+			getPopulationAtRiskFor(POP_AT_RISK[VL_INDEX], VL_COLUMN, defaultSubnationalLevel),	
+			getPopulationAtRiskFor(POP_AT_RISK[CL_INDEX], CL_COLUMN, defaultSubnationalLevel),
+			getPopulationAtRiskFor(POP_AT_RISK[ACL_INDEX], ACL_COLUMN, defaultSubnationalLevel),
+			getPopulationAtRiskFor(POP_AT_RISK[ZCL_INDEX], ZCL_COLUMN, defaultSubnationalLevel),
+			//getAnalyticsDataForDX(NEW_AND_UNSP_CASES, 1, fillIndicatorArray, [NEW_AND_UNSP_CASES, new_and_usnp_cases]), // replaced by fillNewAndUnspCasesWorkaround
+			getAnalyticsDataForDX(UN_WPP, 1, fillIndicatorArray, [UN_WPP, un_wpp_data]),
+			getAnalyticsDataForDX(SCREEN_PASSIVE, 1, fillIndicatorArray, [SCREEN_PASSIVE, screen_passive]),
+			getAnalyticsDataForDX(TREAT_COMPLETED, 1, fillIndicatorArray, [TREAT_COMPLETED, total_treated]),	
+			getAnalyticsDataForDX(LAB_PARASITO_RESULT_NEWUNSP, 1, fillIndicatorArray, [LAB_PARASITO_RESULT_NEWUNSP, lab_parasito_result]),
+			getAnalyticsDataForDX(LAB_PARASITO_TESTED_NEWUNSP, 1, fillIndicatorArray, [LAB_PARASITO_TESTED_NEWUNSP, lab_parasito_tested]),
+			getAnalyticsDataForDX(DIRECT_EXAM_DIAGNOSED, 1, fillIndicatorArray, [DIRECT_EXAM_DIAGNOSED, direct_exam_diagnosed]),
+			getAnalyticsDataForDX(POSITIVE_SLIDES_PROP, 1, fillIndicatorArray, [POSITIVE_SLIDES_PROP, positive_slides_prop]),
+			getAnalyticsDataForDX(TREAT_OUTCOME_CURE, 1, fillIndicatorArray, [TREAT_OUTCOME_CURE, toutcome_cure]),
+			getAnalyticsDataForDX(TREAT_OUTCOME_FAIL, 1, fillIndicatorArray, [TREAT_OUTCOME_FAIL, toutcome_fail]),
+			getAnalyticsDataForDX(TREAT_OUTCOME_FATAL, 1, fillIndicatorArray, [TREAT_OUTCOME_FATAL, toutcome_fatal])
+			//get_indicators_values) // gets popAtRisks who is needed for EPI incidence
+			).done( function(data_cl, data_vl, data_azcl){
+				fillUN_WPP();
+				fillArray(data_cl.dataValues, CL_COLUMN, DE.CL_EPI_Type); 
+				fillArray(data_cl.dataValues, MCL_COLUMN, DE.MCL_EPI_Type, DE.MCL_GEN_EPID_cases); 
+				fillArray(data_vl.dataValues, VL_COLUMN, DE.VL_EPI_Type, "");
+				fillArray(data_vl.dataValues, PKDL_COLUMN, DE.VL_EPI_Type, DE.PKDL_GEN_EPID_cases);
+				//TODO: move to a proper place
+
+				var vlArray = data_vl.dataValues || [];
+				var clArray = data_cl.dataValues || [];
+				var aczlArray = data_azcl.dataValues || [];
+				var leishArray = [].concat.apply([], [vlArray, clArray, aczlArray]);
+
+				fillControlAndSurveillance(leishArray);
+				fillTreatmentAndMedicines(leishArray);
+
+				fillArray(data_azcl.dataValues, ACL_COLUMN, DE.ACL_EPI_Type, ""); 
+				fillArray(data_azcl.dataValues, ZCL_COLUMN, DE.ZCL_EPI_Type, ""); 
+
+				return fillArray_IncidenceRow();
+			
+			} )
+		})	
+		.then( function(){
 	
-		$.when(
-			epi_incidence_async,
-			generateMapAndLegend(VL_INDEX),
-			generateMapAndLegend(CL_INDEX),
-			generateMapAndLegend(ACL_INDEX),
-			generateMapAndLegend(ZCL_INDEX),
-			get_gho_ntds(),
-			getIncidenceForCharts(INCIDENCE_FOR_CHARTS[VL_INDEX], VL_COLUMN),
-			getIncidenceForCharts(INCIDENCE_FOR_CHARTS[CL_INDEX], CL_COLUMN),
-			getIncidenceForCharts(INCIDENCE_FOR_CHARTS[ACL_INDEX], ACL_COLUMN),
-			getIncidenceForCharts(INCIDENCE_FOR_CHARTS[ZCL_INDEX], ZCL_COLUMN),
-			getNewCases(DE.VL_EPI_Type, VL_COLUMN),
-			getNewCases(DE.CL_EPI_Type, CL_COLUMN),
-			getNewCases(DE.ACL_EPI_Type, ACL_COLUMN),
-			getNewCases(DE.ZCL_EPI_Type, ZCL_COLUMN),
-			get_monthly_cases_for(CL_MONTHLY, ds.year, DE_MONTHLY.CL_CASES, CL_ROW),
-			get_monthly_cases_for(CL_MONTHLY, ds.year-1, DE_MONTHLY.CL_CASES, CL_PREVIOUS_YEAR_ROW),
-			get_monthly_cases_for(VL_MONTHLY, ds.year, DE_MONTHLY.VL_CASES, VL_ROW),
-			get_monthly_cases_for(VL_MONTHLY, ds.year-1, DE_MONTHLY.VL_CASES, VL_PREVIOUS_YEAR_ROW),
-			get_monthly_cases_for(CL_MONTHLY, ds.year, DE_MONTHLY.ACL_CASES, ACL_ROW),
-			get_monthly_cases_for(CL_MONTHLY, ds.year-1, DE_MONTHLY.ACL_CASES, ACL_PREVIOUS_YEAR_ROW),
-			get_monthly_cases_for(CL_MONTHLY, ds.year, DE_MONTHLY.ZCL_CASES, ZCL_ROW),
-			get_monthly_cases_for(CL_MONTHLY, ds.year-1, DE_MONTHLY.ZCL_CASES, ZCL_PREVIOUS_YEAR_ROW),
-			getFootnotes()).done(function(cgi,i1,i2,i3,i4,nc1,nc2,nc3,nc4,m1,m2,m3,m4,m5,m6,ls1,ls2,ls3,ls4,f1,tm1,le1,ft1){
+			return $.when( 
+				generateLegends(),
+				generateMaps(),
+				get_gho_ntds(),
+				getAnalyticsDataForDX(INCIDENCE_FOR_CHARTS[VL_INDEX], historicLength, fillIncidenceChartArray, [VL_COLUMN]),
+				getAnalyticsDataForDX(INCIDENCE_FOR_CHARTS[CL_INDEX], historicLength, fillIncidenceChartArray, [CL_COLUMN]),
+				getAnalyticsDataForDX(INCIDENCE_FOR_CHARTS[ACL_INDEX], historicLength, fillIncidenceChartArray, [ACL_COLUMN]),
+				getAnalyticsDataForDX(INCIDENCE_FOR_CHARTS[ZCL_INDEX], historicLength, fillIncidenceChartArray, [ZCL_COLUMN]),
+				getAnalyticsDataForDX(NEW_AND_UNSP_CASES[VL_INDEX], historicLength, fillNewCasesArray, [VL_COLUMN]),
+				getAnalyticsDataForDX(NEW_AND_UNSP_CASES[CL_INDEX], historicLength, fillNewCasesArray, [CL_COLUMN]),
+				getAnalyticsDataForDX(NEW_AND_UNSP_CASES[ACL_INDEX], historicLength, fillNewCasesArray, [ACL_COLUMN]),
+				getAnalyticsDataForDX(NEW_AND_UNSP_CASES[ZCL_INDEX], historicLength, fillNewCasesArray, [ZCL_COLUMN]),
+				get_monthly_cases_for(CL_MONTHLY, ds.year, DE_MONTHLY.CL_CASES, CL_ROW),
+				get_monthly_cases_for(CL_MONTHLY, ds.year-1, DE_MONTHLY.CL_CASES, CL_PREVIOUS_YEAR_ROW),
+				get_monthly_cases_for(VL_MONTHLY, ds.year, DE_MONTHLY.VL_CASES, VL_ROW),
+				get_monthly_cases_for(VL_MONTHLY, ds.year-1, DE_MONTHLY.VL_CASES, VL_PREVIOUS_YEAR_ROW),
+				get_monthly_cases_for(CL_MONTHLY, ds.year, DE_MONTHLY.ACL_CASES, ACL_ROW),
+				get_monthly_cases_for(CL_MONTHLY, ds.year-1, DE_MONTHLY.ACL_CASES, ACL_PREVIOUS_YEAR_ROW),
+				get_monthly_cases_for(CL_MONTHLY, ds.year, DE_MONTHLY.ZCL_CASES, ZCL_ROW),
+				get_monthly_cases_for(CL_MONTHLY, ds.year-1, DE_MONTHLY.ZCL_CASES, ZCL_PREVIOUS_YEAR_ROW),
+				getFootnotes(defaultSubnationalLevel))
+				.done(function(lgds,mps,gho,dx1,dx2,dx3,dx4,dx5,dx6,dx7,dx8,
+								m1,m2,m3,m4,m5,m6,m7,m8,fndata){
 			// the code here will be executed when all four ajax requests resolve.
 			// a1, a2, a3 and a4 are lists of length 3 containing the response text,
 			// status, and jqXHR object for each of the four ajax calls respectively.
 
 
 				writeTable(CGI_TABLE_NAME, "Body", generalInformationArray, LINES_BELOW_LABELS_CGI);
+				underlineDivisionName();
 				writeTable(EPI_TABLE_NAME, "Body", array, LINES_BELOW_LABELS_EPI);
 				writeTable(MONTHLY_TABLE_NAME, "Body", monthlyArray, LINES_BELOW_LABELS_MONTHLY);
 				writeTable(CAS_TABLE_NAME, "Body", controlArray, LINES_BELOW_LABELS_CAS);
@@ -3430,10 +3895,11 @@
 				generate_cl_vl_new_monthly_charts();
 				generate_cl_vl_new_and_incidence_yearly_charts();
 
+				fillFootNotes(fndata);
 				fillHTMLListWithArray(SORTABLE_LIST_1_NAME, storedFootnotes, 'ui-state-default '+CLASS_EDITABLE_ELEMENT);
 				fillHTMLListWithArray(SORTABLE_LIST_2_NAME, activeFootnotesPage1, 'ui-state-highlight '+CLASS_EDITABLE_ELEMENT);
 				fillHTMLListWithArray(SORTABLE_LIST_3_NAME, activeFootnotesPage2, 'ui-state-highlight '+CLASS_EDITABLE_ELEMENT);
-				fillFootnotes();
+				writeFootnotes();
 
 				hideNoRelevantContent();
 				
@@ -3449,10 +3915,20 @@
 			//	$("#disableNBMaps").trigger('click');
 				//$(".radioButton").change();
 				document.getElementById("country_profile_and_panel").style.display = "block";
+		
+		})})
+		.fail(function(data) {
 
-		}).fail(function(data) {
-			console.log ("ERROR. WHEN");
-			console.log (data);
+			if (defaultSubnationalLevel == 1){
+				// try againg against level 0
+				defaultSubnationalLevel = 0;
+				startPreparingReport();
+			} else {
+	
+				console.log ("ERROR. WHEN");
+				console.log (data);
+			}
+
 		});
 
 	}
@@ -3478,11 +3954,13 @@
 	<link rel="stylesheet" href="css/pace_loading_bar.css" type="text/css" />
 	<meta charset="UTF-8">
 	<title>Leishmaniasis Country Profile Generator</title>
-   <link rel="stylesheet" href="css/style.css" type="text/css" />
    <link rel="stylesheet" href="css/jquery-te-1.4.0.css" type="text/css" />
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" type="text/css" />
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" type="text/css" crossorigin="anonymous" />
 	<link rel="stylesheet" href="https://jqueryui.com/resources/demos/style.css" type="text/css" />
    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400" />
+   <link rel="stylesheet" href="css/style.css" type="text/css" />
+
+
    <!-- <link rel="stylesheet" href="../../../dhis-web-commons/javascripts/ext/resources/css/ext-plugin-gray.css" type="text/css" />-->
    <!---<link rel="stylesheet" href="../../../dhis-web-mapping/extjs/resources/css/ext-all-gray.css" type="text/css" />-->
 
@@ -3493,27 +3971,57 @@
 
 		<div class="non-printable configuration-section section"><hr>
 
-			<div class="comment">
-				Configuration Area - Wont be printed<br>
-				Instructions : Left click to add a footnote number.<br>
-								Right click to edit an element.
-			</div>
 			<div id="tabs">
 				<ul>
 					<li><a href="#tabs-1">General</a></li>
-					<li><a href="#tabs-2">Maps</a></li>
-					<li><a href="#tabs-3">Footnotes</a></li>
+					<li><a href="#tabs-2">Charts</a></li>
+					<li><a href="#tabs-3">Maps</a></li>
+					<li><a href="#tabs-4">Footnotes</a></li>
+					<li><a href="#tabs-5">Help</a></li>
+					<li><a href="#tabs-6">New CP</a></li>
 				</ul>
 				<div id="tabs-1">		
 					<fieldset id="leish_detail_checkboxes"></fieldset>
 					<fieldset id="monthlyCheckboxes"></fieldset>
-					<fieldset id="chartCheckboxes"></fieldset>
 					<p><select name="subnationalLevelSelector" id="subnationalLevelSelector"></select>
 						<input id="maps_to_selectedSubLevel" type="checkbox" checked="checked" />
 						<label for="maps_to_selectedSubLevel"> recalculate maps to this level</label>
 					</p>
 				</div>
-				<div id="tabs-2">		
+				<div id="tabs-2">	
+					<fieldset id="monthlyChartCheckboxes"></fieldset>
+					<fieldset id="yearlyChartCheckboxes"></fieldset>
+					<fieldset id="chartConfiguration"><legend>Configure chart</legend>
+						<table id="chartConfigTable">
+							<tr>
+								<td colspan="3"><select name="chartSelector" id="chartSelector">
+								<option disabled selected value>Select a chart</option>
+								</select></td>
+							</tr>
+							<tr>
+								<td></td>
+								<td>min value</td>
+								<td>max value</td>
+							</tr>
+							<tr>
+								<td>Cases: </td>
+								<td><input type="number" class="chartParams" step="10" id="minCases"  min="0"  /></td>
+								<td><input type="number" class="chartParams" step="10" id="maxCases"  min="0" /></td>
+							</tr>
+							<tr>
+								<td>Incd: </td>
+								<td><input type="number" class="chartParams" step=".1" id="minIncd"  min="0"  /></td>
+								<td><input type="number" class="chartParams" step=".1" id="maxIncd"  min="0" /></td>
+							</tr>
+							<tr>
+								<td colspan="3"><button disabled id="updateChartButton" class="ui-button ui-widget ui-corner-all">Update Chart</button>
+								<button id="cancelChartButton" class="ui-button ui-widget ui-corner-all">Cancel</button></td>
+							</tr>
+						</table>
+						<div id ="chartPreview"></div>
+					</fieldset>
+				</div>
+				<div id="tabs-3">		
 					<fieldset id="mapCheckboxes"></fieldset>
 					<fieldset id="mapConfiguration"><legend>Configure map</legend>
 						<div>
@@ -3549,6 +4057,7 @@
 									<div id="font_size_slider"><div id="font_size_slider_handle" class="ui-slider-handle"></div></div>
 								</p>
 								<p><button id="updateLegendButton" class="ui-button ui-widget ui-corner-all">Update Legend</button></p>
+								<p><button id="resetLegendButton" class="ui-button ui-widget ui-corner-all" title="Use if legends didn't load properly or dissapeared">Recreate all legends</button></p>
 								<p>
 									<fieldset>
 										<legend>Resize Nota Bene for Maps: </legend>
@@ -3580,7 +4089,7 @@
 
 					</fieldset>
 				</div>
-				<div id="tabs-3">
+				<div id="tabs-4">
 					<div class="FixedHeightContainer">
 						<div class="Content">
 							<h6 class="subHeader">Stored footnotes</h6>
@@ -3602,6 +4111,22 @@
 						<span class="ui-icon ui-icon-document"></span> Add new footnote
 					</button>
 					<div id="newFootnoteText" style="display:none"></div>
+
+				</div>
+				<div id="tabs-5">
+					<div class="comment">
+						This Configuration Area wont be printed<br>
+						- Left click to add a footnote number.<br>
+						- Right click to edit an element.
+					</div>
+
+					Download here the LCPG manual: 
+					<a class="usermanual" target="_blank"><img class="resize" src="img/icons/pdf.png" border=0></a>
+					<br>
+					Guide to generate LCP: 
+					<a target="_blank" href="https://docs.google.com/document/d/1umecgF-AEG_CkLN3EAF3N5IGa6By9U_HbNXZKuIl4aI/edit?usp=sharing"><img class="resize" src="img/icons/googledocs.png" border=0></a>
+				</div>
+				<div id="tabs-6">
 
 				</div>
 			</div>
@@ -3643,7 +4168,7 @@
 		</div>
 
 		<div class="section">
-			<h4 class="editableElement footnotable" >Monthly distribution of new cases January-December</h4>
+			<h4 class="editableElement footnotable" >Monthly distribution of new cases (January-December)</h4>
 
 			<table id="monthlyTable" class="display" cellspacing="0" width="100%">
 					<thead>
@@ -3655,14 +4180,15 @@
 		</div>
 
 		<div>
-			<canvas class="sameLine draggable chart" id="chart0" width="425" height="260" ></canvas>
-			<canvas class="sameLine draggable chart" id="chart1" width="425" height="260" ></canvas>
-			<canvas class="sameLine draggable chart" id="chart2" width="425" height="260" ></canvas>
+			<div id ="divFormonthlychart0" class="sameLine draggable"><canvas class="chart" id="monthlychart0" width="400" height="240" ></canvas></div>
+			<div id ="divFormonthlychart1"class="sameLine draggable"><canvas class="chart" id="monthlychart1" width="400" height="240" ></canvas></div>
+			<div id ="divFormonthlychart2" class="sameLine draggable"><canvas class="chart" id="monthlychart2" width="400" height="240" ></canvas></div>
 		</div>
+		<h4 class="editableElement footnotable" >Number of new cases and Incidence rate/10,000 at the national level from <span id ="chartTitleFirstYear"></span> to <span id ="chartTitleLastYear"></span></h4>
 		<div>
-			<canvas class="sameLine draggable chart" id="chart3" width="425" height="260" ></canvas>
-			<canvas class="sameLine draggable chart" id="chart4" width="425" height="260" ></canvas>
-			<canvas class="sameLine draggable chart" id="chart5" width="425" height="260" ></canvas>
+			<div id ="divForyearlychart0" class="sameLine draggable"><canvas class="chart" id="yearlychart0" width="400" height="240" ></canvas></div>
+			<div id ="divForyearlychart1" class="sameLine draggable"><canvas class="chart" id="yearlychart1" width="400" height="240" ></canvas></div>
+			<div id ="divForyearlychart2" class="sameLine draggable"><canvas class="chart" id="yearlychart2" width="400" height="240" ></canvas></div>
 		</div>
 
 		<div class="section">
@@ -3673,11 +4199,11 @@
 		<div class="pagebreak"></div>
 
 		<div class="section">
-			<h4 class="editableElement footnotable" >Distribution of new CL (left) and new (primary) VL (right) cases per 10 000 population</h4>
-			<div class="sameLine map"> <div id="map0" class="sameLine draggable"></div></div>
-			<div class="sameLine map"><div id="map1" class="sameLine draggable"></div></div>
-			<div class="sameLine map"><div id="map2" class="sameLine draggable"></div></div>
-			<div class="sameLine map"><div id="map3" class="sameLine draggable"></div></div>
+			<h4 class="editableElement footnotable" >Disease distribution of new <span style="text-decoration: underline red" id ="mapsTitleDis"></span> cases at <span style="text-decoration: underline red" id ="mapsTitleLvl"></span> per 10,000 population <span id ="mapsTitleYear"></span></h4>
+			<div class="sameLine map draggable"> <div id="map0"></div></div>
+			<div class="sameLine map draggable"><div id="map1"></div></div>
+			<div class="sameLine map draggable"><div id="map2"></div></div>
+			<div class="sameLine map draggable"><div id="map3"></div></div>
 			<div id="notaBeneMaps"  class="notasBene draggable"><div class="editableElement"></div></div>
 		</div>
 
@@ -3742,38 +4268,32 @@
 	</div>
 
 
+	<div class="form-popup" id="error-report">
+		<div id="errorFeedbackTitle">There was a problem retrieving the following information: </div><br>
+		<div id= "errorFeedback"></div>
+		<button class="btn btnSafeOption" onclick="error_report_close(); startPreparingReport();" >Relaunch</button>	
+		<button class="btn btnRiskyOption" onclick="error_report_close()">Close this window</button>
+	</div>
 
 	<div class="form-popup" id="country-selector">
 		<form action="javascript:checkMetadataAssignedToThisCountry()" class="form-container">
 	  
 		  <h2><div class="formTitle">Generate <br> Country Profile </div></h2>
-	  
-	  
-		  <label for="yearField"><b>Year</b></label>
-		  <input id="yearField" type="text" placeholder="Enter and select country name" name="yearField" required>
-	  
-	  
+		  
 		  <label for="targetCountry"><b>Country</b></label>
 		  <input  id="targetCountry" type="text" placeholder="Enter and select country name" name="targetCountry" required>
+	  
+		  <label for="yearField"><b>Year</b></label>
+		  <input id="yearField" type="text" placeholder="Enter and select year" name="yearField" required>
 							
 		  <div id= "metadataFeedback"></div>
-		  <button type="submit" class="btn">Start preparing CP</button>
-
+		  <button type="submit" class="btn btnSafeOption" >Start preparing CP</button>
+		  <br><br>
+		  <div class="download_manual">Download here the LCPG manual: 
+				<a class="usermanual" target="_blank"><img class="resize" src="img/icons/pdf.png" border=0></a>
+		  </div>
 		</form>
+		<div id="footer"> LCPG v0.39 - 2020.03.26</div>
 	</div>
-
-	<!--
-	<div id="dialog-country-selector" title="Select country and year">
-		<div id="country-selector" ></div>
-			Year: 
-		<input id="yearField">
-										
-		<div class="ui-widget">
-			<label for="targetCountry">Country: </label>
-			<input id="targetCountry">
-		</div>
-								
-	</div>
--->
 </body>
 </html>
