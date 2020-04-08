@@ -64,6 +64,16 @@ h6 {
 	font-size: 15px;
 }
 
+.section > * {
+	padding-left: 2em;
+}
+
+/* HEADER section */ 
+/* Organize content of div in equal-sized colons*/
+.head_container {
+    font-family:'Century Gothic',san-serif;
+}
+
 .title_section {
   background-color: #1e80b8;
   color: white;
@@ -71,6 +81,36 @@ h6 {
   padding:0;
   height: 26mm;
 }
+
+#title {
+	padding-top:6px;
+    font-size: 20px;
+    font-weight:bolder;
+
+}	
+
+#published_date {
+    font-size:12px;
+}
+
+#country_name {
+	padding-top:4px;
+	font-size:36px;
+	font-weight:bolder;
+}
+
+#head_logo_div{
+   float: right;
+   display:flex;
+   height:100%;
+   padding-right: 2em;
+}
+#head_logo_img {
+	width:180px;
+  align-self: center;
+}
+
+/* END of HEADER section */ 
 
 .comment {
 	font-style: italic;
@@ -84,18 +124,6 @@ h6 {
 .superindex 
 {vertical-align:super} 
 
-.head_logo{
-	width:160px;
-}
-
-
-
-
-img.right {
-    display: block;
-    margin: 2pt;
-    float: right;
-}
 
 .download_manual {
   font-size: 11px;
@@ -108,6 +136,7 @@ img.resize {
   height: 36px;
   width: auto;
 }
+
 
 /*autocomplete list menu*/
 
@@ -130,16 +159,6 @@ img.resize {
 }
 .align_to_right{
 	text-align: right !important;
-}
-
-/* Organize content of div in equal-sized colons*/
-.head_container {
-	margin-top:2px;
-	border-top: solid 3px #39547d ;
-  	display: flex;
-}
-.head_container > div {
-  flex: 1; /*grow*/
 }
 
 .textUnderTable {
