@@ -153,7 +153,13 @@
 	var CL_CHART_LEGEND = "CL ";	
 	var ACL_CHART_LEGEND = "ACL ";
 	var ZCL_CHART_LEGEND = "ZCL ";
-	var TOUTCOME_TABLE_FIRST_COLUMNS = "INITIAL TREATMENT OUTCOME FOR NEW CASES";
+	
+	var TABLE_TITLE_CGI = "COUNTRY GENERAL INFORMATION";
+	var TABLE_TITLE_EPI = "EPIDEMIOLOGY";
+	var TABLE_TITLE_CAS = "CONTROL AND SURVEILLANCE";
+	var TABLE_TITLE_DIAG = "DIAGNOSIS";
+	var TABLE_TITLE_TAM = "TREATMENT AND MEDICINES";
+	var TABLE_TITLE_TOUTCOME = "INITIAL TREATMENT OUTCOME FOR NEW CASES";
 
 	var MONTHLY_CHART_LABELS = ["VL monthly", "CL monthly", "AZCL monthly"];
 	var YEARLY_CHART_LABELS = ["VL yearly", "CL yearly", "AZCL yearly"];
@@ -3331,13 +3337,13 @@
 					underlineDivisionName();
 					writeTable(EPI_TABLE_NAME, "Body", array, LINES_BELOW_LABELS_EPI);
 					// It writes the entire table data, so put also the headers
-					fillTableHead(EPI_TABLE_NAME, "Head", '', COLUMNS_LABELS);
+					fillTableHead(EPI_TABLE_NAME, "Head", TABLE_TITLE_EPI, COLUMNS_LABELS);
 
 					// rewrites also DiagTable and Toutcome table since buttons are going to be clicked
 					writeTable(DIAG_TABLE_NAME, "Body", diagnosisArray, LINES_BELOW_LABELS_DIAG);
 					writeTable(TOUTCOME_TABLE_NAME, "Body", toutcomeArray, LINES_BELOW_LABELS_TREAT);
-					fillTableHead(DIAG_TABLE_NAME, "Head", '', COLUMNS_LABELS);
-					fillTableHead(TOUTCOME_TABLE_NAME, "Head", TOUTCOME_TABLE_FIRST_COLUMNS, COLUMNS_LABELS.slice(0,4));
+					fillTableHead(DIAG_TABLE_NAME, "Head", TABLE_TITLE_DIAG, COLUMNS_LABELS);
+					fillTableHead(TOUTCOME_TABLE_NAME, "Head", TABLE_TITLE_TOUTCOME, COLUMNS_LABELS.slice(0,4));
 
 					refreshToggleStatus();
 					removeAllFootnotesMarks(); // removes all footnotes marks since refreshed elements will lost its footnote mark
@@ -3774,11 +3780,13 @@
 		}
 		});
 		
-		
-		fillTableHead(EPI_TABLE_NAME, "Head", '', COLUMNS_LABELS);
+		fillTableHead(CGI_TABLE_NAME, "Head", TABLE_TITLE_CGI, []);
+		fillTableHead(EPI_TABLE_NAME, "Head", TABLE_TITLE_EPI, COLUMNS_LABELS);
 		fillTableHead(MONTHLY_TABLE_NAME, "Head", ds.year, MONTHS_ABBREV);
-		fillTableHead(DIAG_TABLE_NAME, "Head", '', COLUMNS_LABELS);
-		fillTableHead(TOUTCOME_TABLE_NAME, "Head", TOUTCOME_TABLE_FIRST_COLUMNS, COLUMNS_LABELS.slice(0,4));
+		fillTableHead(CAS_TABLE_NAME, "Head", TABLE_TITLE_CAS, []);
+		fillTableHead(DIAG_TABLE_NAME, "Head", TABLE_TITLE_DIAG, COLUMNS_LABELS);
+		fillTableHead(TAM_TABLE_NAME, "Head", TABLE_TITLE_TAM, []);
+		fillTableHead(TOUTCOME_TABLE_NAME, "Head", TABLE_TITLE_TOUTCOME, COLUMNS_LABELS.slice(0,4));
 
 
 		// Dragable activation
@@ -4150,18 +4158,15 @@
 		</div>
 
 		<div class="section">
-			<h4 class="editableElement footnotable">COUNTRY GENERAL INFORMATION</h4>
-			<div class="twoColumns"><table id="cgiTable" class="display" cellspacing="0" width="100%">
+			<table id="cgiTable" class="display" cellspacing="0" width="100%">
 					<thead>
 						<tr id ="cgiTableHead"></tr>
 					</thead>
 					<tbody id="cgiTableBody"></tbody>
-			</table></div>
+			</table>
 		</div>
 
 		<div class="section">
-			<h4 class="editableElement footnotable">EPIDEMIOLOGY</h4>
-
 			<table id="epiTable" class="display" cellspacing="0" width="100%">
 					<thead>
 						<tr id ="epiTableHead"></tr>
@@ -4172,7 +4177,7 @@
 		</div>
 
 		<div class="section">
-			<h4 class="editableElement footnotable" >Monthly distribution of new cases (January-December)</h4>
+			<h4 class="editableElement footnotable titlesBlue" >Monthly distribution of new cases (January-December)</h4>
 
 			<table id="monthlyTable" class="display" cellspacing="0" width="100%">
 					<thead>
@@ -4188,7 +4193,7 @@
 			<div id ="divFormonthlychart1"class="sameLine draggable"><canvas class="chart" id="monthlychart1" width="400" height="240" ></canvas></div>
 			<div id ="divFormonthlychart2" class="sameLine draggable"><canvas class="chart" id="monthlychart2" width="400" height="240" ></canvas></div>
 		</div>
-		<h4 class="editableElement footnotable" >Number of new cases and Incidence rate/10,000 at the national level from <span id ="chartTitleFirstYear"></span> to <span id ="chartTitleLastYear"></span></h4>
+		<h4 class="editableElement footnotable titlesBlue" >Number of new cases and Incidence rate/10,000 at the national level from <span id ="chartTitleFirstYear"></span> to <span id ="chartTitleLastYear"></span></h4>
 		<div>
 			<div id ="divForyearlychart0" class="sameLine draggable"><canvas class="chart" id="yearlychart0" width="400" height="240" ></canvas></div>
 			<div id ="divForyearlychart1" class="sameLine draggable"><canvas class="chart" id="yearlychart1" width="400" height="240" ></canvas></div>
@@ -4203,7 +4208,7 @@
 		<div class="pagebreak"></div>
 
 		<div class="section">
-			<h4 class="editableElement footnotable" >Disease distribution of new <span style="text-decoration: underline red" id ="mapsTitleDis"></span> cases at <span style="text-decoration: underline red" id ="mapsTitleLvl"></span> per 10,000 population <span id ="mapsTitleYear"></span></h4>
+			<h4 class="editableElement footnotable titlesBlue" >Disease distribution of new <span style="text-decoration: underline red" id ="mapsTitleDis"></span> cases at <span style="text-decoration: underline red" id ="mapsTitleLvl"></span> per 10,000 population <span id ="mapsTitleYear"></span></h4>
 			<div class="sameLine map draggable"> <div id="map0"></div></div>
 			<div class="sameLine map draggable"><div id="map1"></div></div>
 			<div class="sameLine map draggable"><div id="map2"></div></div>
@@ -4213,19 +4218,16 @@
 
 
 		<div class="section">
-			<h4 id="casTitle" class="editableElement footnotable" >CONTROL AND SURVEILLANCE</h4>
-			<div class="twoColumns"><table id="casTable" class="display" cellspacing="0" width="100%">
+			<table id="casTable" class="display" cellspacing="0" width="100%">
 					<thead>
 						<tr id ="casTableHead"></tr>
 					</thead>
 					<tbody id="casTableBody"></tbody>
-			</table></div>
+			</table>
 
 		</div>
 
 		<div class="section">
-			<h4 class="editableElement footnotable" >DIAGNOSIS</h4>
-
 			<table id="diagTable" class="display" cellspacing="0" width="100%">
 					<thead>
 						<tr id ="diagTableHead"></tr>
@@ -4240,8 +4242,6 @@
 
 
 		<div class="section">
-			<h4 id="tamTitle" class="editableElement footnotable" >TREATMENT AND MEDICINES</h4>
-
 			<table id="tamTable" class="display" cellspacing="0" width="100%">
 					<thead>
 						<tr id ="tamTableHead"></tr>

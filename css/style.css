@@ -40,6 +40,8 @@ body
 
 table {
 	font-size: 11px !important;
+	margin-top: 20px;
+  margin-bottom:5px;
 }
 
 /* creates a margin extending the row background colors */
@@ -47,17 +49,16 @@ table th:first-child, table td:first-child {
   padding-left: 22px;
 }   
 
-
-
+/* sets same configuration as titles inside tables*/
 h4 {
-	margin-top: 20px;
+  margin-top: 20px;
   margin-bottom:5px;
-  color: #029ADE;
-  font-size: 15px;
+  padding-left: 22px;
 }
 
 .titlesBlue {
   color: #029ADE;
+  font-size: 15px;
 }
 
 h6 {
@@ -69,7 +70,6 @@ h6 {
 	border-bottom: 0px solid #ccc;  /* line at the end of the section */
 	margin-bottom: 0px; 
 	padding-bottom: 0px;
-	width: 900px;
 	font-size: 15px;
 }
 
@@ -166,6 +166,7 @@ img.resize {
 }
 
 .textUnderTable {
+  padding-left: 22px;
 	display: flex;
 	justify-content: space-between;
 	font-size: 10px;
@@ -174,22 +175,31 @@ img.resize {
 
 /* lines for tables */
 
-/* thead > tr:nth-child(even) {background: #FFFFFF} background already white */
-thead > tr:nth-child(odd) {background: #daeaf9}
-tbody > tr:nth-child(even) {background: #daeaf9}
-/* tbody > tr:nth-child(odd) {background: #FFFFFF} background already white */
+thead > tr:nth-child(even) {background: #daeaf9}
+/* thead > tr:nth-child(odd) {background: #FFFFFF} background already white */
+/* tbody > tr:nth-child(even) {background: #FFFFFF} background already white */
+tbody > tr:nth-child(odd) {background: #daeaf9}
 
-#monthlyTable {
+#monthlyTable{
+	margin-top: 0px; /* removes the margin since the title is outside the table*/
+}
 
+/* removes zebra lines for monthly tables since some are hidden*/
+#monthlyTable tr {
+	background: none;
+}
+
+/* sets fixed zebra lines only for visible rows */
+#monthlyTable tbody {
     padding: 0;
     margin: 0;
     border: none;
     width: 100%;
-   background-image:
-  repeating-linear-gradient(#daeaf9, #daeaf9 15px, white 15px, white 30px);
+    background-image:
+    repeating-linear-gradient(#daeaf9, #daeaf9 15px, white 15px, white 30px);
     border-collapse: collapse;
-
 }
+
 #monthlyTable tbody td, #monthlyTable tbody tr {
     border: none;
     padding: 1px;
@@ -242,17 +252,6 @@ th {
   width: 100px;
   text-align: right; 
 }
-
-
-/*
-.twoColumns {
-    column-count:2;
-    -moz-column-count:2;
-    -webkit-column-count:2;
-    break-inside: avoid-column;
-    -webkit-column-break-inside: avoid;
-    width:900px;
-}*/
 
 #tabs {
 	height:fit-content;
