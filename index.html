@@ -403,8 +403,8 @@
 	var map_levels = [NATIONAL_LEVEL + WIDP_OU_SHIFT, NATIONAL_LEVEL + WIDP_OU_SHIFT + SUBLEVEL1];
 	var defaultSubnationalLevel = SUBLEVEL1;
 	var map_opacity = 80;
-	var map_height = 315;
-	var map_width = 420;
+	var map_height = 280;
+	var map_width = 360;
 
 	var TOP_LEFT = 0;
 	var TOP_RIGHT = 1;
@@ -516,8 +516,8 @@
 	/* Treatment and medicines table*/
 	var TAM_ROW_FREEOFCHARGE = 0;
 	var TAM_ROW_EML = 1;
-	var TAM_LABELS = [	"Is treatment provided for free in the public sector? (CL / VL):",
-						"Antileishmanial medicines included in the National Medicine List:"
+	var TAM_LABELS = [	"► Is treatment provided for free in the public sector? (CL / VL):",
+						"► Antileishmanial medicines included in the National Medicine List:"
 						];
 	var LINES_BELOW_LABELS_TAM = [true,true];
 	var tamArray = create_2_dim_array(TAM_LABELS.length, TAM_LABELS, LABELS_ON_COLUMNS);
@@ -3178,7 +3178,6 @@
 			changeOption.prop('disabled', function(_, attr){ return !attr});
 
 			// togles the chart
-			$("#"+type+CHART+index).toggle();
 
 			var theCanvas = $('#'+type + CHART + index);
 			theCanvas.toggleClass('sameLine');
@@ -3201,7 +3200,9 @@
 			}
 
 			// enables or disables the options of the list
-			$("#"+MAP_PREFIX+index).toggle();
+			var theMap = $("#"+MAP_PREFIX+index);
+			theMap.toggleClass('sameLine');
+			theMap.toggleClass('notShown');		
 			var changeOption = $('#' + startingid + OPTION_PREFIX + mapSelectorIndex);
 			changeOption.prop('disabled', function(_, attr){ return !attr});
 			$( "#mapSelector" ).selectmenu( 'refresh', true);
@@ -3499,7 +3500,7 @@
 				autocompleteSearcher("targetCountry", organisationUnits, doNothing, 2, 200);
 
 				country_selector_open();
-				//DEBUG_AutomaticallyfillInitialForm();
+				DEBUG_AutomaticallyfillInitialForm();
 
 			});
 		
@@ -4142,7 +4143,7 @@
 		</div>
 
 
-		<div class="section title_section">
+		<div id="heading_section" class="section blue_section">
 			<div id="head_logo_div">
 				<img id="head_logo_img" src="img/WHO-EN-W-H.png"/>
 			</div>
@@ -4177,7 +4178,7 @@
 		</div>
 
 		<div class="section">
-			<h4 class="editableElement footnotable titlesBlue" >Monthly distribution of new cases (January-December)</h4>
+			<h4 id ="monthlyTableTitle" class="editableElement footnotable titlesBlue" >Monthly distribution of new cases (January-December)</h4>
 
 			<table id="monthlyTable" class="display" cellspacing="0" width="100%">
 					<thead>
@@ -4188,16 +4189,19 @@
 
 		</div>
 
-		<div>
-			<div id ="divFormonthlychart0" class="sameLine draggable"><canvas class="chart" id="monthlychart0" width="400" height="240" ></canvas></div>
-			<div id ="divFormonthlychart1"class="sameLine draggable"><canvas class="chart" id="monthlychart1" width="400" height="240" ></canvas></div>
-			<div id ="divFormonthlychart2" class="sameLine draggable"><canvas class="chart" id="monthlychart2" width="400" height="240" ></canvas></div>
-		</div>
-		<h4 class="editableElement footnotable titlesBlue" >Number of new cases and Incidence rate/10,000 at the national level from <span id ="chartTitleFirstYear"></span> to <span id ="chartTitleLastYear"></span></h4>
-		<div>
-			<div id ="divForyearlychart0" class="sameLine draggable"><canvas class="chart" id="yearlychart0" width="400" height="240" ></canvas></div>
-			<div id ="divForyearlychart1" class="sameLine draggable"><canvas class="chart" id="yearlychart1" width="400" height="240" ></canvas></div>
-			<div id ="divForyearlychart2" class="sameLine draggable"><canvas class="chart" id="yearlychart2" width="400" height="240" ></canvas></div>
+		<div id="charts_section">
+
+			<div>
+				<div id ="divFormonthlychart0" class="sameLine draggable"><canvas class="chart" id="monthlychart0" width="350" height="240" ></canvas></div>
+				<div id ="divFormonthlychart1"class="sameLine draggable"><canvas class="chart" id="monthlychart1" width="350" height="240" ></canvas></div>
+				<div id ="divFormonthlychart2" class="sameLine draggable"><canvas class="chart" id="monthlychart2" width="350" height="240" ></canvas></div>
+			</div>
+			<h4 class="editableElement footnotable titlesBlue" >Number of new cases and Incidence rate/10,000 at the national level from <span id ="chartTitleFirstYear"></span> to <span id ="chartTitleLastYear"></span></h4>
+			<div>
+				<div id ="divForyearlychart0" class="sameLine draggable"><canvas class="chart" id="yearlychart0" width="350" height="240" ></canvas></div>
+				<div id ="divForyearlychart1" class="sameLine draggable"><canvas class="chart" id="yearlychart1" width="350" height="240" ></canvas></div>
+				<div id ="divForyearlychart2" class="sameLine draggable"><canvas class="chart" id="yearlychart2" width="350" height="240" ></canvas></div>
+			</div>
 		</div>
 
 		<div class="section">
@@ -4207,12 +4211,14 @@
 
 		<div class="pagebreak"></div>
 
-		<div class="section">
+		<div id = "maps_section" class="section">
 			<h4 class="editableElement footnotable titlesBlue" >Disease distribution of new <span style="text-decoration: underline red" id ="mapsTitleDis"></span> cases at <span style="text-decoration: underline red" id ="mapsTitleLvl"></span> per 10,000 population <span id ="mapsTitleYear"></span></h4>
-			<div class="sameLine map draggable"> <div id="map0"></div></div>
-			<div class="sameLine map draggable"><div id="map1"></div></div>
-			<div class="sameLine map draggable"><div id="map2"></div></div>
-			<div class="sameLine map draggable"><div id="map3"></div></div>
+			<div> <!-- div to apply padding-->
+				<div id="map0" class= "map sameLine draggable"></div>
+				<div id="map1" class= "map sameLine draggable"></div>
+				<div id="map2" class= "map sameLine draggable"></div>
+				<div id="map3" class= "map sameLine draggable"></div>
+			</div>
 			<div id="notaBeneMaps"  class="notasBene draggable"><div class="editableElement"></div></div>
 		</div>
 
@@ -4248,7 +4254,6 @@
 					</thead>
 					<tbody id="tamTableBody"></tbody>
 			</table>
-			<br>
 			<table id="toutcomeTable" class="display" cellspacing="0" width="100%">
 					<thead>
 						<tr id ="toutcomeTableHead"></tr>
@@ -4260,7 +4265,15 @@
 		<div class="section">
 			<hr>
 			<div id="footnotes2"></div>
-			<div id="notaBene"  class="notasBene draggable"><div class="editableElement"></div></div>
+
+		</div>
+
+		<div id="footer_section" class="section blue_section">
+			<div id="head_logo_div_f">
+				<img id="head_logo_img_f" src="img/WHO-EN-W-H.png"/>
+			</div>
+
+			<div id="notaBene" class="notasBene draggable"><div class="editableElement"></div></div>
 
 		</div>
 	</div>

@@ -44,21 +44,24 @@ table {
   margin-bottom:5px;
 }
 
+table td {
+	padding:2px;
+}
+
 /* creates a margin extending the row background colors */
 table th:first-child, table td:first-child {
-  padding-left: 22px;
+  padding-left: 44px;
 }   
 
 /* sets same configuration as titles inside tables*/
 h4 {
-  margin-top: 20px;
-  margin-bottom:5px;
-  padding-left: 22px;
+  margin: 0px;
+  font-size: 15px !important;
 }
 
 .titlesBlue {
   color: #029ADE;
-  font-size: 15px;
+  font-size: 16px;
 }
 
 h6 {
@@ -70,7 +73,8 @@ h6 {
 	border-bottom: 0px solid #ccc;  /* line at the end of the section */
 	margin-bottom: 0px; 
 	padding-bottom: 0px;
-	font-size: 15px;
+  font-size: 15px;
+  max-width: 210mm; /* size of A4*/
 }
 
 
@@ -78,10 +82,10 @@ h6 {
 /* Organize content of div in equal-sized colons*/
 
 .head_container > * {
-   padding-left: 22px;
+   padding-left: 44px;
 }
 
-.title_section {
+.blue_section {
   background-color: #1e80b8;
   color: white;
   margin:0;
@@ -89,32 +93,64 @@ h6 {
   height: 26mm;
 }
 
+#heading_section{
+  height: 26mm;
+}
+
 #title {
 	padding-top:6px;
-    font-size: 20px;
-    font-weight:bolder;
-
+  font-size: 22px;
+  font-weight: bolder;
 }	
 
 #published_date {
-    font-size:12px;
+    font-size:11px;
 }
 
 #country_name {
-	padding-top:4px;
-	font-size:36px;
-	font-weight:bolder;
+	padding-top:0px;
+	font-size: 40px;
+	font-weight: bolder;
 }
 
 #head_logo_div{
    float: right;
    display:flex;
    height:100%;
-   padding-right: 22px;
+   padding-right: 33px;
 }
 #head_logo_img {
 	width:180px;
   align-self: center;
+}
+
+#footer_section{
+  height: 20mm;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-column-gap: 5px;
+}
+
+/* aligns children vertically to center */
+#footer_section * {
+	display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+#head_logo_div_f{
+  grid-column-start: 2;
+}
+
+#head_logo_img_f {
+ width:130px;
+    
+}
+
+#notaBene{
+  padding-right: 44px;
+  margin-left: auto;
+  font-size: 11px;
 }
 
 /* END of HEADER section */ 
@@ -166,12 +202,13 @@ img.resize {
 }
 
 .textUnderTable {
-  padding-left: 22px;
-	display: flex;
-	justify-content: space-between;
+  padding-left: 44px;
 	font-size: 10px;
-	width: 100%;
 }
+
+/* separates items by ;*/ 
+.textUnderTable span:not(:first-of-type):before {content:"; ";}
+.textUnderTable span:empty:before{content:"";}
 
 /* lines for tables */
 
@@ -180,14 +217,32 @@ thead > tr:nth-child(even) {background: #daeaf9}
 /* tbody > tr:nth-child(even) {background: #FFFFFF} background already white */
 tbody > tr:nth-child(odd) {background: #daeaf9}
 
+/* emphasizes total number of cases row */
+#epiTable tbody tr:nth-child(4) {
+	color: #029ADE;
+	font-weight: bold;
+}
+
 #monthlyTable{
 	margin-top: 0px; /* removes the margin since the title is outside the table*/
+}
+
+#monthlyTableTitle{
+  margin-top: 10px;
+  padding-left: 44px;
+}
+
+#monthlyTable thead tr th:first-child {
+  font-size: 11px !important;   /* sets the year size  to the same as other th headers */
 }
 
 /* removes zebra lines for monthly tables since some are hidden*/
 #monthlyTable tr {
 	background: none;
 }
+
+/* adds first zebra lines to first header row*/
+#monthlyTable thead > tr:nth-child(odd) {background: #daeaf9 !important}
 
 /* sets fixed zebra lines only for visible rows */
 #monthlyTable tbody {
@@ -196,13 +251,13 @@ tbody > tr:nth-child(odd) {background: #daeaf9}
     border: none;
     width: 100%;
     background-image:
-    repeating-linear-gradient(#daeaf9, #daeaf9 15px, white 15px, white 30px);
+    repeating-linear-gradient(white, white 17px, #daeaf9 17px, #daeaf9 34px);
     border-collapse: collapse;
 }
 
 #monthlyTable tbody td, #monthlyTable tbody tr {
     border: none;
-    padding: 1px;
+    padding: 2px;
     line-height: 13px;
     margin: 0;
     border-collapse: collapse;
@@ -211,11 +266,28 @@ tbody > tr:nth-child(odd) {background: #daeaf9}
 /* keeps global values for first column*/
 #monthlyTable td:first-child {
   text-align: left;
-  padding-left: 22px;
+  padding-left: 44px;
 }    
 
 #monthlyTable th, #monthlyTable td {
   text-align: center;
+}
+
+/*removes zebra lines from this table */
+#tamTable tr {
+  background: none;
+}
+
+/* compacts the table rows */
+#tamTable td {
+  background: none;
+  padding-top: 0px;
+  padding-bottom: 0px;
+}
+
+/* emphasizes second column */
+#tamTable tbody tr td:nth-child(2) {
+ color: #029ADE;
 }
 
 
@@ -237,9 +309,18 @@ th {
 	display: none !important;
 }
 
+#maps_section > * {
+  padding-left: 44px; /* only applies padding to immediate childs */
+}
+
 .map {
     border: 0;
-    margin: 0px 0px 2px 10px;
+    padding-right: 10px;
+    padding-bottom: 2px;
+}
+
+#charts_section {
+  padding-left: 44px; 
 }
 
 .chart {
@@ -350,14 +431,15 @@ div.col {
 	font-size:12px;
 }
 
-.notasBene{
-	font-size:10px;
-	padding: 4px;
-	border-style: solid;
-  border-width: thin;
-  margin: 1px 10px 10px 10px;
-  width: fit-content;
+#notaBeneMaps{
+  font-size:10px;
+}
 
+#notaBene {
+  float: right;
+  display:flex;
+  height:100%;
+  padding-right: 33px;
 }
 
 #footer
