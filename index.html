@@ -143,9 +143,9 @@
 	LEVEL_REPORT_LABELS[SUBLEVEL2] = "Number of 2<sup>nd</sup> sub-national administrative level divisions, name:";
 	LEVEL_REPORT_LABELS[SUBLEVEL3] = "Number of 3<sup>rd</sup> sub-national administrative level divisions, name:";
 	ENDEMIC_SUBN_LEVEL_LABELS[NATIONAL_LEVEL] = "Endemic divisions. National level:";
-	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL1] = "Number of endemic 1<sup>st</sup> sub-national administrative level divisions:";
-	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL2] = "Number of endemic 2<sup>nd</sup> sub-national administrative level divisions:";
-	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL3] = "Number of endemic 3<sup>rd</sup> sub-national administrative level divisions:";
+	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL1] = "Number of endemic 1<sup>st</sup> sub-national <br>administrative level divisions:";
+	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL2] = "Number of endemic 2<sup>nd</sup> sub-national <br>administrative level divisions:";
+	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL3] = "Number of endemic 3<sup>rd</sup> sub-national <br>administrative level divisions:";
 
 	/* Texts on report */
 	var PUBLISHED_TEXT = "Published in ";
@@ -235,20 +235,21 @@
 	
 	var CIG_ROW_POP = 0;
 	var CIG_ROW_SEX = 1;
-	var CIG_ROW_GDP = 2;
-	var CIG_ROW_INCOME = 3;
-	var CIG_ROW_AGEG = 4;
-	var CIG_ROW_LIFE = 5;
+	var CIG_ROW_AGEG = 2;
+	var CIG_ROW_LIFE = 3;
+	var CIG_ROW_GDP = 4;
+	var CIG_ROW_INCOME = 5;
 	var CIG_ROW_DIVIS = 6;
 
-	var CGI_LABELS = [	"Total population:",
-						"Gender F/M (%):",
-						"GDP (PPP int $):",
-						"Income status:",
-						"Population, age group <15 / ≥ 15 years (%): ",
-						"Life expectancy at birth (F/M, years):",
-						LEVEL_REPORT_LABELS[SUBLEVEL2]
-						];
+	var CGI_LABELS = [];
+	CGI_LABELS[CIG_ROW_POP] = 	"Total population:",
+	CGI_LABELS[CIG_ROW_SEX] = 	"Gender F/M (%):",
+	CGI_LABELS[CIG_ROW_AGEG] = 	"Population, age group <15 / ≥ 15 years (%): ",
+	CGI_LABELS[CIG_ROW_LIFE] = 	"Life expectancy at birth (F/M, years):",	
+	CGI_LABELS[CIG_ROW_GDP] =	"GDP (PPP int $):",
+	CGI_LABELS[CIG_ROW_INCOME] = "Income status:",
+	CGI_LABELS[CIG_ROW_DIVIS] =	LEVEL_REPORT_LABELS[SUBLEVEL2]
+					
 
 	var LINES_BELOW_LABELS_CGI = [true,true,true,false,true,true,true];
 	var generalInformationArray = create_2_dim_array(CGI_LABELS.length, CGI_LABELS, LABELS_ON_COLUMNS);
@@ -2803,7 +2804,7 @@
 				title:{
 						display: true,
 						text: title
-					},
+				},
 				responsive: false
 			}
 		});
@@ -4192,15 +4193,15 @@
 		<div id="charts_section">
 
 			<div>
-				<div id ="divFormonthlychart0" class="sameLine draggable"><canvas class="chart" id="monthlychart0" width="350" height="240" ></canvas></div>
-				<div id ="divFormonthlychart1"class="sameLine draggable"><canvas class="chart" id="monthlychart1" width="350" height="240" ></canvas></div>
-				<div id ="divFormonthlychart2" class="sameLine draggable"><canvas class="chart" id="monthlychart2" width="350" height="240" ></canvas></div>
+				<div id ="divFormonthlychart0" class="sameLine draggable"><canvas class="chart" id="monthlychart0" width="360" height="160" ></canvas></div>
+				<div id ="divFormonthlychart1"class="sameLine draggable"><canvas class="chart" id="monthlychart1" width="360" height="160" ></canvas></div>
+				<div id ="divFormonthlychart2" class="sameLine draggable"><canvas class="chart" id="monthlychart2" width="360" height="160" ></canvas></div>
 			</div>
 			<h4 class="editableElement footnotable titlesBlue" >Number of new cases and Incidence rate/10,000 at the national level from <span id ="chartTitleFirstYear"></span> to <span id ="chartTitleLastYear"></span></h4>
 			<div>
-				<div id ="divForyearlychart0" class="sameLine draggable"><canvas class="chart" id="yearlychart0" width="350" height="240" ></canvas></div>
-				<div id ="divForyearlychart1" class="sameLine draggable"><canvas class="chart" id="yearlychart1" width="350" height="240" ></canvas></div>
-				<div id ="divForyearlychart2" class="sameLine draggable"><canvas class="chart" id="yearlychart2" width="350" height="240" ></canvas></div>
+				<div id ="divForyearlychart0" class="sameLine draggable"><canvas class="chart" id="yearlychart0" width="360" height="160" ></canvas></div>
+				<div id ="divForyearlychart1" class="sameLine draggable"><canvas class="chart" id="yearlychart1" width="360" height="160" ></canvas></div>
+				<div id ="divForyearlychart2" class="sameLine draggable"><canvas class="chart" id="yearlychart2" width="360" height="160" ></canvas></div>
 			</div>
 		</div>
 
