@@ -161,7 +161,8 @@ h6 {
 }
 
 .footnote {
-	font-size: 9px;
+  font-size: 9px;
+  padding-left: 44px;
 }
 
 .superindex 
@@ -216,6 +217,10 @@ thead > tr:nth-child(even) {background: #daeaf9}
 /* thead > tr:nth-child(odd) {background: #FFFFFF} background already white */
 /* tbody > tr:nth-child(even) {background: #FFFFFF} background already white */
 tbody > tr:nth-child(odd) {background: #daeaf9}
+
+#cgiTable thead tr th:first-child {
+  width: 456px;
+}
 
 /* emphasizes total number of cases row */
 #epiTable tbody tr:nth-child(4) {
@@ -273,6 +278,10 @@ tbody > tr:nth-child(odd) {background: #daeaf9}
   text-align: center;
 }
 
+#casTable thead tr th:first-child {
+  width: 456px;
+}
+
 /*removes zebra lines from this table */
 #tamTable tr {
   background: none;
@@ -283,6 +292,10 @@ tbody > tr:nth-child(odd) {background: #daeaf9}
   background: none;
   padding-top: 0px;
   padding-bottom: 0px;
+}
+
+#tamTable tbody tr td:first-child {
+  width: 350px;
 }
 
 /* emphasizes second column */
@@ -307,6 +320,10 @@ th {
 .notShown
 {
 	display: none !important;
+}
+
+#maps_section {
+  padding-top: 20px;
 }
 
 #maps_section > * {
