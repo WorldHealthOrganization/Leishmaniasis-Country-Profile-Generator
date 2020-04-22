@@ -326,6 +326,7 @@ th {
 .chart {
     border: 0;
     margin: 5px 10px 0px 0px;
+    position: relative;
 }
 
 /* inputs */
@@ -422,6 +423,52 @@ div.col {
 	padding: 4px;
 	background:white;
 }
+
+#chartPreview{
+  position: relative;
+}
+
+.legendChart{
+	width:280px;
+	height:60px;
+	background:transparent;
+	display: flex;
+	position:absolute;
+	top:35;
+	left:65;
+}
+
+#legendmonthlychart2 > div {
+  width: 90px;	
+}
+
+#legendyearlychart2 > div {
+  width: 160px;	
+}
+
+.oneLegendChart{
+  font-family:'Century Gothic',san-serif !important;
+  font-size:11px;
+  padding-right: 10px;
+}
+
+.oneLegendChart div:first-child {
+  width: 20px;
+  margin-right: 0px;
+  margin-left: 0;
+}
+
+.oneLegendChart .bar {
+    height: 8px;
+    border: 1px solid #999;
+  }
+  
+  .oneLegendChart .line {
+    height: 2px;
+    width: 30px;
+    border: 1px solid white;
+  }
+
 
 .legentSetElementText{
 	font-size:10px;
