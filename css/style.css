@@ -295,7 +295,7 @@ tbody > tr:nth-child(odd) {background: #daeaf9}
 }
 
 #tamTable tbody tr td:first-child {
-  width: 350px;
+  width: 380px;
 }
 
 /* emphasizes second column */

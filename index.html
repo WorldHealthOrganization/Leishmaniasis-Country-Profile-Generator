@@ -3444,6 +3444,17 @@
 		$('#' + MAP_PREFIX + CL_INDEX).find(".leaflet-control-zoom").hide();
 		$('#' + MAP_PREFIX + ACL_INDEX).find(".leaflet-control-zoom").hide();
 		$('#' + MAP_PREFIX + ZCL_INDEX).find(".leaflet-control-zoom").hide();
+		
+		var width = $(document).width();
+		var cmtoinch = width / 210;
+		heigthofA4 = 297 * cmtoinch;
+		var heigth = $(document).height();
+		lastPageHeigh = heigth % heigthofA4;
+		remaining = heigthofA4 - lastPageHeigh; // remaining blank space.
+
+		$("#toutcomeTable").css("margin-bottom", remaining); // puts the remaining blank space after last table
+
+
 	};
 
 	var afterPrint = function() {
@@ -3452,6 +3463,8 @@
 		$('#' + MAP_PREFIX + CL_INDEX).find(".leaflet-control-zoom").show();
 		$('#' + MAP_PREFIX + ACL_INDEX).find(".leaflet-control-zoom").show();
 		$('#' + MAP_PREFIX + ZCL_INDEX).find(".leaflet-control-zoom").show();
+
+		$("#toutcomeTable").css("margin-bottom", "0px");
 	};
 
 	if (window.matchMedia) {
@@ -3465,8 +3478,8 @@
 		});
 	}
 
-	window.onbeforeprint = beforePrint;
-	window.onafterprint = afterPrint;
+	//window.onbeforeprint = beforePrint;
+	//window.onafterprint = afterPrint;
 	/* END AFTER AND BEFORE printing actions */
 
 
