@@ -88,8 +88,8 @@ h6 {
 .blue_section {
   background-color: #1e80b8;
   color: white;
-  margin:0;
-  padding:0;
+  margin:0px;
+  padding:0px;
   height: 26mm;
 }
 
@@ -117,7 +117,7 @@ h6 {
    float: right;
    display:flex;
    height:100%;
-   padding-right: 33px;
+   padding-right: 30px;
 }
 #head_logo_img {
 	width:180px;
@@ -129,6 +129,7 @@ h6 {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   grid-column-gap: 5px;
+  margin-top: 5px;
 }
 
 /* aligns children vertically to center */
@@ -145,12 +146,6 @@ h6 {
 #head_logo_img_f {
  width:130px;
     
-}
-
-#notaBene{
-  padding-right: 44px;
-  margin-left: auto;
-  font-size: 11px;
 }
 
 /* END of HEADER section */ 
@@ -204,12 +199,22 @@ img.resize {
 
 .textUnderTable {
   padding-left: 44px;
-	font-size: 10px;
+	font-size: 9px;
 }
 
 /* separates items by ;*/ 
 .textUnderTable span:not(:first-of-type):before {content:"; ";}
 .textUnderTable span:empty:before{content:"";}
+
+.fraction_text{
+  font-size: 10px;
+  vertical-align:middle;
+}
+
+.prev_fraction {
+  padding-right: 10px;
+  vertical-align:middle;
+}
 
 /* lines for tables */
 
@@ -228,6 +233,10 @@ tbody > tr:nth-child(odd) {background: #daeaf9}
 	font-weight: bold;
 }
 
+#epiTable tbody tr td:first-child {
+  width: 333px;
+}
+
 #monthlyTable{
 	margin-top: 0px; /* removes the margin since the title is outside the table*/
 }
@@ -235,6 +244,8 @@ tbody > tr:nth-child(odd) {background: #daeaf9}
 #monthlyTableTitle{
   margin-top: 10px;
   padding-left: 44px;
+  padding-bottom: 5px;
+  font-size: 14px !important;
 }
 
 #monthlyTable thead tr th:first-child {
@@ -251,8 +262,8 @@ tbody > tr:nth-child(odd) {background: #daeaf9}
 
 /* sets fixed zebra lines only for visible rows */
 #monthlyTable tbody {
-    padding: 0;
-    margin: 0;
+    padding: 0px;
+    margin: 0px;
     border: none;
     width: 100%;
     background-image:
@@ -262,9 +273,8 @@ tbody > tr:nth-child(odd) {background: #daeaf9}
 
 #monthlyTable tbody td, #monthlyTable tbody tr {
     border: none;
-    padding: 2px;
     line-height: 13px;
-    margin: 0;
+    margin: 0px;
     border-collapse: collapse;
 }
 
@@ -278,8 +288,12 @@ tbody > tr:nth-child(odd) {background: #daeaf9}
   text-align: center;
 }
 
-#casTable thead tr th:first-child {
-  width: 456px;
+#casTable tbody tr td:first-child {
+  width: 432px;
+}
+
+#diagTable tbody tr td:first-child {
+  width: 432px;
 }
 
 /*removes zebra lines from this table */
@@ -303,6 +317,18 @@ tbody > tr:nth-child(odd) {background: #daeaf9}
  color: #029ADE;
 }
 
+/* emphasizes arrow icon */
+#tamTable td:first-letter {
+  color: #029ADE;
+ }
+
+ #toutcomeTable tbody tr td:first-child {
+  width: 432px;
+}
+
+.lastTableColumn{
+  padding-right: 30px;
+}
 
 th {
   text-align: left;
@@ -326,13 +352,17 @@ th {
   padding-top: 20px;
 }
 
+#maps_section .titlesBlue {
+	margin-bottom: 5px;
+}
+
 #maps_section > * {
   padding-left: 44px; /* only applies padding to immediate childs */
 }
 
 .map {
     border: 0;
-    padding-right: 10px;
+    padding-right: 6px;
     padding-bottom: 2px;
 }
 
@@ -342,7 +372,7 @@ th {
 
 .chart {
     border: 0;
-    margin: 5px 10px 0px 0px;
+    margin: 5px 8px 0px 0px;
     position: relative;
 }
 
@@ -377,7 +407,7 @@ th {
     border: 1px solid #eee;
     min-height: 50px;
     list-style-type: none;
-    margin: 0;
+    margin: 0px;
     padding: 5px 0 0 0;
     float: left;
     margin-right: 10px;
@@ -398,7 +428,7 @@ th {
 .Content
 {
   display:inline-block;
-  max-width: 33%;
+  max-width: 32.9%;
 }
 
 /* maps slider */
@@ -406,6 +436,10 @@ div.col {
     float: left;
     width: fit-content;
     padding-right: 20px;
+}
+div.row { /* makes notabene controls to appear at left in a new row */
+  display: flex;
+  flex-wrap: wrap;
 }
 
 .ui-slider-horizontal {
@@ -446,13 +480,13 @@ div.col {
 }
 
 .legendChart{
-	width:280px;
+	/*width:280px;*/
 	height:60px;
 	background:transparent;
 	display: flex;
 	position:absolute;
-	top:35;
-	left:65;
+	top:35px;
+	left:65px;
 }
 
 #legendmonthlychart2 > div {
@@ -460,7 +494,7 @@ div.col {
 }
 
 #legendyearlychart2 > div {
-  width: 160px;	
+  width: 150px;	/* to avoid 4 legends overflow the page limit */
 }
 
 .oneLegendChart{
@@ -472,7 +506,7 @@ div.col {
 .oneLegendChart div:first-child {
   width: 20px;
   margin-right: 0px;
-  margin-left: 0;
+  margin-left: 0px;
 }
 
 .oneLegendChart .bar {
@@ -496,14 +530,18 @@ div.col {
 }
 
 #notaBeneMaps{
-  font-size:10px;
+  font-size: 8px;
+  text-align:justify;
+  padding-right: 30px;
 }
 
 #notaBene {
   float: right;
   display:flex;
   height:100%;
-  padding-right: 33px;
+  padding-right: 30px;
+  margin-left: auto;
+  font-size: 11px;
 }
 
 #footer
@@ -531,6 +569,16 @@ input {
 
 /* dialogs */
 .ui-dialog { z-index: 10000 !important ;}
+
+/* editor */
+
+.jqte{
+  margin: 0px !important;
+}
+
+.jqte_editor, .jqte_source {
+  min-height: 50px !important;
+}
 
 .formTitle {
   text-align:center;
@@ -572,6 +620,7 @@ input {
 /* Full-width input fields */
 .form-container input[type=text], .form-container input[type=password] {
   width: 100%;
+  max-width: 270px;
   padding: 15px;
   margin: 5px 0 22px 0;
   border: none;
