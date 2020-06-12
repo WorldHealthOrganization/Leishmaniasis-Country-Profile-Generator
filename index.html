@@ -1,3 +1,7 @@
+
+<!DOCTYPE html>
+<html>
+<head>
 <!--
 	/****************************************************************************************************
  	 **********		   																		   **********
@@ -143,9 +147,9 @@
 	LEVEL_REPORT_LABELS[SUBLEVEL2] = "Number of 2<sup>nd</sup> sub-national administrative level divisions, name:";
 	LEVEL_REPORT_LABELS[SUBLEVEL3] = "Number of 3<sup>rd</sup> sub-national administrative level divisions, name:";
 	ENDEMIC_SUBN_LEVEL_LABELS[NATIONAL_LEVEL] = "Endemic divisions. National level:";
-	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL1] = "Number of endemic 1<sup>st</sup> sub-national administrative level divisions:";
-	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL2] = "Number of endemic 2<sup>nd</sup> sub-national administrative level divisions:";
-	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL3] = "Number of endemic 3<sup>rd</sup> sub-national administrative level divisions:";
+	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL1] = "Number of endemic 1<sup>st</sup> sub-national <br>administrative level divisions:";
+	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL2] = "Number of endemic 2<sup>nd</sup> sub-national <br>administrative level divisions:";
+	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL3] = "Number of endemic 3<sup>rd</sup> sub-national <br>administrative level divisions:";
 
 	/* Texts on report */
 	var PUBLISHED_TEXT = "Published in ";
@@ -153,7 +157,13 @@
 	var CL_CHART_LEGEND = "CL ";	
 	var ACL_CHART_LEGEND = "ACL ";
 	var ZCL_CHART_LEGEND = "ZCL ";
-	var TOUTCOME_TABLE_FIRST_COLUMNS = "INITIAL TREATMENT OUTCOME FOR NEW CASES";
+	
+	var TABLE_TITLE_CGI = "COUNTRY GENERAL INFORMATION";
+	var TABLE_TITLE_EPI = "EPIDEMIOLOGY";
+	var TABLE_TITLE_CAS = "CONTROL AND SURVEILLANCE";
+	var TABLE_TITLE_DIAG = "DIAGNOSIS";
+	var TABLE_TITLE_TAM = "TREATMENT AND MEDICINES";
+	var TABLE_TITLE_TOUTCOME = "INITIAL TREATMENT OUTCOME FOR NEW CASES";
 
 	var MONTHLY_CHART_LABELS = ["VL monthly", "CL monthly", "AZCL monthly"];
 	var YEARLY_CHART_LABELS = ["VL yearly", "CL yearly", "AZCL yearly"];
@@ -229,20 +239,21 @@
 	
 	var CIG_ROW_POP = 0;
 	var CIG_ROW_SEX = 1;
-	var CIG_ROW_GDP = 2;
-	var CIG_ROW_INCOME = 3;
-	var CIG_ROW_AGEG = 4;
-	var CIG_ROW_LIFE = 5;
+	var CIG_ROW_AGEG = 2;
+	var CIG_ROW_LIFE = 3;
+	var CIG_ROW_GDP = 4;
+	var CIG_ROW_INCOME = 5;
 	var CIG_ROW_DIVIS = 6;
 
-	var CGI_LABELS = [	"Total population:",
-						"Gender F/M (%):",
-						"GDP (PPP int $):",
-						"Income status:",
-						"Population, age group <15 / ≥ 15 years (%): ",
-						"Life expectancy at birth (F/M, years):",
-						LEVEL_REPORT_LABELS[SUBLEVEL2]
-						];
+	var CGI_LABELS = [];
+	CGI_LABELS[CIG_ROW_POP] = 	"Total population:",
+	CGI_LABELS[CIG_ROW_SEX] = 	"Gender F/M (%):",
+	CGI_LABELS[CIG_ROW_AGEG] = 	"Population, age group <15 / ≥ 15 years (%): ",
+	CGI_LABELS[CIG_ROW_LIFE] = 	"Life expectancy at birth (F/M, years):",	
+	CGI_LABELS[CIG_ROW_GDP] =	"GDP (PPP int $):",
+	CGI_LABELS[CIG_ROW_INCOME] = "Income status:",
+	CGI_LABELS[CIG_ROW_DIVIS] =	LEVEL_REPORT_LABELS[SUBLEVEL2]
+					
 
 	var LINES_BELOW_LABELS_CGI = [true,true,true,false,true,true,true];
 	var generalInformationArray = create_2_dim_array(CGI_LABELS.length, CGI_LABELS, LABELS_ON_COLUMNS);
@@ -366,6 +377,16 @@
 	MAP_CHECKBOXES_LABELS[ACL_INDEX] = "ACL incidence";
 	MAP_CHECKBOXES_LABELS[ZCL_INDEX] = "ZCL incidence";
 
+	WHO_OU_TEXT_LVL = [
+		"WHO Global",
+		"WHO Regions",
+		"WHO Member States",
+		"Level 1",
+		"Level 2",
+		"Level 3",
+		"Level 4"
+	];
+
 	var WHO_BASEMAP = 0;
 	var OSM_LIGHT = 1;
 	var GOOGLE_STREETS = 2;
@@ -394,11 +415,45 @@
 
 	var initalMapDiv = new Array(4);
 	var mapLegends = new Array(4);
-	var map_levels = [NATIONAL_LEVEL + WIDP_OU_SHIFT, NATIONAL_LEVEL + WIDP_OU_SHIFT + SUBLEVEL1];
+
+	var DEFAULT_LEGEND_FONT_SIZE = 10;
+	var legendSetFontSize;
+
+	var DEFAULT_MAP_LEVELS = [NATIONAL_LEVEL + WIDP_OU_SHIFT, NATIONAL_LEVEL + WIDP_OU_SHIFT + SUBLEVEL1];
 	var defaultSubnationalLevel = SUBLEVEL1;
-	var map_opacity = 80;
-	var map_height = 315;
-	var map_width = 420;
+	var DEFAULT_MAP_HEIGHT = 280;
+	var DEFAULT_MAP_WIDTH = 356;
+	var DEFAULT_MAP_OPACITY = 80;
+
+	var map_levels = []; 
+	map_levels[VL_INDEX] =  DEFAULT_MAP_LEVELS;
+	map_levels[CL_INDEX] =  DEFAULT_MAP_LEVELS;
+	map_levels[ACL_INDEX] =  DEFAULT_MAP_LEVELS;
+	map_levels[ZCL_INDEX] =  DEFAULT_MAP_LEVELS;
+
+	var map_style = []; 
+	map_style[VL_INDEX] =  WHO_BASEMAP;
+	map_style[CL_INDEX] =  WHO_BASEMAP;
+	map_style[ACL_INDEX] =  WHO_BASEMAP;
+	map_style[ZCL_INDEX] =  WHO_BASEMAP;
+
+	var map_opacity = []; 
+	map_opacity[VL_INDEX] =  DEFAULT_MAP_OPACITY;
+	map_opacity[CL_INDEX] =  DEFAULT_MAP_OPACITY;
+	map_opacity[ACL_INDEX] =  DEFAULT_MAP_OPACITY;
+	map_opacity[ZCL_INDEX] =  DEFAULT_MAP_OPACITY;
+
+	var map_height = [];
+	map_height[VL_INDEX] =  DEFAULT_MAP_HEIGHT;
+	map_height[CL_INDEX] =  DEFAULT_MAP_HEIGHT;
+	map_height[ACL_INDEX] =  DEFAULT_MAP_HEIGHT;
+	map_height[ZCL_INDEX] =  DEFAULT_MAP_HEIGHT;
+
+	var map_width = [];
+	map_width[VL_INDEX] =  DEFAULT_MAP_WIDTH;
+	map_width[CL_INDEX] =  DEFAULT_MAP_WIDTH;
+	map_width[ACL_INDEX] =  DEFAULT_MAP_WIDTH;
+	map_width[ZCL_INDEX] =  DEFAULT_MAP_WIDTH;
 
 	var TOP_LEFT = 0;
 	var TOP_RIGHT = 1;
@@ -422,9 +477,6 @@
 	LEGEND_POSITIONS[BOTTOM_RIGHT] = ".leaflet-bottom.leaflet-right";
 
 	var editingLegend;
-	var font_size_slider = $( "#font_size_slider" );
-	var font_size_slider_handle = $( "#font_size_slider_handle" );
-
 
 	/* Control and surveillance table */
 	var CAS_ROW_LNCP = 0;
@@ -436,7 +488,7 @@
 	var CAS_ROW_RESER = 6;
 	var CAS_ROW_FACIL = 7;
 	
-	var CAS_LABELS = [	"Year Leishmaniasis National Control<br>Programme (LNCP) was established:",
+	var CAS_LABELS = [	"Year Leishmaniasis National Control Programme (LNCP) was established:",
 						"Type of surveillance (CL / VL):",
 						"Is there a vector control programme?",
 						"Type of insecticide used for Indoor residual Spraying (IRS):",
@@ -469,11 +521,11 @@
 
 	var diagnosisLabels = [	"Number of people screened actively for:",
 							"Number of people screened passively for:",
-							"VL cases diagnosed by RDT<br>(%, # RDT+ / new VL cases):",
-							"Proportion of positive RDT<br>(%, # RDT+ / total RDT):",
-							"Cases diagnosed by direct exam<br>(parasitology) (%, # slides + / total cases):",
-							"Proportion of positive slides<br>(%, # slides + / total slides):",
-							"Cases diagnosed clinically<br>(%, # clinical cases / total cases): ",
+							"VL cases diagnosed by RDT (%, # RDT+ / new VL cases):",
+							"Proportion of positive RDT (%, # RDT+ / total RDT):",
+							"Cases diagnosed by direct exam (parasitology) (%, # slides + / total cases):",
+							"Proportion of positive slides (%, # slides + / total slides):",
+							"Cases diagnosed clinically (%, # clinical cases / total cases): ",
 							"Percentage of cases with HIV-VL coinfection:"
 							];
 
@@ -510,8 +562,8 @@
 	/* Treatment and medicines table*/
 	var TAM_ROW_FREEOFCHARGE = 0;
 	var TAM_ROW_EML = 1;
-	var TAM_LABELS = [	"Is treatment provided for free in the public sector? (CL / VL):",
-						"Antileishmanial medicines included in the National Medicine List:"
+	var TAM_LABELS = [	"► Is treatment provided for free in the public sector? (CL / VL):",
+						"► Antileishmanial medicines included in the National Medicine List:"
 						];
 	var LINES_BELOW_LABELS_TAM = [true,true];
 	var tamArray = create_2_dim_array(TAM_LABELS.length, TAM_LABELS, LABELS_ON_COLUMNS);
@@ -896,8 +948,8 @@
 	
 	/* Classes */
 
-	var CLASS_EDITABLE_ELEMENT = "editableElement";
-	var CLASS_FOOTNOTABLE_ELEMENT = "footnotable";
+	var EDITABLE = "editableElement";
+	var FOOTNOTABLE = "footnotable";
 
 	var SORTABLE_LIST_1_NAME = "sortable1";
 	var SORTABLE_LIST_2_NAME = "sortable2";
@@ -924,6 +976,8 @@
 	var LEGENDSET_POOL = "legendPool";
 	var LEGENDSET_PREFIX = "legendSet";
 	var LEGEND_PREFIX = "legend";
+	var LEGENDCHART_POOL = "legendChartPool";
+	var LEGENDCHART_PREFIX = "legendChart";
 	var LEISH_COLUMN_DETAIL_PREFIX = "LeishDetail";
 	var LEVEL_PREFIX = "level";
 	var MAP_PREFIX = "map";	
@@ -948,10 +1002,10 @@
  	 **********                    	     STATIC CONTENT FUNCTIONS         	           	       **********
 	 ****************************************************************************************************/
 	function fillTableHead(tableName, extName, firstColumn, headObjects){
-		var html = '<th class="align_to_left titlesBlue">'+firstColumn+'</th>';
+		var html = '<th class="align_to_left titlesBlue '+EDITABLE+' '+FOOTNOTABLE+'">'+firstColumn+'</th>';
 		
 		for (var i=0; i<headObjects.length;i++){
-			html +='<th class="'+CLASS_EDITABLE_ELEMENT+'">'+headObjects[i]+'</th>';
+			html +='<th class="'+EDITABLE+' '+FOOTNOTABLE+'">'+headObjects[i]+'</th>';
 		}
 		document.getElementById(tableName + extName).innerHTML = html;
 	}
@@ -989,14 +1043,14 @@
 		var html = '';
 
 		if (firstText == true){
-			html +='<span class="' + CLASS_EDITABLE_ELEMENT + '">N/A not applicable</span>';
+			html +='<span class="' + EDITABLE + '">N/A not applicable</span>';
 		} else if (firstText == false){
 			html +='';
 		} else {
 			html +=firstText;
 		}
 		for (var i = 0; i < labels.length; i++){
-			html +='<span id="'  +idprefi + i + '" class="' + CLASS_EDITABLE_ELEMENT+'">' + labels[i] + ' = ' + labelsDesc[i] + '</span>';
+			html +='<span id="'  +idprefi + i + '" class="' + EDITABLE+'">' + labels[i] + ' = ' + labelsDesc[i] + '</span>';
 		}
 
 		$("#"+elementId).html(html);
@@ -1107,16 +1161,18 @@
 		}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " legendSets: " + LEGENDS[index]);}); 
 	}
 
-	function generateMap(index, dimentionType, levels, orgUnitId, year, thematic, mapStyle, opacityLevel){
+	function generateMap(index, dimentionType, orgUnitId, year, thematic){
 		
 		var base = "../../..";
 		var idHtmlElement = MAP_PREFIX+(index);
 		var dimension = INCIDENCE_FOR_MAPS[index];
 		var legendSetID = 	LEGENDS[index];
 
+		var mapStyle = MAP_STYLE[map_style[index]];
+
 		// Resizes the map contener
-		$("#" + MAP_PREFIX + index).height(map_height);
-		$("#" + MAP_PREFIX + index).width(map_width);
+		$("#" + MAP_PREFIX + index).height(map_height[index]);
+		$("#" + MAP_PREFIX + index).width(map_width[index]);
 	
 		// Move back the legend to the legendPool
 		$("#" + LEGENDSET_POOL).append($('#'+LEGENDSET_PREFIX+index));
@@ -1126,8 +1182,8 @@
 		
 
 		var itemsOnRow = [];
-		for(var i=0; i<levels.length; i++){
-			itemsOnRow.push({id: "LEVEL-"+levels[i]});
+		for(var i=0; i<map_levels[index].length; i++){
+			itemsOnRow.push({id: "LEVEL-"+map_levels[index][i]});
 		}
 		itemsOnRow.push({id: orgUnitId});
 
@@ -1147,7 +1203,7 @@
 				layer: thematic,
 				legendSet: {id: legendSetID},
 				labels: false, // labels of the regions
-				opacity:opacityLevel/100
+				opacity:map_opacity[index]/100
 			}]
 		});
 
@@ -1692,8 +1748,10 @@
 
 			percentage =  percentageText(pop_at_risk_values[index], totalPopulation, 0, true);
 
-			array[RISK_ROW][column] = percentage + ", " + formatIntValue(pop_at_risk_values[index], SAME, LOCALE_FORMAT) 
-									+ " / " + formatIntValue((totalPopulation || WHEN_NO_DATA), SAME, LOCALE_FORMAT);
+			array[RISK_ROW][column] = '<div class="prev_fraction sameLine">' + percentage + 
+									'</div><div class="fraction_text sameLine">' + 
+									formatIntValue(pop_at_risk_values[index], SAME, LOCALE_FORMAT) + '/<br>' +
+									formatIntValue((totalPopulation || WHEN_NO_DATA), SAME, LOCALE_FORMAT) + '</div>';
 		} else {
 			array[RISK_ROW][column] = WHEN_NO_DATA; // This is a workaround related with indicators. Ideally, indicator should return blank but it's returning NaN when no data.
 		}
@@ -1969,9 +2027,12 @@
 
 	function update_map_levels_var(min, max){
 
-		map_levels = [];
-		map_levels.push(min);
-		map_levels.push(max);
+		for (var i = VL_INDEX; i<map_levels.length; i++){
+			map_levels[i] = [];
+			map_levels[i].push(min);
+			map_levels[i].push(max);
+		}
+		
 	}
 
 	
@@ -2136,7 +2197,7 @@
 			html += '<tr id="'+tableName+i+'" class="'+lineClass+'">';
 			for (var j = 0; j < array[i].length; j++) {
 				// add <td> elements to the string:
-				html += '<td>' + '<span class="'+CLASS_FOOTNOTABLE_ELEMENT+' '+CLASS_EDITABLE_ELEMENT+'" >' + array[i][j] + '</span>' + '</td>';
+				html += '<td>' + '<span class="'+FOOTNOTABLE+' '+EDITABLE+'" >' + array[i][j] + '</span>' + '</td>';
 				count++;
 			}
 			// add closing </tr> tag to the string:
@@ -2170,16 +2231,22 @@
 	
 
 	function makeElementsEditables(){
-			// Avoid to show menu
-		$(document).bind("contextmenu", "." + CLASS_EDITABLE_ELEMENT, function(e) {
-			editingElement = e.target;
-			editor.jqteVal(editingElement.outerHTML);
-			dialog.dialog( "option", "position", { my: "left top", at: "center bottom+10%", of: editingElement } );	
-			dialog.dialog( "open" );	
+		// Avoid to show menu
+		$(document).on("contextmenu", "." + EDITABLE, function(e) {
+			if (!dialog.dialog("isOpen")) {
+				// only if is not already open
 
-			return false;
+				editingElement = e.target;
+				editor.jqteVal(editingElement.outerHTML);
+				dialog.dialog( "option", "position", { my: "left top", at: "center bottom+10%", of: editingElement } );	
+				dialog.dialog( "open" );	
+
+				return false;
+			}
 
 		});
+
+
 	}
    /**
 	* removes all footnotes marks and footNotedElement class from parent
@@ -2195,15 +2262,16 @@
 	}
 	
 	function makeElementsFootnotables(){
-		$(document).on("click", "." + CLASS_FOOTNOTABLE_ELEMENT, function(e) {
-			if ($(this).hasClass('footNotedElement')) {
+		$(document).on("click", "." + FOOTNOTABLE, function(e) {
+			if ($(this).parents('.jqte_editor').length == 0) {
+				// only when outside the editor
+				if ($(this).hasClass('footNotedElement')) {
 					var element = $('#footNoteNumber' + footNoteCounter ); // will return element
-					if ($(this).children().attr("id")===element.attr("id")) {  // Check if trying to remove last element
+					if ($(this).find("[id^='footNoteNumber']").attr("id")===element.attr("id")) {  // Check if there is footnotechild and if it's the last one
 						element[0].parentNode.removeChild(element[0]); // will remove the element from DOM
 						footNoteCounter--;
 						$(this).toggleClass('footNotedElement');
 					}
-
 				} else {
 					footNoteCounter++;
 					$(this).append("<span id='footNoteNumber"+footNoteCounter+"' class='superindex'>"+footNoteCounter+"</span>");
@@ -2211,6 +2279,8 @@
 				}
 
 				event.preventDefault();
+				
+			}
 		});
 	}
 
@@ -2375,8 +2445,8 @@
 				return cases1 || cases2 || cases3 || WHEN_UNDEFINED;
 			}
 			else if (cases1 + cases2 + cases3 != total){
-				return 	percentageText(cases1, total, 0, false) + ", " +
-						percentageText(cases2, total, 0, false) + ", " +
+				return 	percentageText(cases1, total, 0, false) + " / " +
+						percentageText(cases2, total, 0, false) + " / " +
 						percentageText(cases3, total, 0, false) + ". WARN. Original values do not add up to total.";
 			}
 			else {
@@ -2486,6 +2556,14 @@
 		return array;
 	}
 
+	function addPaddingToLastTableColumns(){
+		$('.lastTableColumn').removeClass('lastTableColumn');
+		$('table tr').each(function(){
+			$(this).find('th:visible:last').addClass('lastTableColumn');
+			$(this).find('td:visible:last').addClass('lastTableColumn');
+		});
+	}
+
 	function hideNoRelevantContent(){
 		// checked by default, trigger click for desactivate and for fire behaviour.
 
@@ -2589,14 +2667,14 @@
 	}
 
 	function drawLegendSet(htmlElementID, index){
-		var html = '<div class="'+CLASS_EDITABLE_ELEMENT+' legentSetTitle">' + mapLegends[index][0].legendSetName + '</div>';
+		var html = '<div class="'+EDITABLE+' legentSetTitle">' + mapLegends[index][0].legendSetName + '</div>';
 		html+='<br>';
 		
 		
 		for(var i=0; i<mapLegends[index].length; i++){
 			html+='<div>';
 			html+='<div class="legendRectangle sameLine" style="background:'+ mapLegends[index][i].legendColors +'"></div>';
-			html+='<div class="legentSetElementText sameLine '+CLASS_EDITABLE_ELEMENT+'">  ' + mapLegends[index][i].legendNames + '</div>';
+			html+='<div class="legentSetElementText sameLine '+EDITABLE+'">  ' + mapLegends[index][i].legendNames + '</div>';
 			html+='</div>';
 
 		}
@@ -2621,6 +2699,10 @@
 		var zcl_previous_year = monthlyArray[ZCL_PREVIOUS_YEAR_ROW].slice(1,monthlyArray[ZCL_PREVIOUS_YEAR_ROW].length);
 		var dataarrays = [acl_current_year, acl_previous_year, zcl_current_year, zcl_previous_year];
 		lineChart(MONTHLY+CHART+ACL_INDEX, CL_CASES_CHART_TITLE, MONTHS_ABBREV, CL_CASES_CHART_Y_TITLE, labels, dataarrays, colors, true);
+		drawLegendChart(LEGEND_PREFIX + MONTHLY + CHART + ACL_INDEX, labels, ["line","line","line","line"], colors);
+		moveLegendChart(ACL_INDEX, LEGEND_PREFIX + MONTHLY + CHART, DIV+MONTHLY+CHART, LEGEND_TO_REPORT);
+
+
 
 		colors = [COLORS.blue, COLORS.soft_blue];
 		labels = [CL_CHART_LEGEND + ds.year, CL_CHART_LEGEND + (ds.year-1)];
@@ -2628,14 +2710,17 @@
 		var cl_previous_year = monthlyArray[CL_PREVIOUS_YEAR_ROW].slice(1,monthlyArray[CL_PREVIOUS_YEAR_ROW].length);
 		var dataarrays = [cl_current_year, cl_previous_year];
 		lineChart(MONTHLY+CHART+CL_INDEX, CL_CASES_CHART_TITLE, MONTHS_ABBREV, CL_CASES_CHART_Y_TITLE, labels, dataarrays, colors, true);
+		drawLegendChart(LEGEND_PREFIX + MONTHLY + CHART + CL_INDEX, labels, ["line","line"], colors);
+		moveLegendChart(CL_INDEX, LEGEND_PREFIX + MONTHLY + CHART, DIV+MONTHLY+CHART, LEGEND_TO_REPORT);
 
 		var vl_current_year = monthlyArray[VL_ROW].slice(1,monthlyArray[VL_ROW].length);
 		var vl_previous_year = monthlyArray[VL_PREVIOUS_YEAR_ROW].slice(1,monthlyArray[VL_PREVIOUS_YEAR_ROW].length);
 		var vl_data_arrays = [vl_current_year, vl_previous_year];
 		var vl_colors = [COLORS.violet, COLORS.soft_violet];
 		var vl_labels = [VL_CHART_LEGEND + ds.year, VL_CHART_LEGEND + (ds.year-1)];
-
 		lineChart(MONTHLY+CHART+VL_INDEX, VL_CASES_CHART_TITLE, MONTHS_ABBREV, VL_CASES_CHART_Y_TITLE, vl_labels, vl_data_arrays, vl_colors, true);
+		drawLegendChart(LEGEND_PREFIX + MONTHLY + CHART + VL_INDEX, vl_labels, ["line","line"], vl_colors);
+		moveLegendChart(VL_INDEX, LEGEND_PREFIX + MONTHLY + CHART, DIV+MONTHLY+CHART, LEGEND_TO_REPORT);
 
 	}
 
@@ -2644,28 +2729,31 @@
 	function generate_cl_vl_new_and_incidence_yearly_charts(){
 
 		var dataLabelArray = [ACL_CHART_INCIDENCE_LEGEND, ZCL_CHART_INCIDENCE_LEGEND, ACL_CHART_CASES_LEGEND, ZCL_CHART_CASES_LEGEND];
-		var charType = ["line","line","bar","bar"];
+		var chartType = ["line","line","bar","bar"];
 		var dataArray = [historicIncidenceChart[ACL_COLUMN], historicIncidenceChart[ZCL_COLUMN], historicNewCases[ACL_COLUMN], historicNewCases[ZCL_COLUMN]];
 		var colorArray = [COLORS.blue, COLORS.green, COLORS.soft_blue, COLORS.soft_green];
 		var dataChartIDs= [DATASID.RIGHT, DATASID.RIGHT, DATASID.LEFT, DATASID.LEFT];
-		lineBarChart(YEARLY+CHART+ACL_INDEX, CL_INCIDENCE_CHART_TITLE, dataLabelArray, CL_INCIDENCE_CHART_Y1_TITLE, CL_INCIDENCE_CHART_Y2_TITLE, charType, dataArray, colorArray, dataChartIDs);
-
-
+		lineBarChart(YEARLY+CHART+ACL_INDEX, CL_INCIDENCE_CHART_TITLE, dataLabelArray, CL_INCIDENCE_CHART_Y1_TITLE, CL_INCIDENCE_CHART_Y2_TITLE, chartType, dataArray, colorArray, dataChartIDs);
+		drawLegendChart(LEGEND_PREFIX + YEARLY + CHART + ACL_INDEX, dataLabelArray, chartType, colorArray);
+		moveLegendChart(ACL_INDEX, LEGEND_PREFIX + YEARLY + CHART, DIV+YEARLY +CHART, LEGEND_TO_REPORT);
 
 		dataLabelArray = [VL_CHART_INCIDENCE_LEGEND, VL_CHART_CASES_LEGEND];
-		charType = ["line","bar"];
+		chartType = ["line","bar"];
 		dataArray = [historicIncidenceChart[VL_COLUMN], historicNewCases[VL_COLUMN]];
 		colorArray = [COLORS.violet, COLORS.soft_violet];
 		dataChartIDs= [DATASID.RIGHT, DATASID.LEFT];
-		lineBarChart(YEARLY+CHART+VL_INDEX, VL_INCIDENCE_CHART_TITLE, dataLabelArray, VL_INCIDENCE_CHART_Y1_TITLE, VL_INCIDENCE_CHART_Y2_TITLE, charType, dataArray, colorArray, dataChartIDs);
-
+		lineBarChart(YEARLY+CHART+VL_INDEX, VL_INCIDENCE_CHART_TITLE, dataLabelArray, VL_INCIDENCE_CHART_Y1_TITLE, VL_INCIDENCE_CHART_Y2_TITLE, chartType, dataArray, colorArray, dataChartIDs);
+		drawLegendChart(LEGEND_PREFIX + YEARLY + CHART + VL_INDEX, dataLabelArray, chartType, colorArray);
+		moveLegendChart(VL_INDEX, LEGEND_PREFIX + YEARLY + CHART, DIV+YEARLY +CHART, LEGEND_TO_REPORT);
 
 		dataLabelArray = [CL_CHART_INCIDENCE_LEGEND, CL_CHART_CASES_LEGEND];
-		charType = ["line","bar"];
+		chartType = ["line","bar"];
 		dataArray = [historicIncidenceChart[CL_COLUMN], historicNewCases[CL_COLUMN]];
 		colorArray = [COLORS.blue, COLORS.green];
 		dataChartIDs= [DATASID.RIGHT, DATASID.LEFT];
-		lineBarChart(YEARLY+CHART+CL_INDEX, CL_INCIDENCE_CHART_TITLE, dataLabelArray, CL_INCIDENCE_CHART_Y1_TITLE, CL_INCIDENCE_CHART_Y2_TITLE, charType, dataArray, colorArray, dataChartIDs);
+		lineBarChart(YEARLY+CHART+CL_INDEX, CL_INCIDENCE_CHART_TITLE, dataLabelArray, CL_INCIDENCE_CHART_Y1_TITLE, CL_INCIDENCE_CHART_Y2_TITLE, chartType, dataArray, colorArray, dataChartIDs);
+		drawLegendChart(LEGEND_PREFIX + YEARLY + CHART + CL_INDEX, dataLabelArray, chartType, colorArray);
+		moveLegendChart(CL_INDEX, LEGEND_PREFIX + YEARLY + CHART, DIV+YEARLY +CHART, LEGEND_TO_REPORT);
 
 	}
 
@@ -2727,12 +2815,15 @@
 					display: true,
 					text: title
 				},
+				legend: {
+					display: false
+				},
 				responsive: false
 			}
 		});
 	}
 
-	function lineBarChart(htmlElementID, title, dataLabelArray, y1Title, y2Title, charType, dataArray, colorArray, dataChartIDs){
+	function lineBarChart(htmlElementID, title, dataLabelArray, y1Title, y2Title, chartType, dataArray, colorArray, dataChartIDs){
 		var theDataSets = [];
 		var aDataSet = {};
 		for (var i = 0; i<dataLabelArray.length; i++){
@@ -2746,7 +2837,7 @@
 			aDataSet.lineTension = 0;
 			aDataSet.pointRadius = 2;
 			aDataSet.spanGaps = false;
-			aDataSet.type = charType[i];
+			aDataSet.type = chartType[i];
 			aDataSet.yAxisID = dataChartIDs[i];
 			theDataSets[i] = aDataSet;
 		}
@@ -2797,7 +2888,10 @@
 				title:{
 						display: true,
 						text: title
-					},
+				},
+				legend: {
+					display: false
+				},
 				responsive: false
 			}
 		});
@@ -2830,9 +2924,23 @@
 			legendObject.removeClass("resizable");
 		} else {
 			editingLegend = legendObject;
-			editingLegend.resizable( "enable" );
+			editingLegend.resizable('destroy'); // prevents bug on last elements
+			editingLegend.resizable();
 		}
 		destination.append(legendObject);
+	 }
+
+	 function moveLegendChart(index, source, destination, destinationCode){
+		var legendObject = $('#' + source + index);
+
+		if (destinationCode == LEGEND_TO_REPORT){
+			legendObject.resizable({ disabled: true });
+			legendObject.removeClass("resizable");
+		} else {
+			editingLegend = legendObject;
+			editingLegend.resizable( "enable" );
+		}
+		$('#' + destination + index).append(legendObject);
 	 }
 
 	function updateLegend(event) {
@@ -2841,17 +2949,20 @@
 		var position_index =  $('#positionLegendSelector').val();
 
 		moveLegend(legend_index, $('#'+MAP_PREFIX+ legend_index).find(LEGEND_POSITIONS[position_index]), LEGEND_TO_REPORT);
-		setButtonDisabledTo("updateLegendButton", true);
-		setOptionSelectMenu("legendSelector", $("#legendSelector option:first").val());
-		setOptionSelectMenu("positionLegendSelector", BOTTOM_RIGHT);
-		font_size_slider.slider("value", 10 );
-		font_size_slider_handle.text( 10 );
+
+		cleanUpdateLegendForm();
 	}
 
 	function updateMap(event) {
 		event.preventDefault();
 		var selected_map_index =  parseInt($('#mapSelector').val()) - 1 ; //first option is the "select text"
-		var mapStyle = MAP_STYLE[$('#mapStyleSelector').val()];
+
+		// stores selected settings
+		map_levels[selected_map_index] = [$( "#slider_range" ).slider( "values", 0 ), $( "#slider_range" ).slider( "values", 1 )];
+		map_style[selected_map_index] = $('#mapStyleSelector').val();
+		map_opacity[selected_map_index] = parseInt($( "#opacity_slider" ).slider( "option", "value"));
+		map_height[selected_map_index] = parseInt($( "#height_slider" ).slider( "option", "value"));
+		map_width[selected_map_index] = parseInt($( "#width_slider" ).slider( "option", "value"));
 
 		// saves the legend in the pool
 		moveLegend(selected_map_index, $("#" + LEGENDSET_POOL), LEGEND_TO_LEGEND_POOL);
@@ -2860,7 +2971,7 @@
 		mapPlugin.unmount(MAP_PREFIX + selected_map_index);
 
 		// generates a new map
-		generateMap(selected_map_index, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic", mapStyle, map_opacity);
+		generateMap(selected_map_index, "INDICATOR", ds.countryID, ds.year, "thematic");
 		cleanUpdateMapForm();
 	}
 
@@ -2905,9 +3016,25 @@
 	}
 
 	function cleanUpdateMapForm(){
+		$( "#slider_range" ).slider( "option", "disabled", true );
+		$( "#mapStyleSelector" ).selectmenu( "option", "disabled", true );
+		$( "#opacity_slider" ).slider( "option", "disabled", true );
+		$( "#height_slider" ).slider( "option", "disabled", true );
+		$( "#width_slider" ).slider( "option", "disabled", true );
 		setButtonDisabledTo("updateMapButton", true);
 		$( "#mapSelector" ).val(0);
 		$( "#mapSelector" ).selectmenu( 'refresh', true);
+	}
+
+	function cleanUpdateLegendForm(){
+		$( "#font_size_slider" ).slider( "option", "disabled", true );
+		$( "#font_size_slider" ).slider( "option", "value", DEFAULT_LEGEND_FONT_SIZE );
+
+		setButtonDisabledTo("updateLegendButton", true);
+		setOptionSelectMenu("positionLegendSelector", BOTTOM_RIGHT);
+
+		setOptionSelectMenu("legendSelector", $("#legendSelector option:first").val());
+		$( "#legendSelector" ).selectmenu( 'refresh', true);
 	}
 	
 	function generateLegends(){
@@ -2922,6 +3049,27 @@
 			drawLegendSet(LEGENDSET_PREFIX + ACL_INDEX, ACL_INDEX);
 			drawLegendSet(LEGENDSET_PREFIX + ZCL_INDEX, ZCL_INDEX);
 		});
+	}
+
+	/**
+	labels, chartTypes and colors must have the same length
+	*/
+	function drawLegendChart(target, labels, chartTypes, colors){
+		var html = '';
+		var divForGroups = '';
+		var divForGroupsEnd = '';
+
+		if (labels.length > 2){
+			divForGroups = '<div>';
+			divForGroupsEnd = '</div>';
+		}
+
+		for (var i = 0; i<labels.length; i++){
+			html += i%2?'':divForGroups; // if even start div
+			html += '<div class="oneLegendChart sameLine"><div class="sameLine '+chartTypes[i]+'" style="background:'+colors[i]+'"></div><div class="sameLine">&nbsp;'+labels[i]+'</div></div>'
+			html += i%2?divForGroupsEnd:''; // If odd finish div
+		}
+		$("#" + target).html(html);
 	}
 
 	function recreateDIV(parent, id, classes){
@@ -2952,16 +3100,15 @@
 
 	function generateMaps(){
 
-		var mapStyle = MAP_STYLE[$('#mapStyleSelector').val()];
 		return $.when(
 			mapPlugin.unmount(MAP_PREFIX + VL_INDEX),
 			mapPlugin.unmount(MAP_PREFIX + CL_INDEX),
 			mapPlugin.unmount(MAP_PREFIX + ACL_INDEX),
 			mapPlugin.unmount(MAP_PREFIX + ZCL_INDEX),
-			generateMap(VL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic", mapStyle, map_opacity),
-			generateMap(CL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic", mapStyle, map_opacity),
-			generateMap(ACL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic", mapStyle, map_opacity),
-			generateMap(ZCL_INDEX, "INDICATOR", map_levels, ds.countryID, ds.year, "thematic", mapStyle, map_opacity)
+			generateMap(VL_INDEX, "INDICATOR", ds.countryID, ds.year, "thematic"),
+			generateMap(CL_INDEX, "INDICATOR", ds.countryID, ds.year, "thematic"),
+			generateMap(ACL_INDEX, "INDICATOR", ds.countryID, ds.year, "thematic"),
+			generateMap(ZCL_INDEX, "INDICATOR", ds.countryID, ds.year, "thematic")
 		).done(function(result){
 			console.log("maps updated");
 		}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " maps.");}); 
@@ -2998,7 +3145,7 @@
 	function addNewFootnote(){
 		var liClass = "ui-state-default";
 		var html='';
-		html+='<li class="'+liClass+' '+CLASS_EDITABLE_ELEMENT+'">';
+		html+='<li class="'+liClass+' '+EDITABLE+'">';
 		html+= $("#newFootnoteText").html();
 		html+= '</li>';
 		document.getElementById(SORTABLE_LIST_1_NAME).innerHTML += html;
@@ -3021,7 +3168,7 @@
 		var elements = $("#sortable2 li");
         var html = '';
 		for (var i=0; i<elements.length; i++){
-			html+='<div class="footnote"><span class="superindex">'+(i+1)+'</span><span class="'+CLASS_EDITABLE_ELEMENT+'">'
+			html+='<div class="footnote"><span class="superindex">'+(i+1)+'</span><span class="'+EDITABLE+'">'
 			html+= elements[i].innerHTML;
 			html+= '</span></div>';
 		}
@@ -3031,7 +3178,7 @@
     	html = '';
 		var base = i;
 		for (var i=0; i<elements.length; i++){
-			html+='<div class="footnote"><span class="superindex">'+(i+base+1)+'</span><span class="'+CLASS_EDITABLE_ELEMENT+'">'
+			html+='<div class="footnote"><span class="superindex">'+(i+base+1)+'</span><span class="'+EDITABLE+'">'
 			html+= elements[i].innerHTML;
 			html+= '</span></div>';
 		}
@@ -3073,8 +3220,8 @@
 
 		dialog = $( "#dialog-editor" ).dialog({
 			autoOpen: false,
-			height: 350,
-			width: 650,
+			height: 230,
+			width: 450,
 			modal: true,
 			title: "Edit field",
 			position: { my: "center", at: "center", collision: "none" },
@@ -3134,6 +3281,8 @@
 					$(this).find("td,th").eq(index+1).toggle(); // +1 since first column are texts
 				});
 
+				addPaddingToLastTableColumns();
+				
 				// text descriptions under tables
 				$('#textUnderEpiTable').each(function() {
 					$(this).find("span").eq(index+1).toggle(); // +1 since N/A is at first position
@@ -3172,13 +3321,24 @@
 			changeOption.prop('disabled', function(_, attr){ return !attr});
 
 			// togles the chart
-			$("#"+type+CHART+index).toggle();
 
 			var theCanvas = $('#'+type + CHART + index);
 			theCanvas.toggleClass('sameLine');
-			theCanvas.toggleClass('notShown');			
+			theCanvas.toggleClass('notShown');		
+			var theLegendChart = $('#'+LEGEND_PREFIX + type + CHART + index);	
+			theLegendChart.toggleClass('notShown');		
 
 			$( "#chartSelector" ).selectmenu( 'refresh', true);
+		});
+
+		$("#one_legend_per_line").change(function() {
+			$("#chartPreview .oneLegendChart").toggleClass('sameLine');
+			$("#chartPreview legendChart").css("display","value");
+			if(this.checked) {
+				$("#chartPreview .legendChart").css("display","block");
+			} else {
+				$("#chartPreview .legendChart").css("display","flex");
+			}
 		});
 
 		//Listener for maps
@@ -3195,7 +3355,9 @@
 			}
 
 			// enables or disables the options of the list
-			$("#"+MAP_PREFIX+index).toggle();
+			var theMap = $("#"+MAP_PREFIX+index);
+			theMap.toggleClass('sameLine');
+			theMap.toggleClass('notShown');		
 			var changeOption = $('#' + startingid + OPTION_PREFIX + mapSelectorIndex);
 			changeOption.prop('disabled', function(_, attr){ return !attr});
 			$( "#mapSelector" ).selectmenu( 'refresh', true);
@@ -3208,17 +3370,25 @@
 
 			switch($(this)[0].id){
 				case "disableNBMaps":
-						$("#notaBeneMaps").resizable({ disabled: true });
-						break;
+					$("#notaBeneMaps").resizable({ disabled: true});
+					$("#notaBeneMaps").removeClass("resizable");
+					break;
 				case "enableNBMaps":
-						$("#notaBeneMaps").resizable( "enable");
-						break;
+					if ($("#notaBeneMaps").resizable( "instance" ) == null) {
+						$("#notaBeneMaps").resizable('destroy');
+					}
+					$("#notaBeneMaps").resizable();
+					break;
 				case "disableNB":
-						$("#notaBene").resizable({ disabled: true });
-						break;
+					$("#notaBene").resizable({ disabled: true});
+					$("#notaBene").removeClass("resizable");
+					break;
 				case "enableNB":
-						$("#notaBene").resizable( "enable");
-						break;
+					if ($("#notaBene").resizable( "instance" ) == null) {
+						$("#notaBene").resizable('destroy');
+					}
+					$("#notaBene").resizable();
+					break;
 			}
 		});
 
@@ -3226,10 +3396,36 @@
 		$('#mapSelector').on('selectmenuchange', function() {
 			var selected_map = parseInt($("#mapSelector").val()) - 1 ; // first option is the "select map"
 
-			if (selected_map >= 0) { 
+			if (selected_map >= 0) { // "Select map" option
+				$( "#slider_range" ).slider( "option", "disabled", false );
+				$( "#mapStyleSelector" ).selectmenu( "option", "disabled", false );
+				$( "#opacity_slider" ).slider( "option", "disabled", false );
+				$( "#height_slider" ).slider( "option", "disabled", false );
+				$( "#width_slider" ).slider( "option", "disabled", false );
 				setButtonDisabledTo("updateMapButton", false);
-			} else  { // "Select map" option
-				setButtonDisabledTo("updateMapButton", true);
+
+				// updates style selector
+				setOptionSelectMenu("mapStyleSelector", map_style[selected_map]);
+
+				// updates level slides
+				$( "#slider_range" ).slider( "values", 0 , map_levels[selected_map][0]);
+				$( "#slider_range" ).slider( "values", 1 , map_levels[selected_map][1]);
+				$( "#ou_level_slider" ).val( WHO_OU_TEXT_LVL[map_levels[selected_map][0]-1] + " - " + WHO_OU_TEXT_LVL[map_levels[selected_map][1]-1] );
+
+
+				// update opacity
+				$( "#opacity_slider" ).slider( "option", "value", map_opacity[selected_map] );
+
+				// update width
+				$( "#height_slider" ).slider( "option", "value", $("#"+MAP_PREFIX+selected_map).height() );
+
+				// update heigth
+				$( "#width_slider" ).slider( "option", "value", $("#"+MAP_PREFIX+selected_map).width() );
+
+			} else  { 
+			
+				cleanUpdateMapForm();
+
 			}
 
 		}).change();
@@ -3269,6 +3465,15 @@
 			$("#minCases").val(defaultMinCases);
 			$("#maxCases").val(defaultMaxCases);
 		
+			// checks or unchecks box whether the legends have sameLine class or not 		
+			if ($("#chartPreview .oneLegendChart").hasClass('sameLine')){
+				$("#one_legend_per_line").prop("checked", false);
+			} else {
+				$("#one_legend_per_line").prop("checked", true);
+			}
+			$("#one_legend_per_line").button( "refresh" );
+
+
 		}).change();
 
 		$(".chartParams").change(function(){
@@ -3290,6 +3495,13 @@
 
 
 		 $('#legendSelector').on('selectmenuchange', function() {
+
+			// restores font-size to previous legend
+			if ($("#legendPool .legentSetElementText:first").length > 0 ){
+				editingLegend.find(".legentSetElementText").css({ 'font-size': legendSetFontSize });
+				editingLegend.find(".legentSetTitle").css({ 'font-size': legendSetFontSize + 2 });
+			}
+			
 			var selected_legend = parseInt($("#legendSelector").val()) - 1 ; // first option is the "select legend"
 		
 			// move back the legend to it map
@@ -3302,13 +3514,18 @@
 
 			if (selected_legend >= 0) {
 				setButtonDisabledTo("updateLegendButton", false);
+				$( "#font_size_slider" ).slider( "option", "disabled", false );
 
 				lastLegendPosition = getLastPosition(selected_legend);
 				setOptionSelectMenu("positionLegendSelector", lastLegendPosition);
 
 				moveLegend(selected_legend, $("#" + LEGENDSET_POOL), LEGEND_TO_LEGEND_POOL);
+
+				legendSetFontSize = parseInt($("#legendPool .legentSetElementText:first").css('font-size'));//.replace(/[^-\d\.]/g, ''); // removes px from number
+				$( "#font_size_slider" ).slider( "option", "value", legendSetFontSize );
+
 			} else { // "select legend" option
-				setButtonDisabledTo("updateLegendButton", true);
+				cleanUpdateLegendForm();
 			}
 
 		}).change();
@@ -3331,13 +3548,13 @@
 					underlineDivisionName();
 					writeTable(EPI_TABLE_NAME, "Body", array, LINES_BELOW_LABELS_EPI);
 					// It writes the entire table data, so put also the headers
-					fillTableHead(EPI_TABLE_NAME, "Head", '', COLUMNS_LABELS);
+					fillTableHead(EPI_TABLE_NAME, "Head", TABLE_TITLE_EPI, COLUMNS_LABELS);
 
 					// rewrites also DiagTable and Toutcome table since buttons are going to be clicked
 					writeTable(DIAG_TABLE_NAME, "Body", diagnosisArray, LINES_BELOW_LABELS_DIAG);
 					writeTable(TOUTCOME_TABLE_NAME, "Body", toutcomeArray, LINES_BELOW_LABELS_TREAT);
-					fillTableHead(DIAG_TABLE_NAME, "Head", '', COLUMNS_LABELS);
-					fillTableHead(TOUTCOME_TABLE_NAME, "Head", TOUTCOME_TABLE_FIRST_COLUMNS, COLUMNS_LABELS.slice(0,4));
+					fillTableHead(DIAG_TABLE_NAME, "Head", TABLE_TITLE_DIAG, COLUMNS_LABELS);
+					fillTableHead(TOUTCOME_TABLE_NAME, "Head", TABLE_TITLE_TOUTCOME, COLUMNS_LABELS.slice(0,4));
 
 					refreshToggleStatus();
 					removeAllFootnotesMarks(); // removes all footnotes marks since refreshed elements will lost its footnote mark
@@ -3347,7 +3564,7 @@
 
 			// recalculates maps to selected subnational level
 			if ($("#maps_to_selectedSubLevel").prop('checked')){
-				update_map_levels_var(map_levels[0], WIDP_OU_SHIFT + subNationaSelectedLevel);
+				update_map_levels_var(WIDP_OU_SHIFT + NATIONAL_LEVEL, WIDP_OU_SHIFT + subNationaSelectedLevel);
 				generateMaps();
 			}
 
@@ -3363,6 +3580,25 @@
 		$('#' + MAP_PREFIX + CL_INDEX).find(".leaflet-control-zoom").hide();
 		$('#' + MAP_PREFIX + ACL_INDEX).find(".leaflet-control-zoom").hide();
 		$('#' + MAP_PREFIX + ZCL_INDEX).find(".leaflet-control-zoom").hide();
+		
+		var width = $(document).width();
+		var cmtoinch = width / 210;
+		heigthofA4 = Math.round(297 * cmtoinch);
+		var heigth = $(document).height();
+
+		var footnotes1Top = $("#footnotes1").position().top;
+		var remainingPage1 = heigthofA4 - (footnotes1Top + $("#footnotes1").height() + 44); // 44 for margin
+
+		if (remainingPage1 > 0) {
+			$("#charts_section").css("margin-bottom", remainingPage1);
+		}
+
+		lastPageHeigh = heigth % heigthofA4;
+		remainingPage2 = heigthofA4 - lastPageHeigh; // remaining blank space.
+
+		$("#toutcomeTable").css("margin-bottom", remainingPage2); // puts the remaining blank space after last table
+
+
 	};
 
 	var afterPrint = function() {
@@ -3371,6 +3607,10 @@
 		$('#' + MAP_PREFIX + CL_INDEX).find(".leaflet-control-zoom").show();
 		$('#' + MAP_PREFIX + ACL_INDEX).find(".leaflet-control-zoom").show();
 		$('#' + MAP_PREFIX + ZCL_INDEX).find(".leaflet-control-zoom").show();
+
+		$("#toutcomeTable").css("margin-bottom", "0px");
+		$("#charts_section").css("margin-bottom", "0px");
+
 	};
 
 	if (window.matchMedia) {
@@ -3384,8 +3624,8 @@
 		});
 	}
 
-	window.onbeforeprint = beforePrint;
-	window.onafterprint = afterPrint;
+	//window.onbeforeprint = beforePrint;
+	//window.onafterprint = afterPrint;
 	/* END AFTER AND BEFORE printing actions */
 
 
@@ -3434,7 +3674,6 @@
     $(document).ready(function(){
 
 		document.getElementById("country_profile_and_panel").style.display = "none";
-
 
 		editor = $("#editor");
 		editor.jqte();	
@@ -3644,21 +3883,13 @@
 		$( "#legendSelector" ).selectmenu();
 		$( "#positionLegendSelector" ).selectmenu();
 		$( "#subnationalLevelSelector" ).selectmenu();
-		$( "#mapStyleSelector" ).selectmenu();
+		$( "#mapStyleSelector" ).selectmenu({disabled:true});
 		$( "#updateMapButton").button();
 		$( "#updateChartButton").button();
 		$( "#cancelChartButton").button();
 		$( "#updateLegendButton").button();
 		$( "#resetLegendButton").button();
 		$( ".radioButton" ).checkboxradio();
-
-
-
-		setButtonDisabledTo("updateMapButton", true);
-		setButtonDisabledTo("updateChartButton", true);
-		setButtonDisabledTo("cancelChartButton", true);
-		setButtonDisabledTo("updateLegendButton", true);
-		setOptionSelectMenu("positionLegendSelector", BOTTOM_RIGHT);
 
 		var mapOptions =  ["Select map"].concat(MAP_CHECKBOXES_LABELS);
 		var legendOptions = ["Select legend"].concat(MAP_CHECKBOXES_LABELS);
@@ -3687,16 +3918,6 @@
 								DIAG_LEGEND_LABELS_DESC, 
 								false);
 		setTextUnderTables("textUnderDiagTable2", TEXT_UNDER_DIAG2, DIAG_LEGEND_LABELS_2, DIAG_LEGEND_LABELS_DESC_2, PUT_NA_TEXT);
-		
-		text_values = [
-			"WHO Global",
-			"WHO Regions",
-			"WHO Member States",
-			"Level 1",
-			"Level 2",
-			"Level 3",
-			"Level 4"		
-		];
 
 		// Org unit level slider
 		var sliderRange = $( "#slider_range" );
@@ -3704,28 +3925,31 @@
 			range: true,
 			min: 1,
 			max: 7,
-			values: [ map_levels[0], map_levels[map_levels.length-1]], // values = [firstValue, lastValue]
+			values: [ map_levels[VL_INDEX][0], map_levels[VL_INDEX][map_levels[VL_INDEX].length-1]], // values = [firstValue, lastValue]
 			slide: function( event, ui ) {
-				$( "#ou_level_slider" ).val( text_values[ui.values[ 0 ]-1] + " - " + text_values[ui.values[ 1 ]-1] );
-				update_map_levels_var(ui.values[0], ui.values[1]);
-			}
+				$( "#ou_level_slider" ).val( WHO_OU_TEXT_LVL[ui.values[ 0 ]-1] + " - " + WHO_OU_TEXT_LVL[ui.values[ 1 ]-1] );
+			},
+			disabled:true
 
 		});
-		$( "#ou_level_slider" ).val( text_values[sliderRange.slider( "values", 0 )-1] + " - " + text_values[sliderRange.slider( "values", 1 )-1] );
+		$( "#ou_level_slider" ).val( WHO_OU_TEXT_LVL[sliderRange.slider( "values", 0 )-1] + " - " + WHO_OU_TEXT_LVL[sliderRange.slider( "values", 1 )-1] );
 
 		// Opacitity slider  
 		var opacity_slider_handle = $( "#opacity_slider_handle" );
 		$( "#opacity_slider" ).slider({
 		min: 0,
 		max: 100,
-		value: map_opacity,
+		value: DEFAULT_MAP_OPACITY,
 		create: function() {
 			opacity_slider_handle.text( $( this ).slider( "value" ) );
 		},
 		slide: function( event, ui ) {
 			opacity_slider_handle.text( ui.value );
-			map_opacity = ui.value;
-		}
+		},
+		change: function( event, ui ) {
+			opacity_slider_handle.text( ui.value );
+		},
+		disabled:true
 		});
 		
 		// height slider  
@@ -3733,14 +3957,17 @@
 		$( "#height_slider" ).slider({
 		min: 100,
 		max: 900,
-		value: map_height,
+		value: DEFAULT_MAP_HEIGHT,
 		create: function() {
 			height_slider_handle.text( $( this ).slider( "value" ) );
 		},
 		slide: function( event, ui ) {
 			height_slider_handle.text( ui.value );
-			map_height = ui.value;
-		}
+		},
+		change: function( event, ui ) {
+			height_slider_handle.text( ui.value );
+		},
+		disabled:true
 		});
 		
 		// width slider  
@@ -3748,37 +3975,50 @@
 		$( "#width_slider" ).slider({
 		min: 100,
 		max: 900,
-		value: map_width,
+		value: DEFAULT_MAP_WIDTH,
 		create: function() {
 			width_slider_handle.text( $( this ).slider( "value" ) );
 		},
 		slide: function( event, ui ) {
 			width_slider_handle.text( ui.value );
-			map_width = ui.value;
-		}
+		},
+		change: function( event, ui ) {
+			width_slider_handle.text( ui.value );
+		},
+		disabled:true
 		});
 
 		// Font size slider  
-		
-		font_size_slider.slider({
-		min: 6,
-		max: 24,
-		value: 10,
-		create: function() {
-			font_size_slider_handle.text( $( this ).slider( "value" ) );
-		},
-		slide: function( event, ui ) {
-			font_size_slider_handle.text( ui.value );
-			editingLegend.find(".legentSetElementText").css({ 'font-size': $( this ).slider( "value" ) });
-			editingLegend.find(".legentSetTitle").css({ 'font-size': $( this ).slider( "value" )+2 });
-		}
+		legendSetFontSize = DEFAULT_LEGEND_FONT_SIZE;
+		var font_size_slider_handle = $( "#font_size_slider_handle" );
+		$( "#font_size_slider" ).slider({
+			min: 6,
+			max: 24,
+			value: DEFAULT_LEGEND_FONT_SIZE,
+			create: function() {
+				font_size_slider_handle.text( $( this ).slider( "value" ) );
+			},
+			slide: function( event, ui ) {
+				font_size_slider_handle.text( ui.value );
+				editingLegend.find(".legentSetElementText").css({ 'font-size': ui.value });
+				editingLegend.find(".legentSetTitle").css({ 'font-size': ui.value + 2 });
+			},
+			change: function( event, ui ) {
+				font_size_slider_handle.text( ui.value );
+			}
 		});
+
+		cleanUpdateMapForm();
+		cleanUpdateChartForm();
+		cleanUpdateLegendForm();
 		
-		
-		fillTableHead(EPI_TABLE_NAME, "Head", '', COLUMNS_LABELS);
+		fillTableHead(CGI_TABLE_NAME, "Head", TABLE_TITLE_CGI, []);
+		fillTableHead(EPI_TABLE_NAME, "Head", TABLE_TITLE_EPI, COLUMNS_LABELS);
 		fillTableHead(MONTHLY_TABLE_NAME, "Head", ds.year, MONTHS_ABBREV);
-		fillTableHead(DIAG_TABLE_NAME, "Head", '', COLUMNS_LABELS);
-		fillTableHead(TOUTCOME_TABLE_NAME, "Head", TOUTCOME_TABLE_FIRST_COLUMNS, COLUMNS_LABELS.slice(0,4));
+		fillTableHead(CAS_TABLE_NAME, "Head", TABLE_TITLE_CAS, []);
+		fillTableHead(DIAG_TABLE_NAME, "Head", TABLE_TITLE_DIAG, COLUMNS_LABELS);
+		fillTableHead(TAM_TABLE_NAME, "Head", TABLE_TITLE_TAM, []);
+		fillTableHead(TOUTCOME_TABLE_NAME, "Head", TABLE_TITLE_TOUTCOME, COLUMNS_LABELS.slice(0,4));
 
 
 		// Dragable activation
@@ -3896,25 +4136,25 @@
 				generate_cl_vl_new_and_incidence_yearly_charts();
 
 				fillFootNotes(fndata);
-				fillHTMLListWithArray(SORTABLE_LIST_1_NAME, storedFootnotes, 'ui-state-default '+CLASS_EDITABLE_ELEMENT);
-				fillHTMLListWithArray(SORTABLE_LIST_2_NAME, activeFootnotesPage1, 'ui-state-highlight '+CLASS_EDITABLE_ELEMENT);
-				fillHTMLListWithArray(SORTABLE_LIST_3_NAME, activeFootnotesPage2, 'ui-state-highlight '+CLASS_EDITABLE_ELEMENT);
+				fillHTMLListWithArray(SORTABLE_LIST_1_NAME, storedFootnotes, 'ui-state-default '+EDITABLE);
+				fillHTMLListWithArray(SORTABLE_LIST_2_NAME, activeFootnotesPage1, 'ui-state-highlight '+EDITABLE);
+				fillHTMLListWithArray(SORTABLE_LIST_3_NAME, activeFootnotesPage2, 'ui-state-highlight '+EDITABLE);
 				writeFootnotes();
 
 				hideNoRelevantContent();
-				
-				makeElementsEditables();
-				makeElementsFootnotables();
 
 				$("#disableNBMaps").prop('checked', true);
-				$("#notaBeneMaps").resizable({ disabled: true });
 				$("#disableNB").prop('checked', true);
-				$("#notaBene").resizable({ disabled: true });
+
 				$( ".radioButton" ).checkboxradio("refresh");
 
 			//	$("#disableNBMaps").trigger('click');
 				//$(".radioButton").change();
 				document.getElementById("country_profile_and_panel").style.display = "block";
+
+				makeElementsEditables();
+				makeElementsFootnotables();
+				addPaddingToLastTableColumns(); // adds class to last visible table columns
 		
 		})})
 		.fail(function(data) {
@@ -3947,23 +4187,19 @@
 	 ****************************************************************************************************/
 	-->
 
+
+		<link rel="stylesheet" href="css/pace_loading_bar.css" type="text/css" />
+		<meta charset="UTF-8">
+		<title>Leishmaniasis Country Profile Generator</title>
+		<link rel="stylesheet" href="css/jquery-te-1.4.0.css" type="text/css" />
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" type="text/css" crossorigin="anonymous" />
+		<link rel="stylesheet" href="https://jqueryui.com/resources/demos/style.css" type="text/css" />
+		<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400" />
+		<link rel="stylesheet" href="css/style.css" type="text/css" />
 	
-<!DOCTYPE html>
-<html>
-<head>
-	<link rel="stylesheet" href="css/pace_loading_bar.css" type="text/css" />
-	<meta charset="UTF-8">
-	<title>Leishmaniasis Country Profile Generator</title>
-   <link rel="stylesheet" href="css/jquery-te-1.4.0.css" type="text/css" />
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" type="text/css" crossorigin="anonymous" />
-	<link rel="stylesheet" href="https://jqueryui.com/resources/demos/style.css" type="text/css" />
-   <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400" />
-   <link rel="stylesheet" href="css/style.css" type="text/css" />
-
-
-   <!-- <link rel="stylesheet" href="../../../dhis-web-commons/javascripts/ext/resources/css/ext-plugin-gray.css" type="text/css" />-->
-   <!---<link rel="stylesheet" href="../../../dhis-web-mapping/extjs/resources/css/ext-all-gray.css" type="text/css" />-->
-
+	
+		<!-- <link rel="stylesheet" href="../../../dhis-web-commons/javascripts/ext/resources/css/ext-plugin-gray.css" type="text/css" />-->
+		<!---<link rel="stylesheet" href="../../../dhis-web-mapping/extjs/resources/css/ext-all-gray.css" type="text/css" />-->
 </head>
 
 <body>
@@ -4013,8 +4249,12 @@
 								<td><input type="number" class="chartParams" step=".1" id="minIncd"  min="0"  /></td>
 								<td><input type="number" class="chartParams" step=".1" id="maxIncd"  min="0" /></td>
 							</tr>
+			
 							<tr>
-								<td colspan="3"><button disabled id="updateChartButton" class="ui-button ui-widget ui-corner-all">Update Chart</button>
+								<td colspan="3">
+								<input id="one_legend_per_line" type="checkbox" checked="checked" />
+								<label for="one_legend_per_line">one-column legend</label>
+								<button disabled id="updateChartButton" class="ui-button ui-widget ui-corner-all">Update Chart</button>
 								<button id="cancelChartButton" class="ui-button ui-widget ui-corner-all">Cancel</button></td>
 							</tr>
 						</table>
@@ -4024,7 +4264,7 @@
 				<div id="tabs-3">		
 					<fieldset id="mapCheckboxes"></fieldset>
 					<fieldset id="mapConfiguration"><legend>Configure map</legend>
-						<div>
+						<div class="row">
 							<div class="col">
 								<select name="mapSelector" id="mapSelector">
 									<option disabled selected value>Select a Map</option>
@@ -4056,8 +4296,17 @@
 								<p> Font size :
 									<div id="font_size_slider"><div id="font_size_slider_handle" class="ui-slider-handle"></div></div>
 								</p>
+								<div id="legendPool">
+									<div id="legendSet0" class="legendSet" ></div>
+									<div id="legendSet1" class="legendSet" ></div>
+									<div id="legendSet2" class="legendSet" ></div>
+									<div id="legendSet3" class="legendSet" ></div>	
+								</div>
+								<br>
 								<p><button id="updateLegendButton" class="ui-button ui-widget ui-corner-all">Update Legend</button></p>
 								<p><button id="resetLegendButton" class="ui-button ui-widget ui-corner-all" title="Use if legends didn't load properly or dissapeared">Recreate all legends</button></p>
+							</div>
+							<div class="col">
 								<p>
 									<fieldset>
 										<legend>Resize Nota Bene for Maps: </legend>
@@ -4078,13 +4327,7 @@
 								</p>
 												
 							</div>
-							<div id="legendPool" class="col">
-								<div id="legendSet0" class="legendSet" ></div>
-								<div id="legendSet1" class="legendSet" ></div>
-								<div id="legendSet2" class="legendSet" ></div>
-								<div id="legendSet3" class="legendSet" ></div>	
-							</div>
-
+							
 						</div>
 
 					</fieldset>
@@ -4133,44 +4376,50 @@
 			<hr>
 		</div>
 
+		<div id="legendChartPool" >
+			<div id="legendmonthlychart0" class="legendChart draggable" ></div>
+			<div id="legendmonthlychart1" class="legendChart draggable" ></div>
+			<div id="legendmonthlychart2" class="legendChart draggable" ></div>
+			<div id="legendyearlychart0" class="legendChart draggable" ></div>
+			<div id="legendyearlychart1" class="legendChart draggable" ></div>
+			<div id="legendyearlychart2" class="legendChart draggable" ></div>
+		</div>
 
-		<div class="section">
-			<img class="head_logo center" src="https://www.who.int/about/Logo-WHO.jpg" />
+		<div id="heading_section" class="section blue_section">
+			<div id="head_logo_div">
+				<img id="head_logo_img" src="img/WHO-EN-W-H.png"/>
+			</div>
 
 			<div class="head_container">	
-				<div class="editableElement">Leishmaniasis</div>
-				<div class="center_text editableElement" id="country_name"></div>
-				<div class="align_to_right">
-					<div class="editableElement" id="year"></div>
-					<div class="editableElement comment" id="published_date"></div>
+				<div id="title">
+					<div class="editableElement sameLine">Leishmaniasis country profile  —&nbsp;</div>
+					<div class="editableElement sameLine" id="year"></div>
 				</div>
+				<div class="editableElement comment" id="published_date"></div>
+				<div class="align_to_left editableElement" id="country_name"></div>
 			</div>
 		</div>
 
 		<div class="section">
-			<h4 class="editableElement footnotable">COUNTRY GENERAL INFORMATION</h4>
-			<div class="twoColumns"><table id="cgiTable" class="display" cellspacing="0" width="100%">
+			<table id="cgiTable" class="display" cellspacing="0" width="100%">
 					<thead>
 						<tr id ="cgiTableHead"></tr>
 					</thead>
 					<tbody id="cgiTableBody"></tbody>
-			</table></div>
+			</table>
 		</div>
 
 		<div class="section">
-			<h4 class="editableElement footnotable">EPIDEMIOLOGY</h4>
-
 			<table id="epiTable" class="display" cellspacing="0" width="100%">
 					<thead>
 						<tr id ="epiTableHead"></tr>
 					</thead>
 					<tbody id="epiTableBody"></tbody>
 			</table>
-			<div id="textUnderEpiTable" class="textUnderTable"></div>
 		</div>
 
 		<div class="section">
-			<h4 class="editableElement footnotable" >Monthly distribution of new cases (January-December)</h4>
+			<h4 id ="monthlyTableTitle" class="editableElement footnotable titlesBlue" >Monthly distribution of new cases (January-December)</h4>
 
 			<table id="monthlyTable" class="display" cellspacing="0" width="100%">
 					<thead>
@@ -4178,75 +4427,70 @@
 					</thead>
 					<tbody id="monthlyTableBody"></tbody>
 			</table>
-
+			<div id="textUnderEpiTable" class="textUnderTable"></div>
 		</div>
 
-		<div>
-			<div id ="divFormonthlychart0" class="sameLine draggable"><canvas class="chart" id="monthlychart0" width="400" height="240" ></canvas></div>
-			<div id ="divFormonthlychart1"class="sameLine draggable"><canvas class="chart" id="monthlychart1" width="400" height="240" ></canvas></div>
-			<div id ="divFormonthlychart2" class="sameLine draggable"><canvas class="chart" id="monthlychart2" width="400" height="240" ></canvas></div>
-		</div>
-		<h4 class="editableElement footnotable" >Number of new cases and Incidence rate/10,000 at the national level from <span id ="chartTitleFirstYear"></span> to <span id ="chartTitleLastYear"></span></h4>
-		<div>
-			<div id ="divForyearlychart0" class="sameLine draggable"><canvas class="chart" id="yearlychart0" width="400" height="240" ></canvas></div>
-			<div id ="divForyearlychart1" class="sameLine draggable"><canvas class="chart" id="yearlychart1" width="400" height="240" ></canvas></div>
-			<div id ="divForyearlychart2" class="sameLine draggable"><canvas class="chart" id="yearlychart2" width="400" height="240" ></canvas></div>
+		<div id="charts_section">
+
+			<div>
+				<div id ="divFormonthlychart0" class="sameLine draggable"><canvas class="chart" id="monthlychart0" width="356" height="160" ></canvas></div>
+				<div id ="divFormonthlychart1"class="sameLine draggable"><canvas class="chart" id="monthlychart1" width="356" height="160" ></canvas></div>
+				<div id ="divFormonthlychart2" class="sameLine draggable"><canvas class="chart" id="monthlychart2" width="356" height="160" ></canvas></div>
+			</div>
+			<h4 class="editableElement footnotable titlesBlue" >Number of new cases and Incidence rate/10,000 at the national level from <span id ="chartTitleFirstYear"></span> to <span id ="chartTitleLastYear"></span></h4>
+			<div>
+				<div id ="divForyearlychart0" class="sameLine draggable"><canvas class="chart" id="yearlychart0" width="356" height="160" ></canvas></div>
+				<div id ="divForyearlychart1" class="sameLine draggable"><canvas class="chart" id="yearlychart1" width="356" height="160" ></canvas></div>
+				<div id ="divForyearlychart2" class="sameLine draggable"><canvas class="chart" id="yearlychart2" width="356" height="160" ></canvas></div>
+			</div>
 		</div>
 
 		<div class="section">
-			<hr>
 			<div id="footnotes1"></div>
 		</div>
 
 		<div class="pagebreak"></div>
 
-		<div class="section">
-			<h4 class="editableElement footnotable" >Disease distribution of new <span style="text-decoration: underline red" id ="mapsTitleDis"></span> cases at <span style="text-decoration: underline red" id ="mapsTitleLvl"></span> per 10,000 population <span id ="mapsTitleYear"></span></h4>
-			<div class="sameLine map draggable"> <div id="map0"></div></div>
-			<div class="sameLine map draggable"><div id="map1"></div></div>
-			<div class="sameLine map draggable"><div id="map2"></div></div>
-			<div class="sameLine map draggable"><div id="map3"></div></div>
+		<div id = "maps_section" class="section">
+			<h4 class="editableElement footnotable titlesBlue" >Disease distribution of new <span style="text-decoration: underline red" id ="mapsTitleDis"></span> cases at <span style="text-decoration: underline red" id ="mapsTitleLvl"></span> per 10,000 population <span id ="mapsTitleYear"></span></h4>
+			<div> <!-- div to apply padding-->
+				<div id="map0" class= "map sameLine draggable"></div>
+				<div id="map1" class= "map sameLine draggable"></div>
+				<div id="map2" class= "map sameLine draggable"></div>
+				<div id="map3" class= "map sameLine draggable"></div>
+			</div>
 			<div id="notaBeneMaps"  class="notasBene draggable"><div class="editableElement"></div></div>
 		</div>
 
 
 		<div class="section">
-			<h4 id="casTitle" class="editableElement footnotable" >CONTROL AND SURVEILLANCE</h4>
-			<div class="twoColumns"><table id="casTable" class="display" cellspacing="0" width="100%">
+			<table id="casTable" class="display" cellspacing="0" width="100%">
 					<thead>
 						<tr id ="casTableHead"></tr>
 					</thead>
 					<tbody id="casTableBody"></tbody>
-			</table></div>
+			</table>
 
 		</div>
 
 		<div class="section">
-			<h4 class="editableElement footnotable" >DIAGNOSIS</h4>
-
 			<table id="diagTable" class="display" cellspacing="0" width="100%">
 					<thead>
 						<tr id ="diagTableHead"></tr>
 					</thead>
 					<tbody id="diagTableBody"></tbody>
 			</table>
-			<div id="textUnderDiagTable1" class="textUnderTable"></div>
 			<div id="textUnderDiagTable2" class="textUnderTable"></div>
-
-
 		</div>
 
 
 		<div class="section">
-			<h4 id="tamTitle" class="editableElement footnotable" >TREATMENT AND MEDICINES</h4>
-
 			<table id="tamTable" class="display" cellspacing="0" width="100%">
 					<thead>
 						<tr id ="tamTableHead"></tr>
 					</thead>
 					<tbody id="tamTableBody"></tbody>
 			</table>
-			<br>
 			<table id="toutcomeTable" class="display" cellspacing="0" width="100%">
 					<thead>
 						<tr id ="toutcomeTableHead"></tr>
@@ -4256,9 +4500,16 @@
 		</div>
 
 		<div class="section">
-			<hr>
+			<div id="textUnderDiagTable1" class="textUnderTable"></div>
 			<div id="footnotes2"></div>
-			<div id="notaBene"  class="notasBene draggable"><div class="editableElement"></div></div>
+		</div>
+
+		<div id="footer_section" class="section blue_section">
+			<div id="head_logo_div_f">
+				<img id="head_logo_img_f" src="img/WHO-EN-W-H.png"/>
+			</div>
+
+			<div id="notaBene" class="notasBene draggable"><div class="editableElement"></div></div>
 
 		</div>
 	</div>
@@ -4295,7 +4546,7 @@
 				<a class="usermanual" target="_blank"><img class="resize" src="img/icons/pdf.png" border=0></a>
 		  </div>
 		</form>
-		<div id="footer"> LCPG v0.39 - 2020.03.26</div>
+		<div id="footer"> LCPG v0.40 - 2020.05.27</div>
 	</div>
 </body>
 </html>
