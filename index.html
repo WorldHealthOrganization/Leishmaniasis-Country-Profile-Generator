@@ -991,7 +991,11 @@
 
 
 	var dialog, editor;
-	var addingFootnote = false;
+	var NONE = 0;
+	var NEW_FOOTNOTE = 1;
+	var ACTIVE_FOOTNOTE = 2;
+	var CP_FOOTNOTE = 3;
+	var footnoteMode = NONE;
 
 	var minCases, maxCases, minIncd, maxIncd;
 	var defaultMinCases, defaultMaxCases, defaultMinIncd, defaultMaxIncd;
@@ -2237,6 +2241,17 @@
 				// only if is not already open
 
 				editingElement = e.target;
+				// check if editing footnotes
+				if (editingElement.parentElement.classList.contains("footnote")) {
+					// editing footnote in CP
+					footnoteMode = CP_FOOTNOTE;
+
+				} else if ([SORTABLE_LIST_2_NAME, SORTABLE_LIST_3_NAME].includes(editingElement.parentElement.id)){
+					// editing active footnote in footnotes section
+					footnoteMode = ACTIVE_FOOTNOTE;
+				} else {
+					footnoteMode = NONE;
+				}
 				editor.jqteVal(editingElement.outerHTML);
 				dialog.dialog( "option", "position", { my: "left top", at: "center bottom+10%", of: editingElement } );	
 				dialog.dialog( "open" );	
@@ -2650,6 +2665,7 @@
 		$('#mapsTitleDis').html(text.join(""));
 		$('#mapsTitleLvl').html(ds.divisionName + " level");
 		$('#mapsTitleYear').html("(" + ds.year + ")");
+		underlineMapsTitle();
 		$('#chartTitleFirstYear').html( ds.year - (historicLength - 1)); // historicLength includes current year
 		$('#chartTitleLastYear').html( ds.year );
  
@@ -3195,7 +3211,7 @@
 	}
 
 	function country_selector_relocate(){
-		Pace.restart();
+		//Pace.restart();
 		document.getElementById('tabs-6').appendChild(
 			document.getElementById("country-selector")
 		);
@@ -3230,13 +3246,13 @@
 				"Save changes and close": saveChangesAndClose,
 				Cancel: function() {
 					deleteNewFootnote();
-					addingFootnote = false;
+					footnoteMode = NONE;
 					dialog.dialog( "close" );
 				}
 			},
 			close: function(event) {
 				event.preventDefault();
-				addingFootnote = false;
+				footnoteMode = NONE;
 				return false;
 				//allFields.removeClass( "ui-state-error" );
 			}
@@ -3245,13 +3261,31 @@
 
 
 	function saveChangesAndClose(){
-		if(addingFootnote){
-			editingElement.innerHTML = editor.jqteVal();
-			addNewFootnote();
-		} else {
-			editingElement.outerHTML = editor.jqteVal();
+		switch(footnoteMode){
+			case NEW_FOOTNOTE:
+				editingElement.innerHTML = editor.jqteVal();
+				addNewFootnote();
+				break;
+			case ACTIVE_FOOTNOTE:
+				sortableNo = parseInt(editingElement.parentElement.id.slice(-1));
+				pageNumber = sortableNo - 1;
+				position = $(editingElement).index();
+				editingElement.outerHTML = editor.jqteVal();
+				$("#footnotes"+pageNumber+" > div:eq("+position+") > span.editableElement")[0].innerHTML = $("#sortable"+(sortableNo)+" > li:eq("+position+")")[0].innerHTML;
+				break;
+			case CP_FOOTNOTE:
+				pageNumber = parseInt(editingElement.parentElement.parentElement.id.slice(-1));
+				sortableNo = pageNumber + 1;
+				position = $(editingElement.parentElement).index();
+				editingElement.outerHTML = editor.jqteVal();
+				$("#sortable"+sortableNo+" > li:eq("+position+")")[0].innerHTML = $("#footnotes"+pageNumber+" > div:eq("+position+") > span.editableElement")[0].innerHTML;
+				break;
+			default:
+				editingElement.outerHTML = editor.jqteVal();
+				break;
 		}
 		dialog.dialog( "close" );
+		footnoteMode = NONE;
 	}
 
 
@@ -3544,6 +3578,12 @@
 					fillArray_IncidenceRow(),
 					updateNumberOfDivisions(subNationaSelectedLevel)
 				).done(function(result){
+					// recalculates maps to selected subnational level
+					if ($("#maps_to_selectedSubLevel").prop('checked')){
+						update_map_levels_var(WIDP_OU_SHIFT + NATIONAL_LEVEL, WIDP_OU_SHIFT + subNationaSelectedLevel);
+						updateMapsTitle();
+						generateMaps();
+					}
 					writeTable(CGI_TABLE_NAME, "Body", generalInformationArray, LINES_BELOW_LABELS_CGI);
 					underlineDivisionName();
 					writeTable(EPI_TABLE_NAME, "Body", array, LINES_BELOW_LABELS_EPI);
@@ -3556,17 +3596,15 @@
 					fillTableHead(DIAG_TABLE_NAME, "Head", TABLE_TITLE_DIAG, COLUMNS_LABELS);
 					fillTableHead(TOUTCOME_TABLE_NAME, "Head", TABLE_TITLE_TOUTCOME, COLUMNS_LABELS.slice(0,4));
 
+					
+
+
 					refreshToggleStatus();
 					removeAllFootnotesMarks(); // removes all footnotes marks since refreshed elements will lost its footnote mark
 				});
 			});
 
 
-			// recalculates maps to selected subnational level
-			if ($("#maps_to_selectedSubLevel").prop('checked')){
-				update_map_levels_var(WIDP_OU_SHIFT + NATIONAL_LEVEL, WIDP_OU_SHIFT + subNationaSelectedLevel);
-				generateMaps();
-			}
 
 		}).change();
 
@@ -3684,7 +3722,7 @@
 		/* Listeners */
 		// Editor for footnotes
 		$("#newfootnote").click(function() {
-			addingFootnote = true;
+			footnoteMode = NEW_FOOTNOTE;
 			editingElement = $("#newFootnoteText")[0];
 			editor.jqteVal(editingElement.innerHTML);
 
@@ -3825,6 +3863,10 @@
 	// underlines provisional text with a red underline
 	function underlineDivisionName(){
 		$( "#cgiTable6 > td:nth-child(2) > span").css( "text-decoration","underline red");
+	}
+
+	function underlineMapsTitle(){
+		$("#mapsTitleDis, #mapsTitleLvl").css( "text-decoration","underline red");
 	}
 
 	function showFeedbackToUser(text){
@@ -4546,7 +4588,7 @@
 				<a class="usermanual" target="_blank"><img class="resize" src="img/icons/pdf.png" border=0></a>
 		  </div>
 		</form>
-		<div id="footer"> LCPG v0.40 - 2020.05.27</div>
+		<div id="footer"> LCPG v0.41 - 2020.07.02</div>
 	</div>
 </body>
 </html>
