@@ -2635,6 +2635,23 @@
 
 	}
 
+	function resetMapsAndChartsVisibility(){
+
+		// ACL_INDEX since ACL and ZCL shares the same chart
+		for (var i = 0; i<=ACL_INDEX; i++) {
+			$('#'+DIV + MONTHLY + CHART + i).addClass('sameLine');
+			$('#'+DIV + MONTHLY + CHART + i).removeClass('notShown');
+			$('#'+DIV + YEARLY + CHART + i).addClass('sameLine');
+			$('#'+DIV + YEARLY + CHART + i).removeClass('notShown');
+		}
+	
+		for (var i = 0; i<=ZCL_INDEX; i++) {
+			$('#'+ MAP_PREFIX + i).addClass('sameLine');
+			$('#'+ MAP_PREFIX + i).removeClass('notShown');
+		}
+
+	}
+
 	function updateMapsTitle(){
 		var text = [];
 		var separator = " and ";
@@ -3888,6 +3905,7 @@
 	function startPreparingReport() {
 	
 		cleanErrorFeedback();
+		resetMapsAndChartsVisibility();
 
 		$( "#country_name" ).text(ds.countryName);
 		$( "#year" ).text(ds.year);
