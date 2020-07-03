@@ -3332,7 +3332,7 @@
 			var index = Number(this.id.slice(this.id.length-1, this.id.length));
 			var startingid = this.id.slice(0, -1-BUTTON_PREFIX.length);
 			$("#"+startingid+index).toggle();
-			
+			addPaddingToLastTableColumns();
 		});
 		
 		// Listener chart buttons
