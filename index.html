@@ -3408,9 +3408,6 @@
 					$("#notaBeneMaps").removeClass("resizable");
 					break;
 				case "enableNBMaps":
-					if ($("#notaBeneMaps").resizable( "instance" ) == null) {
-						$("#notaBeneMaps").resizable('destroy');
-					}
 					$("#notaBeneMaps").resizable();
 					break;
 				case "disableNB":
@@ -3418,9 +3415,6 @@
 					$("#notaBene").removeClass("resizable");
 					break;
 				case "enableNB":
-					if ($("#notaBene").resizable( "instance" ) == null) {
-						$("#notaBene").resizable('destroy');
-					}
 					$("#notaBene").resizable();
 					break;
 			}
