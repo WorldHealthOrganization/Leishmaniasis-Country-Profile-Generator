@@ -3948,7 +3948,7 @@
 		var mapOptions =  ["Select map"].concat(MAP_CHECKBOXES_LABELS);
 		var legendOptions = ["Select legend"].concat(MAP_CHECKBOXES_LABELS);
 		generateMapConfigurationList($("#mapSelector"), mapOptions, MAP_PREFIX, false);
-		generateMapConfigurationList($("#chartSelector"), MONTHLY_CHART_LABELS, MONTHLY+CHART, true);
+		generateMapConfigurationList($("#chartSelector"), MONTHLY_CHART_LABELS, MONTHLY+CHART, false);
 		generateMapConfigurationList($("#chartSelector"), YEARLY_CHART_LABELS, YEARLY+CHART, true);
 		generateMapConfigurationList($("#legendSelector"), legendOptions, LEGENDSET_PREFIX, false);
 		generateMapConfigurationList($("#positionLegendSelector"), LEGEND_POSITION_LABELS, LEGEND_PREFIX, false);
@@ -4600,7 +4600,7 @@
 				<a class="usermanual" target="_blank"><img class="resize" src="img/icons/pdf.png" border=0></a>
 		  </div>
 		</form>
-		<div id="footer"> LCPG v0.41 - 2020.07.02</div>
+		<div id="footer"> LCPG v0.42 - 2020.07.09</div>
 	</div>
 </body>
 </html>
