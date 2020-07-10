@@ -3157,6 +3157,13 @@
 
 	}
 
+	function resetNotaBeneShapes(){
+		$("#notaBeneMaps").remove();
+		$("#notaBene").remove();
+		$("#maps_section").append('<div id="notaBeneMaps"  class="notasBene draggable"><div class="editableElement"></div></div>');
+		$("#footer_section").append('<div id="notaBene" class="notasBene draggable"><div class="editableElement"></div></div>');
+	}
+
 	function fillNotaBene(){
 		var text = "Data source: Ministry of Health, " +
 					ds.countryName +
@@ -3971,6 +3978,7 @@
 		
 		generateMapConfigurationList($("#subnationalLevelSelector"), LEVEL_CONFIG_LABELS, LEVEL_PREFIX, false);
 
+		resetNotaBeneShapes();
 		fillNotaBene();
 		fillNotaBeneMaps();
 
