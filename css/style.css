@@ -134,12 +134,12 @@ h6 {
 
 /* aligns children vertically to center */
 #footer_section * {
-	display:flex;
     align-items:center;
     justify-content:center;
 }
 
 #head_logo_div_f{
+  display:flex;
   grid-column-start: 2;
 }
 
