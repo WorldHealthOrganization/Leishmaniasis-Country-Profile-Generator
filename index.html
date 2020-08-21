@@ -431,6 +431,12 @@
 	map_levels[ACL_INDEX] =  DEFAULT_MAP_LEVELS;
 	map_levels[ZCL_INDEX] =  DEFAULT_MAP_LEVELS;
 
+	var boundaries_map_levels = []; 
+	boundaries_map_levels[VL_INDEX] =  DEFAULT_MAP_LEVELS;
+	boundaries_map_levels[CL_INDEX] =  DEFAULT_MAP_LEVELS;
+	boundaries_map_levels[ACL_INDEX] =  DEFAULT_MAP_LEVELS;
+	boundaries_map_levels[ZCL_INDEX] =  DEFAULT_MAP_LEVELS;
+
 	var map_style = []; 
 	map_style[VL_INDEX] =  WHO_BASEMAP;
 	map_style[CL_INDEX] =  WHO_BASEMAP;
@@ -1189,6 +1195,10 @@
 		itemsOnRow.push({id: "LEVEL-"+map_levels[index][0]});
 		itemsOnRow.push({id: orgUnitId});
 
+		var boundaryLevels = [];
+		boundaryLevels.push({id: "LEVEL-"+boundaries_map_levels[index][0]});
+		boundaryLevels.push({id: orgUnitId});
+
 		// url has to be defined outside
 		mapPlugin.url = base;
 
@@ -1197,7 +1207,7 @@
 			basemap: mapStyle,
 			mapViews: [
 			{
-				rows: [{dimension: "ou", items: itemsOnRow}],
+				rows: [{dimension: "ou", items: boundaryLevels}],
 				layer: "boundary",
 				labels: false, // labels of the regions
 				opacity:map_opacity[index]/100
@@ -2040,6 +2050,8 @@
 		for (var i = VL_INDEX; i<map_levels.length; i++){
 			map_levels[i] = [];
 			map_levels[i].push(max);
+			boundaries_map_levels[i] = [];
+			boundaries_map_levels[i].push(max);
 		}
 		
 	}
@@ -2661,6 +2673,46 @@
 
 	}
 
+	function resetVariables(){
+		
+		map_levels[VL_INDEX] =  DEFAULT_MAP_LEVELS;
+		map_levels[CL_INDEX] =  DEFAULT_MAP_LEVELS;
+		map_levels[ACL_INDEX] =  DEFAULT_MAP_LEVELS;
+		map_levels[ZCL_INDEX] =  DEFAULT_MAP_LEVELS;
+
+		boundaries_map_levels[VL_INDEX] =  DEFAULT_MAP_LEVELS;
+		boundaries_map_levels[CL_INDEX] =  DEFAULT_MAP_LEVELS;
+		boundaries_map_levels[ACL_INDEX] =  DEFAULT_MAP_LEVELS;
+		boundaries_map_levels[ZCL_INDEX] =  DEFAULT_MAP_LEVELS;
+
+		map_style[VL_INDEX] =  WHO_BASEMAP;
+		map_style[CL_INDEX] =  WHO_BASEMAP;
+		map_style[ACL_INDEX] =  WHO_BASEMAP;
+		map_style[ZCL_INDEX] =  WHO_BASEMAP;
+
+		map_opacity[VL_INDEX] =  DEFAULT_MAP_OPACITY;
+		map_opacity[CL_INDEX] =  DEFAULT_MAP_OPACITY;
+		map_opacity[ACL_INDEX] =  DEFAULT_MAP_OPACITY;
+		map_opacity[ZCL_INDEX] =  DEFAULT_MAP_OPACITY;
+
+		map_height[VL_INDEX] =  DEFAULT_MAP_HEIGHT;
+		map_height[CL_INDEX] =  DEFAULT_MAP_HEIGHT;
+		map_height[ACL_INDEX] =  DEFAULT_MAP_HEIGHT;
+		map_height[ZCL_INDEX] =  DEFAULT_MAP_HEIGHT;
+
+		map_width[VL_INDEX] =  DEFAULT_MAP_WIDTH;
+		map_width[CL_INDEX] =  DEFAULT_MAP_WIDTH;
+		map_width[ACL_INDEX] =  DEFAULT_MAP_WIDTH;
+		map_width[ZCL_INDEX] =  DEFAULT_MAP_WIDTH;
+
+		charts_array = [];
+
+		footNoteCounter = 0;
+
+		generatedYears = [], organisationUnits = [];
+
+	}
+
 	function updateMapsTitle(){
 		var text = [];
 		var separator = " and ";
@@ -3000,7 +3052,8 @@
 		var selected_map_index =  parseInt($('#mapSelector').val()) - 1 ; //first option is the "select text"
 
 		// stores selected settings
-		map_levels[selected_map_index] = [$( "#slider_range" ).slider( "values", 0 )];
+		map_levels[selected_map_index] = [$( "#ou_slider_range" ).slider( "values", 0 )];
+		boundaries_map_levels[selected_map_index] = [$( "#ou_boundaries_slider_range" ).slider( "values", 0 )];
 		map_style[selected_map_index] = $('#mapStyleSelector').val();
 		map_opacity[selected_map_index] = parseInt($( "#opacity_slider" ).slider( "option", "value"));
 		map_height[selected_map_index] = parseInt($( "#height_slider" ).slider( "option", "value"));
@@ -3058,7 +3111,8 @@
 	}
 
 	function cleanUpdateMapForm(){
-		$( "#slider_range" ).slider( "option", "disabled", true );
+		$( "#ou_slider_range" ).slider( "option", "disabled", true );
+		$( "#ou_boundaries_slider_range" ).slider( "option", "disabled", true );
 		$( "#mapStyleSelector" ).selectmenu( "option", "disabled", true );
 		$( "#opacity_slider" ).slider( "option", "disabled", true );
 		$( "#height_slider" ).slider( "option", "disabled", true );
@@ -3458,7 +3512,8 @@
 			var selected_map = parseInt($("#mapSelector").val()) - 1 ; // first option is the "select map"
 
 			if (selected_map >= 0) { // "Select map" option
-				$( "#slider_range" ).slider( "option", "disabled", false );
+				$( "#ou_slider_range" ).slider( "option", "disabled", false );
+				$( "#ou_boundaries_slider_range" ).slider( "option", "disabled", false );
 				$( "#mapStyleSelector" ).selectmenu( "option", "disabled", false );
 				$( "#opacity_slider" ).slider( "option", "disabled", false );
 				$( "#height_slider" ).slider( "option", "disabled", false );
@@ -3469,8 +3524,10 @@
 				setOptionSelectMenu("mapStyleSelector", map_style[selected_map]);
 
 				// updates level slides
-				$( "#slider_range" ).slider( "values", 0 , map_levels[selected_map][0]);
+				$( "#ou_slider_range" ).slider( "values", 0 , map_levels[selected_map][0]);
 				$( "#ou_level_slider" ).val( WHO_OU_TEXT_LVL[map_levels[selected_map][0]-1]);
+				$( "#ou_boundaries_slider_range" ).slider( "values", 0 , boundaries_map_levels[selected_map][0]);
+				$( "#ou_boundaries_level_slider" ).val( WHO_OU_TEXT_LVL[boundaries_map_levels[selected_map][0]-1]);
 
 
 				// update opacity
@@ -3921,6 +3978,7 @@
 	
 		cleanErrorFeedback();
 		resetMapsAndChartsVisibility();
+		resetVariables();
 
 		$( "#country_name" ).text(ds.countryName);
 		$( "#year" ).text(ds.year);
@@ -3990,7 +4048,7 @@
 		setTextUnderTables("textUnderDiagTable2", TEXT_UNDER_DIAG2, DIAG_LEGEND_LABELS_2, DIAG_LEGEND_LABELS_DESC_2, PUT_NA_TEXT);
 
 		// Org unit level slider
-		var sliderRange = $( "#slider_range" );
+		var sliderRange = $( "#ou_slider_range" );
 		sliderRange.slider({
 			range: false,
 			min: 1,
@@ -4003,6 +4061,21 @@
 
 		});
 		$( "#ou_level_slider" ).val( WHO_OU_TEXT_LVL[sliderRange.slider( "values", 0 )-1] );
+
+		// Boundaries Org unit level slider
+		var sliderRange = $( "#ou_boundaries_slider_range" );
+		sliderRange.slider({
+			range: false,
+			min: 1,
+			max: 7,
+			values: [ boundaries_map_levels[VL_INDEX][0]], // if multiple values set: values = [firstValue, lastValue]
+			slide: function( event, ui ) {
+				$( "#ou_boundaries_level_slider" ).val( WHO_OU_TEXT_LVL[ui.values[ 0 ]-1]);
+			},
+			disabled:true
+
+		});
+		$( "#ou_boundaries_level_slider" ).val( WHO_OU_TEXT_LVL[sliderRange.slider( "values", 0 )-1] );
 
 		// Opacitity slider  
 		var opacity_slider_handle = $( "#opacity_slider_handle" );
@@ -4340,9 +4413,14 @@
 									<option disabled selected value>Select a Map</option>
 								</select>
 								<p>
-									<label for="ou_level_slider">OrgUnit levels:</label>
+									<label for="ou_level_slider">OrgUnit level:</label>
 									<input type="text" id="ou_level_slider" readonly style="border:0; color:#f6931f; font-weight:bold;  width:260px ">
-									<div id="slider_range"></div>
+									<div id="ou_slider_range"></div>
+								</p>
+								<p>
+									<label for="ou_boundaries_level_slider">Boundaries level:</label>
+									<input type="text" id="ou_boundaries_level_slider" readonly style="border:0; color:#f6931f; font-weight:bold;  width:260px ">
+									<div id="ou_boundaries_slider_range"></div>
 								</p>
 								<select name="mapStyleSelector" id="mapStyleSelector"></select>
 								<p> Opacity:
@@ -4616,7 +4694,7 @@
 				<a class="usermanual" target="_blank"><img class="resize" src="img/icons/pdf.png" border=0></a>
 		  </div>
 		</form>
-		<div id="footer"> LCPG v0.43 - 2020.07.10</div>
+		<div id="footer"> LCPG v0.44b - 2020.08.20</div>
 	</div>
 </body>
 </html>
