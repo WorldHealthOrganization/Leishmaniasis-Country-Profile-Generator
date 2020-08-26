@@ -1241,6 +1241,9 @@
 		// hides default legend button
 		$('#' + MAP_PREFIX + index).find(".leaflet-control-legend").hide();
 
+		// removes spinner in case it is still there
+		$('#' + MAP_PREFIX + index + " div.spinner").remove();
+
 		// moves custom legend on top of the map
 		moveLegend(index, $('#'+id).find(LEGEND_POSITIONS[BOTTOM_RIGHT]), LEGEND_TO_REPORT);
 	}
