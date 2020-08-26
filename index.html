@@ -2499,8 +2499,8 @@
 				var dataset = [cases1/total*100, cases2/total*100, cases3/total*100];
 				var percentages100 = largestRemainderRound(dataset, 100);
 				
-				return 	percentageText(percentages100[0], 100, 0, false) + ", " +
-						percentageText(percentages100[1], 100, 0, false) + ", " +
+				return 	percentageText(percentages100[0], 100, 0, false) + " / " +
+						percentageText(percentages100[1], 100, 0, false) + " / " +
 						percentageText(percentages100[2], 100, 0, false);
 
 			}
