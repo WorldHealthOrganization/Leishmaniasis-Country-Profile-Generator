@@ -53,6 +53,22 @@ table th:first-child, table td:first-child {
   padding-left: 44px;
 }   
 
+#tooltipTable {
+  margin: 0px;
+}
+
+/* creates a margin extending the row background colors */
+#tooltipTable th, #tooltipTable td{
+  padding: 3px 6px 3px 6px !important;
+  text-align: center;
+}   
+
+#ouInfoHover img {
+  vertical-align: middle;
+  padding-left: 4px;
+  padding-bottom: 4px;
+}
+
 /* sets same configuration as titles inside tables*/
 h4 {
   margin: 0px;
@@ -322,7 +338,7 @@ tbody > tr:nth-child(odd) {background: #daeaf9}
   color: #029ADE;
  }
 
- #toutcomeTable tbody tr td:first-child {
+#toutcomeTable tbody tr td:first-child {
   width: 432px;
 }
 
