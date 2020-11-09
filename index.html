@@ -62,7 +62,6 @@
  <script type="text/javascript" src ="js/jquery-te-1.4.0-oms.js"></script>
  <script type="text/javascript" src ="js/tools.js"></script>
  <script type="text/javascript" src ="js/largestRemainderRound.js"></script>
-<!--<script type="text/javascript" src ="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js">//TODO:use the cdn officiel</script>-->
 <script
   src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
   integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
@@ -1003,6 +1002,11 @@
 	var ACTIVE_FOOTNOTE = 2;
 	var CP_FOOTNOTE = 3;
 	var footnoteMode = NONE;
+
+	var RESIZEDISABLED = 0;
+	var RESIZENOTASBENE = 1;
+	var RESIZESECTIONS = 2;
+	var resizeMode = RESIZEDISABLED;
 
 	var minCases, maxCases, minIncd, maxIncd;
 	var defaultMinCases, defaultMaxCases, defaultMinIncd, defaultMaxIncd;
@@ -2687,6 +2691,9 @@
 			$('#'+ MAP_PREFIX + i).removeClass('notShown');
 		}
 
+		$("#maps_section").width("753px"); // 211mm - 44px (margin-left)
+		$("#charts_section").width("753px");
+
 	}
 
 	function resetVariables(){
@@ -2728,6 +2735,8 @@
 		generatedYears = [], organisationUnits = [];
 		
 		infoTable = "";
+
+		disableResizes();
 
 	}
 
@@ -3508,35 +3517,25 @@
 		$(".radioButton").change(function() {
 
 			switch($(this)[0].id){
-				case "disableNBMaps":
-					$(".resizable").resizable( "disable" );
+				case "disableResize":
+					disableResizes();
 					break;
-				case "enableNBMaps":
-					$(".resizable").resizable({
+				case "resizeNotasBene":
+					disableResizes();
+					$("#notaBeneMaps").resizable();
+					$("#notaBene").resizable();
+					resizeMode = RESIZENOTASBENE;
+					break;
+				case "resizeSections":
+					disableResizes();
+					$(".resizeSections").resizable({
 						helper: "ui-resizable-helper"
 					});
+					resizeMode = RESIZESECTIONS;
 					break;
+					 
 			}
 
-
-/*
-			switch($(this)[0].id){
-				case "disableNBMaps":
-					$("#notaBeneMaps").resizable({ disabled: true});
-					$("#notaBeneMaps").removeClass("resizable");
-					break;
-				case "enableNBMaps":
-					$("#notaBeneMaps").resizable();
-					break;
-				case "disableNB":
-					$("#notaBene").resizable({ disabled: true});
-					$("#notaBene").removeClass("resizable");
-					break;
-				case "enableNB":
-					$("#notaBene").resizable();
-					break;
-			}
-			*/
 		});
 
 		// enables the updatedMapButton
@@ -3725,6 +3724,16 @@
 
 	 }
 
+	 function disableResizes() {
+		if (resizeMode == RESIZENOTASBENE) {
+			$("#notaBeneMaps").resizable( "destroy" );
+			$("#notaBene").resizable( "destroy" );
+		} 
+		if (resizeMode == RESIZESECTIONS) {
+			$(".resizeSections").resizable( "destroy" );
+		}
+		resizeMode = RESIZEDISABLED;
+	 }
 
 	/* AFTER AND BEFORE printing actions */
 	var beforePrint = function() {
@@ -3885,7 +3894,7 @@
 				autocompleteSearcher("targetCountry", organisationUnits, doNothing, 2, 200);
 
 				country_selector_open();
-				DEBUG_AutomaticallyfillInitialForm();
+				//DEBUG_AutomaticallyfillInitialForm();
 
 			});
 			
@@ -4012,8 +4021,8 @@
 	function startPreparingReport() {
 	
 		cleanErrorFeedback();
-		resetMapsAndChartsVisibility();
 		resetVariables();
+		resetMapsAndChartsVisibility();
 
 		$( "#country_name" ).text(ds.countryName);
 		$( "#year" ).text(ds.year);
@@ -4321,13 +4330,9 @@
 
 				hideNoRelevantContent();
 
-				$("#disableNBMaps").prop('checked', true);
-				$("#disableNB").prop('checked', true);
-
+				$("#disableResize").prop('checked', true);
 				$( ".radioButton" ).checkboxradio("refresh");
 
-			//	$("#disableNBMaps").trigger('click');
-				//$(".radioButton").change();
 				document.getElementById("country_profile_and_panel").style.display = "block";
 
 				addPaddingToLastTableColumns(); // adds class to last visible table columns
@@ -4491,25 +4496,16 @@
 							<div class="col">
 								<p>
 									<fieldset>
-										<legend>Resize Nota Bene for Maps: </legend>
-										<label for="disableNBMaps">Disabled</label>
-										<input type="radio" name="NBMaps" class="radioButton" id="disableNBMaps">
-										<label for="enableNBMaps">Enabled</label>
-										<input type="radio" name="NBMaps" class="radioButton" id="enableNBMaps">
+										<legend>Resize elements: </legend>
+										<label for="disableResize">Disabled</label>
+										<input type="radio" name="Resizes" class="radioButton" id="disableResize">
+										<label for="resizeNotasBene">Resize Notas Bene</label>
+										<input type="radio" name="Resizes" class="radioButton" id="resizeNotasBene">
+										<label for="resizeSections">Resize Sections <i>(Maps and Charts)</i></label>
+										<input type="radio" name="Resizes" class="radioButton" id="resizeSections">
 									</fieldset>
-								</p>
-								<p>
-									<fieldset>
-										<legend>Resize Nota Bene: </legend>
-										<label for="disableNB">Disabled</label>
-										<input type="radio" name="NB" class="radioButton" id="disableNB">
-										<label for="enableNB">Enabled</label>
-										<input type="radio" name="NB" class="radioButton" id="enableNB">
-									</fieldset>
-								</p>
-												
-							</div>
-							
+								</p>			
+							</div>	
 						</div>
 
 					</fieldset>
@@ -4612,15 +4608,15 @@
 			<div id="textUnderEpiTable" class="textUnderTable"></div>
 		</div>
 
-		<div id="charts_section">
+		<div id="charts_section" class="section">
 
-			<div class="resizable">
+			<div class="resizeSections">
 				<div id ="divFormonthlychart0" class="sameLine draggable"><canvas class="chart" id="monthlychart0" width="356" height="160" ></canvas></div>
 				<div id ="divFormonthlychart1"class="sameLine draggable"><canvas class="chart" id="monthlychart1" width="356" height="160" ></canvas></div>
 				<div id ="divFormonthlychart2" class="sameLine draggable"><canvas class="chart" id="monthlychart2" width="356" height="160" ></canvas></div>
 			</div>
 			<h4 class="editableElement footnotable titlesBlue" >Number of new cases and Incidence rate/10,000 at the national level from <span id ="chartTitleFirstYear"></span> to <span id ="chartTitleLastYear"></span></h4>
-			<div class="resizable">
+			<div class="resizeSections">
 				<div id ="divForyearlychart0" class="sameLine draggable"><canvas class="chart" id="yearlychart0" width="356" height="160" ></canvas></div>
 				<div id ="divForyearlychart1" class="sameLine draggable"><canvas class="chart" id="yearlychart1" width="356" height="160" ></canvas></div>
 				<div id ="divForyearlychart2" class="sameLine draggable"><canvas class="chart" id="yearlychart2" width="356" height="160" ></canvas></div>
@@ -4633,7 +4629,7 @@
 
 		<div class="pagebreak"></div>
 
-		<div id = "maps_section" class="section resizable">
+		<div id = "maps_section" class="section resizeSections">
 			<h4 class="editableElement footnotable titlesBlue" >Disease distribution of new <span style="text-decoration: underline red" id ="mapsTitleDis"></span> cases at <span style="text-decoration: underline red" id ="mapsTitleLvl"></span> per 10,000 population <span id ="mapsTitleYear"></span></h4>
 			<div> <!-- div to apply padding-->
 				<div id="map0" class= "map sameLine draggable"></div>
@@ -4641,7 +4637,7 @@
 				<div id="map2" class= "map sameLine draggable"></div>
 				<div id="map3" class= "map sameLine draggable"></div>
 			</div>
-			<div id="notaBeneMaps"  class="notasBene draggable resizable"><div class="editableElement"></div></div>
+			<div id="notaBeneMaps"  class="notasBene draggable"><div class="editableElement"></div></div>
 		</div>
 
 
@@ -4691,7 +4687,7 @@
 				<img id="head_logo_img_f" src="img/WHO-EN-W-H.png"/>
 			</div>
 
-			<div id="notaBene" class="notasBene draggable resizable"><div class="editableElement"></div></div>
+			<div id="notaBene" class="notasBene draggable"><div class="editableElement"></div></div>
 
 		</div>
 	</div>
@@ -4728,7 +4724,7 @@
 				<a class="usermanual" target="_blank"><img class="resize" src="img/icons/pdf.png" border=0></a>
 		  </div>
 		</form>
-		<div id="footer"> LCPG v0.47 - 2020.11.03</div>
+		<div id="footer"> LCPG v0.47 - 2020.11.06</div>
 	</div>
 </body>
 </html>

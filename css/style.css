@@ -375,8 +375,8 @@ th {
 	margin-bottom: 5px;
 }
 
-#maps_section > * {
-  padding-left: 44px; /* only applies padding to immediate childs */
+#maps_section {
+  margin-left: 44px; /* using margin so resize respects the margins  */
 }
 
 .map {
@@ -551,7 +551,7 @@ div.row { /* makes notabene controls to appear at left in a new row */
 #notaBeneMaps{
   font-size: 8px;
   text-align:justify;
-  padding-right: 30px;
+  width: 720px; /*To initialy align with 2 maps */
 }
 
 #notaBene {
