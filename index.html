@@ -464,9 +464,9 @@
 	var TOP_RIGHT = 1;
 	var BOTTOM_LEFT = 2;
 	var BOTTOM_RIGHT = 3;
+	var LEGEND_TO_LEGEND_POOL = 4;
 
-	var LEGEND_TO_REPORT = 0;
-	var LEGEND_TO_LEGEND_POOL = 1;
+	var LEGEND_TO_REPORT = 0; // Only for charts. 
 
 	var LEGEND_POSITION_LABELS = new Array(4);
 	var LEGEND_POSITIONS = new Array(4);
@@ -476,10 +476,10 @@
 	LEGEND_POSITION_LABELS[BOTTOM_LEFT] = "Bottom left corner";
 	LEGEND_POSITION_LABELS[BOTTOM_RIGHT] = "Bottom right corner";
 
-	LEGEND_POSITIONS[TOP_LEFT] = ".leaflet-top.leaflet-left";
-	LEGEND_POSITIONS[TOP_RIGHT] = ".leaflet-top.leaflet-right";
-	LEGEND_POSITIONS[BOTTOM_LEFT] = ".leaflet-bottom.leaflet-left";
-	LEGEND_POSITIONS[BOTTOM_RIGHT] = ".leaflet-bottom.leaflet-right";
+	LEGEND_POSITIONS[TOP_LEFT] = ".mapboxgl-ctrl-top-left";
+	LEGEND_POSITIONS[TOP_RIGHT] = ".mapboxgl-ctrl-top-right";
+	LEGEND_POSITIONS[BOTTOM_LEFT] = ".mapboxgl-ctrl-bottom-left";
+	LEGEND_POSITIONS[BOTTOM_RIGHT] = ".mapboxgl-ctrl-bottom-right";
 
 	var editingLegend;
 
@@ -1243,13 +1243,19 @@
 		var index = parseInt(id.slice(-1));
 
 		// hides default legend button
-		$('#' + MAP_PREFIX + index).find(".leaflet-control-legend").hide();
+		//$('#' + MAP_PREFIX + index).find(".leaflet-control-legend").hide();
+	    $('#' + MAP_PREFIX + index + " .dhis2-map-legend").remove();
+		$('#' + MAP_PREFIX + index + " .map-plugin-single-2").remove();
+	//	$('#' + MAP_PREFIX + index + " .mapboxgl-ctrl-fullscreen").remove();
+		$('#' + MAP_PREFIX + index + " .mapboxgl-ctrl-group:has(> .mapboxgl-ctrl-fullscreen)").remove();
+		
+		
 
 		// removes spinner in case it is still there
-		$('#' + MAP_PREFIX + index + " div.spinner").remove();
+		// $('#' + MAP_PREFIX + index + " div.spinner").remove();
 
 		// moves custom legend on top of the map
-		moveLegend(index, $('#'+id).find(LEGEND_POSITIONS[BOTTOM_RIGHT]), LEGEND_TO_REPORT);
+		moveLegend(index, BOTTOM_RIGHT);
 	}
 
 	function prepareMapListeners() {
@@ -3037,17 +3043,30 @@
 	 **********                               MAPS functions                                 **********
 	 ****************************************************************************************************/
 
-	 function moveLegend(index, destination, destinationCode){
+	 function moveLegend(index, destinationCode){
 		var legendObject = $('#' + LEGENDSET_PREFIX + index);
+		var destination;
 
-		if (destinationCode == LEGEND_TO_REPORT){
+		if (destinationCode < LEGEND_TO_LEGEND_POOL){
 			legendObject.resizable({ disabled: true });
 			legendObject.removeClass("resizable");
+
+			destination = $('#'+MAP_PREFIX + index).find(LEGEND_POSITIONS[destinationCode]);
+			if (destinationCode == TOP_RIGHT){
+				zoomDestination = $('#'+MAP_PREFIX + index).find(LEGEND_POSITIONS[TOP_LEFT]);
+				zoomDestination.append(destination.contents());
+			} else if (destinationCode == TOP_LEFT){
+				zoomDestination = $('#'+MAP_PREFIX + index).find(LEGEND_POSITIONS[TOP_RIGHT]);
+				zoomDestination.append(destination.contents());
+			}
 		} else {
 			editingLegend = legendObject;
 			editingLegend.resizable('destroy'); // prevents bug on last elements
 			editingLegend.resizable();
+
+			destination = $("#" + LEGENDSET_POOL);
 		}
+
 		destination.append(legendObject);
 	 }
 
@@ -3069,7 +3088,7 @@
 		var legend_index =   parseInt($('#legendSelector').val()) -1 ; //first option is the "select text"
 		var position_index =  $('#positionLegendSelector').val();
 
-		moveLegend(legend_index, $('#'+MAP_PREFIX+ legend_index).find(LEGEND_POSITIONS[position_index]), LEGEND_TO_REPORT);
+		moveLegend(legend_index, position_index);
 
 		cleanUpdateLegendForm();
 	}
@@ -3087,7 +3106,7 @@
 		map_width[selected_map_index] = parseInt($( "#width_slider" ).slider( "option", "value"));
 
 		// saves the legend in the pool
-		moveLegend(selected_map_index, $("#" + LEGENDSET_POOL), LEGEND_TO_LEGEND_POOL);
+		moveLegend(selected_map_index, LEGEND_TO_LEGEND_POOL);
 
 		// removes the loaded map
 		mapPlugin.unmount(MAP_PREFIX + selected_map_index);
@@ -3213,7 +3232,7 @@
 		for (var i=0; i<MAP_CHECKBOXES_LABELS.length; i++){
 			if ( $('#'+ MAP_PREFIX+BUTTON_PREFIX + i ).prop( "checked") && 
 			$("#" + LEGENDSET_POOL).find('#' + LEGENDSET_PREFIX + i).length > 0) {
-				moveLegend(i, $('#' + MAP_PREFIX + i).find(LEGEND_POSITIONS[BOTTOM_RIGHT]), LEGEND_TO_REPORT);	
+				moveLegend(i, BOTTOM_RIGHT);	
 			}
 		}
 
@@ -3656,7 +3675,7 @@
 			var position_index =  $('#positionLegendSelector').val();
 			for (var i=0; i<MAP_CHECKBOXES_LABELS.length; i++){
 				if ( $("#" + LEGENDSET_POOL).find('#' + LEGENDSET_PREFIX + i).length > 0) {
-					moveLegend(i, $('#' + MAP_PREFIX + i).find(LEGEND_POSITIONS[position_index]), LEGEND_TO_REPORT);	
+					moveLegend(i, position_index);	
 				}
 			}
 
@@ -3667,7 +3686,7 @@
 				lastLegendPosition = getLastPosition(selected_legend);
 				setOptionSelectMenu("positionLegendSelector", lastLegendPosition);
 
-				moveLegend(selected_legend, $("#" + LEGENDSET_POOL), LEGEND_TO_LEGEND_POOL);
+				moveLegend(selected_legend, LEGEND_TO_LEGEND_POOL);
 
 				legendSetFontSize = parseInt($("#legendPool .legentSetElementText:first").css('font-size'));//.replace(/[^-\d\.]/g, ''); // removes px from number
 				$( "#font_size_slider" ).slider( "option", "value", legendSetFontSize );
@@ -3738,10 +3757,7 @@
 	/* AFTER AND BEFORE printing actions */
 	var beforePrint = function() {
 		// hides zoom buttons on maps
-		$('#' + MAP_PREFIX + VL_INDEX).find(".leaflet-control-zoom").hide();
-		$('#' + MAP_PREFIX + CL_INDEX).find(".leaflet-control-zoom").hide();
-		$('#' + MAP_PREFIX + ACL_INDEX).find(".leaflet-control-zoom").hide();
-		$('#' + MAP_PREFIX + ZCL_INDEX).find(".leaflet-control-zoom").hide();
+		$('.map').find(".mapboxgl-ctrl-group:has(> .mapboxgl-ctrl-zoom-in)").hide();
 		
 		var width = $(document).width();
 		var cmtoinch = width / 210;
@@ -3765,14 +3781,10 @@
 
 	var afterPrint = function() {
 		// restores zoom buttons on maps
-		$('#' + MAP_PREFIX + VL_INDEX).find(".leaflet-control-zoom").show();
-		$('#' + MAP_PREFIX + CL_INDEX).find(".leaflet-control-zoom").show();
-		$('#' + MAP_PREFIX + ACL_INDEX).find(".leaflet-control-zoom").show();
-		$('#' + MAP_PREFIX + ZCL_INDEX).find(".leaflet-control-zoom").show();
+		$('.map').find(".mapboxgl-ctrl-group:has(> .mapboxgl-ctrl-zoom-in)").show();
 
 		$("#toutcomeTable").css("margin-bottom", "0px");
 		$("#charts_section").css("margin-bottom", "0px");
-
 	};
 
 	if (window.matchMedia) {
@@ -4724,7 +4736,7 @@
 				<a class="usermanual" target="_blank"><img class="resize" src="img/icons/pdf.png" border=0></a>
 		  </div>
 		</form>
-		<div id="footer"> LCPG v0.47 - 2020.11.06</div>
+		<div id="footer"> LCPG v0.48 - DHIS2.34 - 2020.11.17</div>
 	</div>
 </body>
 </html>
