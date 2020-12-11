@@ -2743,6 +2743,7 @@
 		infoTable = "";
 
 		disableResizes();
+		disableDragging();
 
 	}
 
@@ -3037,6 +3038,16 @@
 			};
 		}
 		charts_array[chart].update();
+	}
+
+	function disableDragging(){
+		$( ".draggable" ).draggable().draggable( "destroy" );	
+	}
+
+	function enableDragging(){
+		var gridValue =  Number($("#dragGridSize").val());
+		// Dragable activation
+		$( ".draggable" ).draggable({ grid: [ gridValue, gridValue ] });	
 	}
 
 	/****************************************************************************************************
@@ -3551,6 +3562,12 @@
 						helper: "ui-resizable-helper"
 					});
 					resizeMode = RESIZESECTIONS;
+					break;
+				case "disableDragging":
+					disableDragging();
+					break;
+				case "enableDragging":
+					enableDragging();
 					break;
 					 
 			}
@@ -4219,12 +4236,6 @@
 		fillTableHead(TAM_TABLE_NAME, "Head", TABLE_TITLE_TAM, []);
 		fillTableHead(TOUTCOME_TABLE_NAME, "Head", TABLE_TITLE_TOUTCOME, COLUMNS_LABELS.slice(0,4));
 
-
-		// Dragable activation
-		$( ".draggable" ).draggable({ grid: [ 2, 2 ] });	
-		//$( ".resizable" ).resizable();
-
-
 		// fillCountryGeneralInformation(LEVEL2); //TODO: Manage error when not level 2
 
 		// Code to execute after API calls have been done.
@@ -4343,6 +4354,7 @@
 				hideNoRelevantContent();
 
 				$("#disableResize").prop('checked', true);
+				$("#disableDragging").prop('checked', true);
 				$( ".radioButton" ).checkboxradio("refresh");
 
 				document.getElementById("country_profile_and_panel").style.display = "block";
@@ -4405,9 +4417,10 @@
 					<li><a href="#tabs-1">General</a></li>
 					<li><a href="#tabs-2">Charts</a></li>
 					<li><a href="#tabs-3">Maps</a></li>
-					<li><a href="#tabs-4">Footnotes</a></li>
-					<li><a href="#tabs-5">Help</a></li>
-					<li><a href="#tabs-6">New CP</a></li>
+					<li><a href="#tabs-4">Move and resize</a></li>
+					<li><a href="#tabs-5">Footnotes</a></li>
+					<li><a href="#tabs-6">Help</a></li>
+					<li><a href="#tabs-7">New CP</a></li>
 				</ul>
 				<div id="tabs-1">		
 					<fieldset id="leish_detail_checkboxes"></fieldset>
@@ -4505,24 +4518,34 @@
 								<p><button id="updateLegendButton" class="ui-button ui-widget ui-corner-all">Update Legend</button></p>
 								<p><button id="resetLegendButton" class="ui-button ui-widget ui-corner-all" title="Use if legends didn't load properly or dissapeared">Recreate all legends</button></p>
 							</div>
-							<div class="col">
-								<p>
-									<fieldset>
-										<legend>Resize elements: </legend>
-										<label for="disableResize">Disabled</label>
-										<input type="radio" name="Resizes" class="radioButton" id="disableResize">
-										<label for="resizeNotasBene">Resize Notas Bene</label>
-										<input type="radio" name="Resizes" class="radioButton" id="resizeNotasBene">
-										<label for="resizeSections">Resize Sections <i>(Maps and Charts)</i></label>
-										<input type="radio" name="Resizes" class="radioButton" id="resizeSections">
-									</fieldset>
-								</p>			
-							</div>	
 						</div>
-
 					</fieldset>
 				</div>
 				<div id="tabs-4">
+					<p>					
+						<fieldset>
+								<legend>Enable maps, charts and <i>Notate Bene</i> dragging</legend>
+								<label for="disableDragging">Disabled</label>
+								<input type="radio" name="Drag" class="radioButton" id="disableDragging">								
+								<label for="dragGridSize">Size of dragging grid</label>
+								<input type="number" class="gridParams" step="1" id="dragGridSize" min="0" max="50" value="2" />
+								<label for="enableDragging">Enable dragging</label>
+								<input type="radio" name="Drag" class="radioButton" id="enableDragging">
+						</fieldset>
+					</p>			
+					<p>
+						<fieldset>
+							<legend>Resize elements: </legend>
+							<label for="disableResize">Disabled</label>
+							<input type="radio" name="Resizes" class="radioButton" id="disableResize">
+							<label for="resizeNotasBene">Resize <i>Notate Bene</i></label>
+							<input type="radio" name="Resizes" class="radioButton" id="resizeNotasBene">
+							<label for="resizeSections">Resize Sections <i>(Maps and Charts)</i></label>
+							<input type="radio" name="Resizes" class="radioButton" id="resizeSections">
+						</fieldset>	
+					</p>
+				</div>
+				<div id="tabs-5">
 					<div class="FixedHeightContainer">
 						<div class="Content">
 							<h6 class="subHeader">Stored footnotes</h6>
@@ -4546,7 +4569,7 @@
 					<div id="newFootnoteText" style="display:none"></div>
 
 				</div>
-				<div id="tabs-5">
+				<div id="tabs-6">
 					<div class="comment">
 						This Configuration Area wont be printed<br>
 						- Left click to add a footnote number.<br>
@@ -4559,7 +4582,7 @@
 					Guide to generate LCP: 
 					<a target="_blank" href="https://docs.google.com/document/d/1umecgF-AEG_CkLN3EAF3N5IGa6By9U_HbNXZKuIl4aI/edit?usp=sharing"><img class="resize" src="img/icons/googledocs.png" border=0></a>
 				</div>
-				<div id="tabs-6">
+				<div id="tabs-7">
 
 				</div>
 			</div>
@@ -4736,7 +4759,7 @@
 				<a class="usermanual" target="_blank"><img class="resize" src="img/icons/pdf.png" border=0></a>
 		  </div>
 		</form>
-		<div id="footer"> LCPG v0.48 - DHIS2.34 - 2020.11.17</div>
+		<div id="footer"> LCPG v0.49 - DHIS2.34 - 2020.12.11</div>
 	</div>
 </body>
 </html>
