@@ -614,6 +614,9 @@
 	var SQL_DE_DS = "oQdIVqkVlxC";
 	var SQL_DE_P = "IrawAndH02Y";
 
+	var SQL_PROGRAMS = "hz6DwDb7jtp";
+	var SQL_DATASETS = "KtTtDsGuEPf";
+
 	var SQL_OU_LEVELS = "ly3JqHMcHyk";
 	var infoTable = "";
 	
@@ -3940,40 +3943,26 @@
 	function checkMetadataAssignedToThisCountry(){
 		saveSelectedYearAndCountry();
 
-		var datasets = [];
-		datasets.push(CL_DETAILED, CL_SIMPLE, VL_DETAILED, VL_SIMPLE, 
-						AZCL_DETAILED, AZCL_SIMPLE, GI, POPULATION_DATA, GHO_NTDS);
+		var ou_uid = {
+				var: "ouuid:" + ds.countryID
+		};
 
-		var programs = [];
-		programs.push(CL_MONTHLY, VL_MONTHLY, FOOTNOTES, SUBN_ENDEMCTY);
-
-		var datasetFilter = "id:in:["+datasets+"]";
-		var programFilter = "id:in:["+programs+"]";
-		var ouFilter = "organisationUnits.id:in:["+ ds.countryID +"]";
-		var FILTER = "&filter=";
-		var ds_filters = FILTER + datasetFilter + FILTER + ouFilter;
-		var p_filters = FILTER + programFilter + FILTER + ouFilter;
-	
-		var params = {
-			fields: "id",
-			paging: false
-		}
-	
-		return $.when(getv3(DATASETS, params, ds_filters), getv3(PROGRAMS, params, p_filters))
+		return $.when(getv3(SQLVIEWS + "/" + SQL_DATASETS + "/data", ou_uid), 
+						getv3(SQLVIEWS + "/" + SQL_PROGRAMS + "/data", ou_uid))	
 		.done(function(dataSetResult, programResult){
-			if (typeof  dataSetResult.dataSets != 'undefined') {
-				var dsRes = dataSetResult.dataSets;
+			if (dataSetResult.listGrid.rows.length > 0) {
+				var dsRes = dataSetResult.listGrid.rows;
 				for (var i=0; i < dsRes.length; i++){
-					if (dsRes[i].id in dsinfo){
-						dsinfo[dsRes[i].id][ASSG] = true;
+					if (dsRes[i][0] in dsinfo){
+						dsinfo[dsRes[i][0]][ASSG] = true;
 					}
 				}
 			}
-			if (typeof  programResult.programs != 'undefined') {
-				var pRes = programResult.programs;
+			if (programResult.listGrid.rows.length > 0) {
+				var pRes = programResult.listGrid.rows;
 				for (var i=0; i < pRes.length; i++){
-					if (pRes[i].id in pinfo){
-						pinfo[pRes[i].id][ASSG] = true;
+					if (pRes[i][0] in pinfo){
+						pinfo[pRes[i][0]][ASSG] = true;
 					}
 				}
 			}
