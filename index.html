@@ -1245,7 +1245,8 @@
 		// hides default legend button
 		//$('#' + MAP_PREFIX + index).find(".leaflet-control-legend").hide();
 	    $('#' + MAP_PREFIX + index + " .dhis2-map-legend").remove();
-		$('#' + MAP_PREFIX + index + " .map-plugin-single-2").remove();
+		// selects map by id, and a descentant whose class is like map-plugin-.*-2
+		$('[id="'+ MAP_PREFIX + index +'"] [class*="map-plugin-"][class$="-2"]').remove();		
 	//	$('#' + MAP_PREFIX + index + " .mapboxgl-ctrl-fullscreen").remove();
 		$('#' + MAP_PREFIX + index + " .mapboxgl-ctrl-group:has(> .mapboxgl-ctrl-fullscreen)").remove();
 		
@@ -4759,7 +4760,7 @@
 				<a class="usermanual" target="_blank"><img class="resize" src="img/icons/pdf.png" border=0></a>
 		  </div>
 		</form>
-		<div id="footer"> LCPG v0.49 - DHIS2.34 - 2020.12.11</div>
+		<div id="footer"> LCPG v0.50 - 28.01.2021</div>
 	</div>
 </body>
 </html>
