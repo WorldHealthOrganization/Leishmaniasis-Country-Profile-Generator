@@ -636,20 +636,6 @@
 	var VL_MONTHLY = "i5JSf4ffFl2";
 	var FOOTNOTES = "NVUlJzIakuO";
 	var SUBN_ENDEMCTY = "Jd8gnEIt8uT";
-
-	dsinfo[CL_DETAILED] = ["Cutaneous Leishmaniasis - Detailed - Annual", false];
-	dsinfo[CL_SIMPLE] = ["CL - Simple - Annual", false];
-	dsinfo[VL_DETAILED] = ["VL - Detailed - Annual", false];
-	dsinfo[VL_SIMPLE] = ["VL - Simple - Annual", false];
-	dsinfo[AZCL_DETAILED] = ["ACL/ZCL - Detailed - Annual", false];
-	dsinfo[AZCL_SIMPLE] = ["ACL/ZCL - - Simple aggregated - Annual", false];
-	dsinfo[GI] = ["General information", false];
-	dsinfo[POPULATION_DATA] = ["Population data", false];
-	dsinfo[GHO_NTDS] = ["GHO indicators for NTDs", false];
-	pinfo[CL_MONTHLY] = ["CL_cases_by provenance", false];
-	pinfo[VL_MONTHLY] = ["VL_cases_by provenance", false];
-	pinfo[FOOTNOTES] = ["Footnotes for Report Generator", false];
-	pinfo[SUBN_ENDEMCTY] = ["Leishmaniasis endemicity", false];
 	
 	// DATA_ELEMENTS
 	var DE = {
@@ -2706,6 +2692,22 @@
 
 	}
 
+	function resetDSandPInfo(){
+		dsinfo[CL_DETAILED] = ["Cutaneous Leishmaniasis - Detailed - Annual", false];
+		dsinfo[CL_SIMPLE] = ["CL - Simple - Annual", false];
+		dsinfo[VL_DETAILED] = ["VL - Detailed - Annual", false];
+		dsinfo[VL_SIMPLE] = ["VL - Simple - Annual", false];
+		dsinfo[AZCL_DETAILED] = ["ACL/ZCL - Detailed - Annual", false];
+		dsinfo[AZCL_SIMPLE] = ["ACL/ZCL - - Simple aggregated - Annual", false];
+		dsinfo[GI] = ["General information", false];
+		dsinfo[POPULATION_DATA] = ["Population data", false];
+		dsinfo[GHO_NTDS] = ["GHO indicators for NTDs", false];
+		pinfo[CL_MONTHLY] = ["CL_cases_by provenance", false];
+		pinfo[VL_MONTHLY] = ["VL_cases_by provenance", false];
+		pinfo[FOOTNOTES] = ["Footnotes for Report Generator", false];
+		pinfo[SUBN_ENDEMCTY] = ["Leishmaniasis endemicity", false];
+	}
+
 	function resetVariables(){
 		
 		map_levels[VL_INDEX] =  DEFAULT_MAP_LEVELS;
@@ -2746,6 +2748,18 @@
 		
 		infoTable = "";
 
+		de_assigned = new Map();
+		coc_assigned = new Map();
+		indicators_info = new Map();
+
+		for (var uid in dsinfo) {
+			dsinfo[uid][ASSG] = false;
+		}
+
+		for (var uid in pinfo) {
+			pinfo[uid][ASSG] = false;
+		}
+ 
 		disableResizes();
 		disableDragging();
 
@@ -3942,6 +3956,10 @@
 
 	function checkMetadataAssignedToThisCountry(){
 		saveSelectedYearAndCountry();
+		resetDSandPInfo();
+		cleanErrorFeedback();
+		resetVariables();
+		resetMapsAndChartsVisibility();
 
 		var ou_uid = {
 				var: "ouuid:" + ds.countryID
@@ -4039,10 +4057,6 @@
 
 	function startPreparingReport() {
 	
-		cleanErrorFeedback();
-		resetVariables();
-		resetMapsAndChartsVisibility();
-
 		$( "#country_name" ).text(ds.countryName);
 		$( "#year" ).text(ds.year);
 		$( "#published_date").text(getDatePublished());
@@ -4727,7 +4741,7 @@
 	<div class="form-popup" id="error-report">
 		<div id="errorFeedbackTitle">There was a problem retrieving the following information: </div><br>
 		<div id= "errorFeedback"></div>
-		<button class="btn btnSafeOption" onclick="error_report_close(); startPreparingReport();" >Relaunch</button>	
+		<button class="btn btnSafeOption" onclick="error_report_close(); checkMetadataAssignedToThisCountry();" >Relaunch</button>	
 		<button class="btn btnRiskyOption" onclick="error_report_close()">Close this window</button>
 	</div>
 
