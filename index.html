@@ -66,8 +66,6 @@
   src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
   integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
   crossorigin="anonymous"></script>
-<!--<script type="text/javascript" src="../../../dhis-web-visualizer/chart.js"></script>-->
-<!--<script type="text/javascript" src="js/Chart-2.7.3.js"></script>-->
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.min.js"></script>
 
 <script type="text/javascript" src="../../../dhis-web-commons/javascripts/dhis2/dhis2.util.js"></script>
@@ -76,7 +74,6 @@
 <script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
 
-<!--<script type="text/javascript" src="../../../dhis-web-maps/map.js"></script>-->
 <script type="text/javascript" src="js/map.js"></script>
 
 <script type="text/javascript" src="../../../dhis-web-commons/javascripts/dhis2/dhis2.storage.ss.js"></script>
@@ -3069,20 +3066,25 @@
 	 function moveLegend(index, destinationCode){
 		var legendObject = $('#' + LEGENDSET_PREFIX + index);
 		var destination;
+		console.log("moveLegend "+ LEGENDSET_PREFIX + index + " to " + destinationCode);
 
 		if (destinationCode < LEGEND_TO_LEGEND_POOL){
+			console.log ("  destination CP");
 			legendObject.resizable({ disabled: true });
 			legendObject.removeClass("resizable");
 
 			destination = $('#'+MAP_PREFIX + index).find(LEGEND_POSITIONS[destinationCode]);
 			if (destinationCode == TOP_RIGHT){
+				console.log ("  moving zoom controls to left");
 				zoomDestination = $('#'+MAP_PREFIX + index).find(LEGEND_POSITIONS[TOP_LEFT]);
 				zoomDestination.append(destination.contents());
 			} else if (destinationCode == TOP_LEFT){
+				console.log ("  moving zoom controls to right");
 				zoomDestination = $('#'+MAP_PREFIX + index).find(LEGEND_POSITIONS[TOP_RIGHT]);
 				zoomDestination.append(destination.contents());
 			}
 		} else {
+			console.log ("  destination legendSetPool");
 			editingLegend = legendObject;
 			editingLegend.resizable('destroy'); // prevents bug on last elements
 			editingLegend.resizable();
@@ -3270,6 +3272,7 @@
 			mapPlugin.unmount(MAP_PREFIX + CL_INDEX),
 			mapPlugin.unmount(MAP_PREFIX + ACL_INDEX),
 			mapPlugin.unmount(MAP_PREFIX + ZCL_INDEX),
+			resetLegends(),
 			generateMap(VL_INDEX, "INDICATOR", ds.countryID, ds.year, "thematic"),
 			generateMap(CL_INDEX, "INDICATOR", ds.countryID, ds.year, "thematic"),
 			generateMap(ACL_INDEX, "INDICATOR", ds.countryID, ds.year, "thematic"),
@@ -4304,7 +4307,6 @@
 		.then( function(){
 	
 			return $.when( 
-				generateLegends(),
 				generateMaps(),
 				get_gho_ntds(),
 				getAnalyticsDataForDX(INCIDENCE_FOR_CHARTS[VL_INDEX], historicLength, fillIncidenceChartArray, [VL_COLUMN]),
@@ -4324,7 +4326,7 @@
 				get_monthly_cases_for(CL_MONTHLY, ds.year, DE_MONTHLY.ZCL_CASES, ZCL_ROW),
 				get_monthly_cases_for(CL_MONTHLY, ds.year-1, DE_MONTHLY.ZCL_CASES, ZCL_PREVIOUS_YEAR_ROW),
 				getFootnotes(defaultSubnationalLevel))
-				.done(function(lgds,mps,gho,dx1,dx2,dx3,dx4,dx5,dx6,dx7,dx8,
+				.done(function(mps,gho,dx1,dx2,dx3,dx4,dx5,dx6,dx7,dx8,
 								m1,m2,m3,m4,m5,m6,m7,m8,fndata){
 			// the code here will be executed when all four ajax requests resolve.
 			// a1, a2, a3 and a4 are lists of length 3 containing the response text,
