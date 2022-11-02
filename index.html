@@ -1,0 +1,4730 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<!--
+	/****************************************************************************************************
+ 	 **********		   																		   **********
+ 	 **********                      Report App for DHIS2 Leishmaniasis 2017               	   **********
+ 	 **********		   																		   **********
+	 ****************************************************************************************************/
+
+
+	 	* @author  Ramon Jose Jimenez Pomareta 
+		* @email ramon@pomareta.ch
+ 		* @version 1.0 
+		* @date 26/04/2017
+
+
+		* Some comments
+			Since this App has to be made in only one file, all is here.
+			When needed external js plugins, i.e. jquery-te and jquery-ui, I have stored a version in 
+			https://github.com/Rjjp/plugins
+			In order to share raw files, I have used https://rawgit.com/
+
+
+		* Sections of the code. 
+		1. CSS styles
+		2. JavaScript    
+			JavaScript imports
+			CSS imports
+			CONSTANTS
+			STATIC CONTENT FUNCTIONS
+			FUNCTIONS CALLING THE API 
+			FILLING LOGICAL STRUCTURES (ARRAYS)
+			AUXILIARY FUNCTIONS
+			CHARTS FUNCTIONS
+			FOOTNOTES FUNCTIONS
+			EDITOR
+			LISTENER
+			ENTRY POINT
+		3. HTML Code
+
+-->
+
+<!-- 
+
+/****************************************************************************************************
+ **********		   																		   **********
+ **********                            		2. JavaScript                                  **********
+ **********		   																		   **********
+ ****************************************************************************************************/
+	
+/****************************************************************************************************
+ **********                             JavaScript imports                                 **********
+ ****************************************************************************************************/
+ -->
+ <script type="text/javascript" src ="js/pace.min.js"></script>
+ <script
+ src="https://code.jquery.com/jquery-2.2.4.js"
+ integrity="sha256-iT6Q9iMJYuQiMWNd9lDyBUStIq/8PuOW33aOqmvFpqI="
+ crossorigin="anonymous"></script>
+ <script type="text/javascript" src ="js/jquery-te-1.4.0-oms.js"></script>
+ <script type="text/javascript" src ="js/tools.js"></script>
+ <script type="text/javascript" src ="js/largestRemainderRound.js"></script>
+<script
+  src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
+  integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
+  crossorigin="anonymous"></script>
+<script type="text/javascript" src="../../../dhis-web-visualizer/chart.js"></script>
+<script type="text/javascript" src="js/Chart-2.7.3.js"></script>
+<!--<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.js"></script>-->
+
+<script type="text/javascript" src="../../../dhis-web-commons/javascripts/dhis2/dhis2.util.js"></script>
+<!--<script type="text/javascript" src="../../../dhis-web-mapping/extjs/ext-all.js"></script>-->
+
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/7.8.3/polyfill.min.js"></script>
+<script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
+
+<script type="text/javascript" src="../../../dhis-web-maps/map.js"></script>
+
+<script type="text/javascript" src="../../../dhis-web-commons/javascripts/dhis2/dhis2.storage.ss.js"></script>
+<script type="text/javascript" src="../../../dhis-web-commons/javascripts/dhis2/dhis2.storage.ls.js"></script>
+<script type="text/javascript" src="../../../dhis-web-commons/javascripts/dhis2/dhis2.storage.idb.js"></script>
+<script type="text/javascript" src="../../../dhis-web-commons/javascripts/dhis2/dhis2.storage.memory.js"></script>
+<script type="text/javascript" src="../../../dhis-web-commons/javascripts/dhis2/dhis2.storage.js"></script>
+
+<script type="text/javascript" src="commons/api.js"></script>
+<script type="text/javascript" src="commons/inputControl.js"></script>
+<script type="text/javascript" src="commons/tools.js"></script>
+<script type="text/javascript" src="commons/analytics_tools.js"></script>
+
+
+
+<!--
+<script type="text/javascript" src="https://dhis2-cdn.org/v222/openlayers/OpenLayers.js"></script>
+<script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false"></script>
+-->
+
+<script type="text/javascript">
+
+	/*jshint esversion: 6 */
+
+	/****************************************************************************************************
+ 	 **********                      	       CONSTANTS            	              	       **********
+	 ****************************************************************************************************/
+	var ANALYTICS = "analytics";
+	var WHEN_UNDEFINED = "No data";
+	var WHEN_NO_DATA = "No data";
+	var WHEN_NON_APPLICABLE = "N/A";
+	var ERROR = "Error!";
+	var ERROR_API_TEXT_START = "Error getting ";
+
+	var HISTORIC_DEFAULT_VALUE = 16; // includes current year
+
+	var BOTTOM_LINE_CLASS = "bottom_line";
+
+	var VALUE_KEY = "value";
+	var CC_KEY = "categoryOptionCombo";
+	var DE_KEY = "dataElement";
+	var CODE_KEY = "code";
+	var NAME_KEY = "name";
+	var PERIOD_KEY = "period";
+
+	var LABELS_ON_ROWS = 0;
+	var LABELS_ON_COLUMNS = 1;
+
+	/* config subnational level */
+
+	var WIDP_OU_SHIFT = 3;
+	var NATIONAL_LEVEL = 0;
+	var SUBLEVEL1 = 1;
+	var SUBLEVEL2 = 2;
+	var SUBLEVEL3 = 3;
+	var MIN_OU_LEVEL = SUBLEVEL1 + WIDP_OU_SHIFT;
+	var MAX_OU_LEVEL = SUBLEVEL3 + WIDP_OU_SHIFT;
+	var LEVEL_CONFIG_LABELS = new Array(4);
+	var LEVEL_REPORT_LABELS = new Array(4);
+	var ENDEMIC_SUBN_LEVEL_LABELS = new Array(4);
+	LEVEL_CONFIG_LABELS[NATIONAL_LEVEL] = "National level";
+	LEVEL_CONFIG_LABELS[SUBLEVEL1] = "1<sup>st</sup> sub-national administrative level";
+	LEVEL_CONFIG_LABELS[SUBLEVEL2] = "2<sup>nd</sup> sub-national administrative level";
+	LEVEL_CONFIG_LABELS[SUBLEVEL3] = "3<sup>rd</sup> sub-national administrative level";
+	LEVEL_REPORT_LABELS[NATIONAL_LEVEL] = "National level, name:";
+	LEVEL_REPORT_LABELS[SUBLEVEL1] = "Number of 1<sup>st</sup> sub-national administrative level divisions, name:";
+	LEVEL_REPORT_LABELS[SUBLEVEL2] = "Number of 2<sup>nd</sup> sub-national administrative level divisions, name:";
+	LEVEL_REPORT_LABELS[SUBLEVEL3] = "Number of 3<sup>rd</sup> sub-national administrative level divisions, name:";
+	ENDEMIC_SUBN_LEVEL_LABELS[NATIONAL_LEVEL] = "Endemic divisions. National level:";
+	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL1] = "Number of endemic 1<sup>st</sup> sub-national <br>administrative level divisions:";
+	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL2] = "Number of endemic 2<sup>nd</sup> sub-national <br>administrative level divisions:";
+	ENDEMIC_SUBN_LEVEL_LABELS[SUBLEVEL3] = "Number of endemic 3<sup>rd</sup> sub-national <br>administrative level divisions:";
+
+	/* Texts on report */
+	var PUBLISHED_TEXT = "Published in ";
+	var VL_CHART_LEGEND = "VL ";
+	var CL_CHART_LEGEND = "CL ";	
+	var ACL_CHART_LEGEND = "ACL ";
+	var ZCL_CHART_LEGEND = "ZCL ";
+	
+	var TABLE_TITLE_CGI = "COUNTRY GENERAL INFORMATION";
+	var TABLE_TITLE_EPI = "EPIDEMIOLOGY";
+	var TABLE_TITLE_CAS = "CONTROL AND SURVEILLANCE";
+	var TABLE_TITLE_DIAG = "DIAGNOSIS";
+	var TABLE_TITLE_TAM = "TREATMENT AND MEDICINES";
+	var TABLE_TITLE_TOUTCOME = "INITIAL TREATMENT OUTCOME FOR NEW CASES";
+
+	var MONTHLY_CHART_LABELS = ["VL monthly", "CL monthly", "AZCL monthly"];
+	var YEARLY_CHART_LABELS = ["VL yearly", "CL yearly", "AZCL yearly"];
+
+	var TWO_VALUES_SEPARATOR = " / ";
+
+	var VL_CHART_CASES_LEGEND = "VL cases";
+	var CL_CHART_CASES_LEGEND = "CL cases";
+	var ACL_CHART_CASES_LEGEND = "ACL cases";
+	var ZCL_CHART_CASES_LEGEND = "ZCL cases";
+	var VL_CHART_INCIDENCE_LEGEND = "VL incidence rate";
+	var CL_CHART_INCIDENCE_LEGEND = "CL incidence rate";
+	var ACL_CHART_INCIDENCE_LEGEND = "ACL incidence rate";
+	var ZCL_CHART_INCIDENCE_LEGEND = "ZCL incidence rate";
+
+	var MONTHS = [	"January",
+					"February",
+					"March",
+					"April",
+					"May",
+					"June",
+					"July",
+					"August",
+					"September",
+					"October",
+					"November",
+					"December" ];
+
+	var MONTHS_ABBREV = [	"JAN",
+							"FEB",
+							"MAR",
+							"APR",
+							"MAY",
+							"JUN",
+							"JUL",
+							"AUG",
+							"SEP",
+							"OCT",
+							"NOV",
+							"DEC"];
+
+	var COLORS = {
+		green : 'rgba(153, 204, 0, 1)',
+		soft_green : 'rgba(153, 204, 0, 0.4)',
+		blue: 'rgba(51, 153, 255, 1)',
+		soft_blue: 'rgba(51, 153, 255, 0.4)',
+		violet :'rgba(153, 0, 255, 1)',
+		soft_violet :'rgba(153, 0, 255, 0.4)'
+	};
+
+	CL_CASES_CHART_TITLE = "Cutaneous leishmaniasis";
+	VL_CASES_CHART_TITLE = "Visceral leishmaniasis";
+	CL_CASES_CHART_Y_TITLE = "Number of new CL cases";
+	VL_CASES_CHART_Y_TITLE = "Number of new VL cases";
+
+	CL_INCIDENCE_CHART_TITLE = "Number of cases and incidence rate of CL";
+	VL_INCIDENCE_CHART_TITLE = "Number of cases and incidence rate of VL";
+	CL_INCIDENCE_CHART_Y1_TITLE = "Number of CL cases";
+	VL_INCIDENCE_CHART_Y1_TITLE = "Number of VL cases";
+	CL_INCIDENCE_CHART_Y2_TITLE = "Incidence rate (/10 000)";
+	VL_INCIDENCE_CHART_Y2_TITLE = "Incidence rate (/10 000)";
+
+
+	// For configure mixed charts
+	var DATASID = {
+			LEFT: "left",
+			RIGHT: "right"
+	};
+
+
+	/* Country General Information Texts */
+	// http://who-dev.essi.upc.edu:8083/issues/1498
+	
+	var CIG_ROW_POP = 0;
+	var CIG_ROW_SEX = 1;
+	var CIG_ROW_AGEG = 2;
+	var CIG_ROW_LIFE = 3;
+	var CIG_ROW_GDP = 4;
+	var CIG_ROW_INCOME = 5;
+	var CIG_ROW_DIVIS = 6;
+
+	var CGI_LABELS = [];
+	CGI_LABELS[CIG_ROW_POP] = 	"Total population:",
+	CGI_LABELS[CIG_ROW_SEX] = 	"Gender F/M (%):",
+	CGI_LABELS[CIG_ROW_AGEG] = 	"Population, age group <15 / ≥ 15 years (%): ",
+	CGI_LABELS[CIG_ROW_LIFE] = 	"Life expectancy at birth (F/M, years):",	
+	CGI_LABELS[CIG_ROW_GDP] =	"GDP (PPP int $):",
+	CGI_LABELS[CIG_ROW_INCOME] = "Income status:",
+	CGI_LABELS[CIG_ROW_DIVIS] =	LEVEL_REPORT_LABELS[SUBLEVEL2]
+					
+
+	var LINES_BELOW_LABELS_CGI = [true,true,true,false,true,true,true];
+	var generalInformationArray = create_2_dim_array(CGI_LABELS.length, CGI_LABELS, LABELS_ON_COLUMNS);
+
+	/* Epidemiology table constants */
+	var FIRST_COLUMN = 0;
+	var VL_COLUMN = 1;
+	var CL_COLUMN = 2;
+	var ACL_COLUMN = 3;
+	var ZCL_COLUMN = 4;
+	var PKDL_COLUMN = 5;
+	var MCL_COLUMN = 6;
+
+	var COLUMNS_LABELS = [ 	"VL",
+							"CL",
+							"ACL",
+							"ZCL",
+							"PKDL",
+							"MCL"
+							];
+	var COLUMNS_LABELS_DESC = [ 	"visceral leishmaniasis",
+									"cutaneous leishmaniasis",
+									"anthroponotic cutaneous leishmaniasis",
+									"zoonotic cutaneous leishmaniasis",
+									"post-kala-azar dermal leishmaniasis",
+									"mucocutaneous leishmaniasis"
+									];
+
+
+	var COUNTRY_ENDEMICITY_ROW = 0;
+	var NEW_ROW = 1;
+	var RELAPSE_ROW = 2;
+	var TOTAL_ROW = 3;
+	var IMPORTED_ROW = 4;
+	var SEX_ROW = 5;
+	var AGE_ROW = 6;
+	var INCD_ROW = 7;
+	var THIRD_LEVEL_ROW = 8;
+	var RISK_ROW = 9;
+	var OUTBK_ROW = 10;
+	var FOCI_ROW = 11;
+
+	var rowTitles = [	"Endemicity status:",
+						"Number of new cases (incidence):",
+						"Number of relapses:",
+						"Total number of cases:",
+						"Imported cases (#, %):",
+						"Gender distribution (% F):",
+						"Age group distribution (%, <5 / 5-14 / >14):",
+						"Incidence rate (cases/10,000 population in endemic areas):",
+						ENDEMIC_SUBN_LEVEL_LABELS[defaultSubnationalLevel],
+						"Population at risk (%, # at risk / total population):",
+						"Was there any outbreak?",
+						"Number of new foci:"
+						];
+
+
+	var LINES_BELOW_LABELS_EPI = [true,false,false,true,true,false,true,false,false,true,false,true];
+	var array = create_2_dim_array(rowTitles.length, rowTitles, LABELS_ON_COLUMNS);
+
+	var IMPORTED_DE = new Array(7);
+	IMPORTED_DE[VL_COLUMN] = "fwoGVaxEDHW";  // VL_EPI_Type_Origin
+	IMPORTED_DE[CL_COLUMN] = "k87tHFKjlsP";  // CL_EPI_Type_Origin
+	IMPORTED_DE[ACL_COLUMN] = "KgntvjxDA5K"; // ACL_EPI_Type_Origin
+	IMPORTED_DE[ZCL_COLUMN] = "PxDoizHyyrk"; // ZCL_EPI_Type_Origin
+
+	var GENDER_DE = new Array(7);
+	GENDER_DE[VL_COLUMN] = "CaF8iMJFfkg";  // VL_EPI_Type_Gender
+	GENDER_DE[CL_COLUMN] = "tuHHLQp2GnJ";  // CL_EPI_Type_Gender
+	GENDER_DE[ACL_COLUMN] = "FYhYVWmpweT"; // ACL_EPI_Type_Gender
+	GENDER_DE[ZCL_COLUMN] = "mkmMnWroxMh"; // ZCL_EPI_Type_Gender
+	GENDER_DE[PKDL_COLUMN] = "ipWXN3NeXac"; // PKDL_EPID_sex
+	GENDER_DE[MCL_COLUMN] = "Ujpe40hXdvf"; // MCL_EPID_sex
+
+	var AGE_DE = new Array(7);
+	AGE_DE[VL_COLUMN] = "BF3faoNKOGH";  // VL_EPI_Type_Age
+	AGE_DE[CL_COLUMN] = "OWKZMKxVCnh";  // CL_EPI_Type_Age
+	AGE_DE[ACL_COLUMN] = "wKuJVK1ktpm"; // ACL_EPI_Type_Age
+	AGE_DE[ZCL_COLUMN] = "DVKZOWyoaQs"; // ZCL_EPI_Type_Age
+	AGE_DE[PKDL_COLUMN] = "rw4tu6PNGKO"; // PKDL_EPID_age
+	AGE_DE[MCL_COLUMN] = "bOqGnEVdHsf"; // MCL_EPID_age
+
+//
+	/* Monthly distribution table constants */
+	var VL_ROW = 0;
+	var VL_PREVIOUS_YEAR_ROW = 1;
+	var CL_ROW = 2;
+	var CL_PREVIOUS_YEAR_ROW = 3;
+	var ACL_ROW = 4;
+	var ACL_PREVIOUS_YEAR_ROW = 5;
+	var ZCL_ROW = 6;
+	var ZCL_PREVIOUS_YEAR_ROW = 7;
+
+	var MONTHLY_LABELS = new Array(8);
+	MONTHLY_LABELS[VL_ROW] = "VL";
+	MONTHLY_LABELS[VL_PREVIOUS_YEAR_ROW] = "VL (previous year)";
+	MONTHLY_LABELS[CL_ROW] = "CL";
+	MONTHLY_LABELS[CL_PREVIOUS_YEAR_ROW] = "CL (previous year)";
+	MONTHLY_LABELS[ACL_ROW] = "ACL";
+	MONTHLY_LABELS[ACL_PREVIOUS_YEAR_ROW] = "ACL (previous year)";
+	MONTHLY_LABELS[ZCL_ROW] = "ZCL";
+	MONTHLY_LABELS[ZCL_PREVIOUS_YEAR_ROW] = "ZCL (previous year)";
+
+	var LINES_BELOW_LABELS_MONTHLY = [true,true,true,true,true,true,true,true];
+
+	var monthlyArray = create_2_dim_array(MONTHLY_LABELS.length, MONTHLY_LABELS, LABELS_ON_COLUMNS);
+	var YEARLY_MODE = 0;
+	var MONTHLY_MODE = 1;
+
+	/* Maps */
+	var VL_INDEX = 0;
+	var CL_INDEX = 1;
+	var ACL_INDEX = 2;
+	var ZCL_INDEX = 3; 
+	var PKDL_INDEX = 4;
+	var MCL_INDEX = 5;
+	
+	var MAP_CHECKBOXES_LABELS = new Array(4);
+	MAP_CHECKBOXES_LABELS[VL_INDEX] = "VL incidence";
+	MAP_CHECKBOXES_LABELS[CL_INDEX] = "CL incidence";
+	MAP_CHECKBOXES_LABELS[ACL_INDEX] = "ACL incidence";
+	MAP_CHECKBOXES_LABELS[ZCL_INDEX] = "ZCL incidence";
+
+	WHO_OU_TEXT_LVL = [
+		"WHO Global",
+		"WHO Regions",
+		"WHO Member States",
+		"Level 1",
+		"Level 2",
+		"Level 3",
+		"Level 4"
+	];
+
+	var WHO_BASEMAP = 0;
+	var OSM_LIGHT = 1;
+	var GOOGLE_STREETS = 2;
+	var GOOGLE_HYBRID = 3;
+	var OPEN_STREETS = 4;
+
+	var MAP_STYLE = new Array(4);
+	var MAP_STYLE_LABELS = new Array(4);
+
+	MAP_STYLE [WHO_BASEMAP] = "CeszrLmiLNq";
+	MAP_STYLE [OSM_LIGHT] = "osmLight";
+	MAP_STYLE [GOOGLE_STREETS] = "googleStreets";
+	MAP_STYLE [GOOGLE_HYBRID] = "googleHybrid";
+	MAP_STYLE [OPEN_STREETS] = "openStreetMap";
+	MAP_STYLE_LABELS [WHO_BASEMAP] = "WHO Basemap";
+	MAP_STYLE_LABELS [OSM_LIGHT] = "OSM Light";
+	MAP_STYLE_LABELS [GOOGLE_STREETS] = "Google Streets";
+	MAP_STYLE_LABELS [GOOGLE_HYBRID] = "Google Hybrid";
+	MAP_STYLE_LABELS [OPEN_STREETS] = "Open Street Map";
+
+	var LEGENDS = []; 
+	LEGENDS[VL_INDEX] =  "gUOjExXros1";
+	LEGENDS[CL_INDEX] =  "TnU2O8YxH51";
+	LEGENDS[ACL_INDEX] =  "clwSlrqvmMx";
+	LEGENDS[ZCL_INDEX] =  "TbrqpLWzLS8";
+
+	var initalMapDiv = new Array(4);
+	var mapLegends = new Array(4);
+
+	var DEFAULT_LEGEND_FONT_SIZE = 10;
+	var legendSetFontSize;
+
+	var DEFAULT_MAP_LEVELS = [NATIONAL_LEVEL + WIDP_OU_SHIFT + SUBLEVEL1];
+	var defaultSubnationalLevel = SUBLEVEL1;
+	var DEFAULT_MAP_HEIGHT = 280;
+	var DEFAULT_MAP_WIDTH = 356;
+	var DEFAULT_MAP_OPACITY = 80;
+
+	var map_levels = []; 
+	map_levels[VL_INDEX] =  DEFAULT_MAP_LEVELS;
+	map_levels[CL_INDEX] =  DEFAULT_MAP_LEVELS;
+	map_levels[ACL_INDEX] =  DEFAULT_MAP_LEVELS;
+	map_levels[ZCL_INDEX] =  DEFAULT_MAP_LEVELS;
+
+	var boundaries_map_levels = []; 
+	boundaries_map_levels[VL_INDEX] =  DEFAULT_MAP_LEVELS;
+	boundaries_map_levels[CL_INDEX] =  DEFAULT_MAP_LEVELS;
+	boundaries_map_levels[ACL_INDEX] =  DEFAULT_MAP_LEVELS;
+	boundaries_map_levels[ZCL_INDEX] =  DEFAULT_MAP_LEVELS;
+
+	var map_style = []; 
+	map_style[VL_INDEX] =  WHO_BASEMAP;
+	map_style[CL_INDEX] =  WHO_BASEMAP;
+	map_style[ACL_INDEX] =  WHO_BASEMAP;
+	map_style[ZCL_INDEX] =  WHO_BASEMAP;
+
+	var map_opacity = []; 
+	map_opacity[VL_INDEX] =  DEFAULT_MAP_OPACITY;
+	map_opacity[CL_INDEX] =  DEFAULT_MAP_OPACITY;
+	map_opacity[ACL_INDEX] =  DEFAULT_MAP_OPACITY;
+	map_opacity[ZCL_INDEX] =  DEFAULT_MAP_OPACITY;
+
+	var map_height = [];
+	map_height[VL_INDEX] =  DEFAULT_MAP_HEIGHT;
+	map_height[CL_INDEX] =  DEFAULT_MAP_HEIGHT;
+	map_height[ACL_INDEX] =  DEFAULT_MAP_HEIGHT;
+	map_height[ZCL_INDEX] =  DEFAULT_MAP_HEIGHT;
+
+	var map_width = [];
+	map_width[VL_INDEX] =  DEFAULT_MAP_WIDTH;
+	map_width[CL_INDEX] =  DEFAULT_MAP_WIDTH;
+	map_width[ACL_INDEX] =  DEFAULT_MAP_WIDTH;
+	map_width[ZCL_INDEX] =  DEFAULT_MAP_WIDTH;
+
+	var TOP_LEFT = 0;
+	var TOP_RIGHT = 1;
+	var BOTTOM_LEFT = 2;
+	var BOTTOM_RIGHT = 3;
+
+	var LEGEND_TO_REPORT = 0;
+	var LEGEND_TO_LEGEND_POOL = 1;
+
+	var LEGEND_POSITION_LABELS = new Array(4);
+	var LEGEND_POSITIONS = new Array(4);
+
+	LEGEND_POSITION_LABELS[TOP_LEFT] = "Top left corner";
+	LEGEND_POSITION_LABELS[TOP_RIGHT] = "Top right corner";
+	LEGEND_POSITION_LABELS[BOTTOM_LEFT] = "Bottom left corner";
+	LEGEND_POSITION_LABELS[BOTTOM_RIGHT] = "Bottom right corner";
+
+	LEGEND_POSITIONS[TOP_LEFT] = ".leaflet-top.leaflet-left";
+	LEGEND_POSITIONS[TOP_RIGHT] = ".leaflet-top.leaflet-right";
+	LEGEND_POSITIONS[BOTTOM_LEFT] = ".leaflet-bottom.leaflet-left";
+	LEGEND_POSITIONS[BOTTOM_RIGHT] = ".leaflet-bottom.leaflet-right";
+
+	var editingLegend;
+
+	/* Control and surveillance table */
+	var CAS_ROW_LNCP = 0;
+	var CAS_ROW_TYPE = 1;
+	var CAS_ROW_PROGRAMME = 2;
+	var CAS_ROW_IRS = 3;
+	var CAS_ROW_GUIDELINES = 4;
+	var CAS_ROW_NOTIF = 5;
+	var CAS_ROW_RESER = 6;
+	var CAS_ROW_FACIL = 7;
+	
+	var CAS_LABELS = [	"Year Leishmaniasis National Control Programme (LNCP) was established:",
+						"Type of surveillance (CL / VL):",
+						"Is there a vector control programme?",
+						"Type of insecticide used for Indoor residual Spraying (IRS):",
+						"Year latest national guidelines (CL / VL):",
+						"Is leishmaniasis notifiable (mandatory report)? (CL / VL):",
+						"Is there a reservoir host control programme?",
+						"Number of leishmaniasis health facilities (CL / VL):"
+						];
+	var LINES_BELOW_LABELS_CAS = [true,true,true,true,false,true,true,false,true,true];
+	var controlArray = create_2_dim_array(CAS_LABELS.length, CAS_LABELS, LABELS_ON_COLUMNS);
+
+
+
+	/* Diagnosis table */
+
+	var SCREENED_ACTIVELY_ROW = 0;
+	var SCREENED_PASSIVELY_ROW = 1;
+	var VL_CASES_DIAGNOSED_ROW = 2;
+	var POSITIVE_RDT_ROW = 3;
+	var DIRECT_EXAM_DIAGNOSED_ROW = 4;
+	var POSITIVE_DIRECT_EXAM_ROW = 5;
+	var CLINICALLY_DIAGNOSED_ROW = 6;
+	var HIV_COINFECTION_ROW = 7;
+
+	var LABCLINICAL_DE = new Array(5);
+	LABCLINICAL_DE[VL_COLUMN] = "BAsexzzzJZC";  // VL_LAB_clinical
+	LABCLINICAL_DE[CL_COLUMN] = "";  // 
+	LABCLINICAL_DE[ACL_COLUMN] = ""; // 
+	LABCLINICAL_DE[ZCL_COLUMN] = ""; // 
+
+	var diagnosisLabels = [	"Number of people screened actively for:",
+							"Number of people screened passively for:",
+							"VL cases diagnosed by RDT (%, # RDT+ / new VL cases):",
+							"Proportion of positive RDT (%, # RDT+ / total RDT):",
+							"Cases diagnosed by direct exam (parasitology) (%, # slides + / total cases):",
+							"Proportion of positive slides (%, # slides + / total slides):",
+							"Cases diagnosed clinically (%, # clinical cases / total cases): ",
+							"Percentage of cases with HIV-VL coinfection:"
+							];
+
+
+	var DIAG_LEGEND_LABELS = [ 	"VL",
+								"CL",
+								"ACL",
+								"ZCL",
+								"PKDL",
+								"MCL"
+							];
+	var DIAG_LEGEND_LABELS_DESC = [ "visceral leishmaniasis",
+									"cutaneous leishmaniasis",
+									"anthroponotic cutaneous leishmaniasis",
+									"zoonotic cutaneous leishmaniasis",
+									"post-kala-azar dermal leishmaniasis",
+									"mucocutaneous leishmaniasis"
+									];
+
+	var DIAG_LEGEND_LABELS_2 = [	"RDT",
+									"HIV"
+									];
+
+	var DIAG_LEGEND_LABELS_DESC_2 = [ 	"rapid diagnostic rest",
+										"human immunodeficiency virus"
+										];
+
+	var PUT_NA_TEXT = true;
+
+	var LINES_BELOW_LABELS_DIAG = [false,true,false,true,false,false,true,true];
+
+	var diagnosisArray = create_2_dim_array(diagnosisLabels.length, diagnosisLabels, LABELS_ON_COLUMNS);
+
+	/* Treatment and medicines table*/
+	var TAM_ROW_FREEOFCHARGE = 0;
+	var TAM_ROW_EML = 1;
+	var TAM_LABELS = [	"► Is treatment provided for free in the public sector? (CL / VL):",
+						"► Antileishmanial medicines included in the National Medicine List:"
+						];
+	var LINES_BELOW_LABELS_TAM = [true,true];
+	var tamArray = create_2_dim_array(TAM_LABELS.length, TAM_LABELS, LABELS_ON_COLUMNS);
+
+	/* Treatment outcome table */
+
+	var PROPORTION_TREATED_CASES_ROW = 0;
+	var INITIAL_CURE_RATE_ROW = 1;
+	var FAILURE_RATE_ROW = 2;
+	var CASE_FATALITY_ROW = 3;
+
+	var toutcomeLabels = new Array(4);
+	toutcomeLabels[PROPORTION_TREATED_CASES_ROW] = "Cases that completed treatment (%, # completed treatment / new cases):";
+	toutcomeLabels[INITIAL_CURE_RATE_ROW] = "Initial cure rate (%, # cases initially cured / new cases):";
+	toutcomeLabels[FAILURE_RATE_ROW] = "Failure rate (%, # cases with treatment failure / new cases):";
+	toutcomeLabels[CASE_FATALITY_ROW] = "Case fatality rate (%, # cases who died / new cases):";
+
+	var LINES_BELOW_LABELS_TREAT = [true, false, false, true];
+	var toutcomeArray = create_2_dim_array(toutcomeLabels.length, toutcomeLabels, LABELS_ON_COLUMNS);
+	
+	var historicLength = HISTORIC_DEFAULT_VALUE;
+	var historicIncidenceChart = create_2_dim_array(5,"",LABELS_ON_ROWS);
+	var historicNewCases = create_2_dim_array(5,"",LABELS_ON_ROWS);
+
+	var ITx_TREAT_DE = new Array(5);
+	ITx_TREAT_DE[VL_COLUMN] = "PUD4SrCGSZE";  // VL_TREAT_completed
+	ITx_TREAT_DE[CL_COLUMN] = "daJVc4WMhye";  // CL_TREAT_completed
+	ITx_TREAT_DE[ACL_COLUMN] = "Msp9T50iUXO"; // ACL_TREAT_completed
+	ITx_TREAT_DE[ZCL_COLUMN] = "KYuMdxHQTqQ"; // ZCL_TREAT_completed
+
+	// stores all de assigned through DS or P
+	var de_assigned = new Map();
+	// stores all category option combinations assigned through DE assigned through DS 
+	var coc_assigned = new Map();
+	var dsinfo = new Array(8); // key: UID of dataset. Contains its name and whether the DS is assigned to the OU.
+	var pinfo = new Array(4); // key: UID of program. Contains its name and whether the P is assigned to the OU.
+	var NAME = 0;
+	var ASSG = 1;
+	var DE_IDX = 2;
+	var indicators_info = new Map();
+
+	var SQL_COC_DS = "mejiVo59hWs";
+	var SQL_DE_DS = "oQdIVqkVlxC";
+	var SQL_DE_P = "IrawAndH02Y";
+
+	var SQL_OU_LEVELS = "ly3JqHMcHyk";
+	var infoTable = "";
+	
+	/* DATASETS */
+	var CL_DETAILED = "tnek2LjfuIm";
+	var CL_SIMPLE = "zna8KfLMXn4";
+	var VL_DETAILED = "fdBM4sWSuPR";
+	var VL_SIMPLE = "SHw2zOysJ1R";
+	var AZCL_DETAILED = "Uc3j0vpsfSB";
+	var AZCL_SIMPLE = "Sn0dExPzQqW";
+	var GI = "NKWbkXyfO5F";
+	var POPULATION_DATA = "deKCGAGoEHz"; // some indicators depends on some DE assigned to this DS
+	var GHO_NTDS = "p0NhuIUoeST";
+	
+	/* PROGRAMS */
+	var CL_MONTHLY = "w9hSFsNr3Vh";
+	var VL_MONTHLY = "i5JSf4ffFl2";
+	var FOOTNOTES = "NVUlJzIakuO";
+	var SUBN_ENDEMCTY = "Jd8gnEIt8uT";
+
+	dsinfo[CL_DETAILED] = ["Cutaneous Leishmaniasis - Detailed - Annual", false];
+	dsinfo[CL_SIMPLE] = ["CL - Simple - Annual", false];
+	dsinfo[VL_DETAILED] = ["VL - Detailed - Annual", false];
+	dsinfo[VL_SIMPLE] = ["VL - Simple - Annual", false];
+	dsinfo[AZCL_DETAILED] = ["ACL/ZCL - Detailed - Annual", false];
+	dsinfo[AZCL_SIMPLE] = ["ACL/ZCL - - Simple aggregated - Annual", false];
+	dsinfo[GI] = ["General information", false];
+	dsinfo[POPULATION_DATA] = ["Population data", false];
+	dsinfo[GHO_NTDS] = ["GHO indicators for NTDs", false];
+	pinfo[CL_MONTHLY] = ["CL_cases_by provenance", false];
+	pinfo[VL_MONTHLY] = ["VL_cases_by provenance", false];
+	pinfo[FOOTNOTES] = ["Footnotes for Report Generator", false];
+	pinfo[SUBN_ENDEMCTY] = ["Leishmaniasis endemicity", false];
+	
+	// DATA_ELEMENTS
+	var DE = {
+		CL_EPI_Type :   "EPw6gR9fDqt",
+		VL_EPI_Type :	"IxbBQzytPgv",
+		ACL_EPI_Type : 	"f1bBSpuIyzD",
+		ZCL_EPI_Type : 	"Ta96pnXcAum",
+		MCL_EPI_Type : 	"K8k1LRZagmc",
+		VL_LAB_HIVstatus_Type : "NTo887FeHdI",
+		PKDL_GEN_EPID_cases : "NdbsWSygpqz",
+		MCL_GEN_EPID_cases : "K8k1LRZagmc",
+		PKDL_LAB_HIV: "sxjZutF1AMx",
+		UNS_USE_PREVIOUS_DATA : "ZjIDKHFwMUw",
+		ACL_GEN_EPID_NEW_FOCUS : "TF0LMI2yPPZ",
+		CL_GEN_EPID_NEW_FOCUS : "Euaxw5lULOI",
+		VL_GEN_EPID_NEW_FOCUS : "ciPmHP0ghAZ",
+		ZCL_GEN_EPID_NEW_FOCUS : "LRyb5NStabj",
+		ACL_GEN_EPID_outbreak :  "fW73iTXOe8r",
+		CL_GEN_EPID_outbreak :  "l0cmjII8aSl",
+		VL_GEN_EPID_outbreak :  "kH8ZxF9Biwv",
+		ZCL_GEN_EPID_outbreak :  "nfnq7idjj3Q"
+	};
+
+	var SUB_ENDEMICITY = {
+		CL : "saLNr832Et0",
+		ACL : "K827esuSG6T",
+		ZCL: "XUr4C3Sw4Yx",
+		VL : "S7sZbgQx4dM",
+		ENDEMIC_OPTION_CODE : "1"
+	};
+
+		
+	var COUNTRY_ENDEMICITY = new Array(6);
+	COUNTRY_ENDEMICITY[VL_INDEX] = "LrpYf0oQmW0";
+	COUNTRY_ENDEMICITY[CL_INDEX] = "KTXYAwYLdqB";
+	COUNTRY_ENDEMICITY[ACL_INDEX] = "u4wrb4tx0vF";
+	COUNTRY_ENDEMICITY[ZCL_INDEX] = "BBdfRkCsz7K";
+	COUNTRY_ENDEMICITY[MCL_INDEX] = "UqwziKaKvqT";
+	COUNTRY_ENDEMICITY[PKDL_INDEX] = "IZfAfkwNeAl";
+
+	var ENDEMICITY_OS = {
+		ENDEMIC_OPTION_CODE : "1",
+		ENDEMIC_OPTION_NAME : "Endemic",
+		PREVIOUSLY_REPORTED_OPTION_CODE : "3",
+		PREVIOUSLY_REPORTED_OPTION_NAME : "Previously endemic",
+		NO_ENDEMIC_OPTION_CODE : "5",
+		NO_ENDEMIC_OPTION_NAME : "Non endemic"
+	};
+
+	var DE_SCREEN_ACTIVE = {};
+	DE_SCREEN_ACTIVE[VL_COLUMN] = "g6yIwTl0sHx";
+	DE_SCREEN_ACTIVE[CL_COLUMN] = "c5Zvvh9AWB4";
+	DE_SCREEN_ACTIVE[ACL_COLUMN] = "hqgnicLioSz";
+	DE_SCREEN_ACTIVE[ZCL_COLUMN] = "NDNcasRLz01";
+
+	var DE_MONTHLY = {
+		CL_CASES : "kyMxUQqI2ed",
+		ACL_CASES : "lhxeWB8OiAG",
+		ZCL_CASES : "PwHVQUj3WHw",
+		VL_CASES : "n06IItYE45N"
+	};
+
+	var DE_CGI = {
+		GEN_WB_GDP_PPP_current : "w3XqypgTDEE",
+		GEN_UN_WPP_LifeExpBirth_Female : "P0Auj9njqhb",
+		GEN_UN_WPP_Pop_Tot_1000 : "WKJu1WytXzH",
+		GEN_UN_WPP_LifeExpBirth_Male : "VLqzKAFFsh7",
+		GEN_WB_IncomeGroup : "Oov1cYM9y6o"
+	};
+
+	var CGI_MALE = 0;
+	var CGI_FEMALE = 1;
+	var CGI_GENDER_UNKNOWN = 2;
+
+	var CC_DEFAULT = "Xr12mI7VPn3";
+	var TYPE_NEW_CASES = "psVSPLclyFj";
+	var TYPE_RELAPSE = "KPn9RHNrd8R";
+	var TYPE_UNSPECIFIED = "IRW4YrOtk5q";
+
+	var NEW_MALE = "GpQZH8hC7jY";
+	var NEW_FEMALE = "TtoYCIVcBA3";
+	var NEW_UNKNOWN = "FaYhAlKLX16";
+	var UNS_MALE = "aWWYWv6buzp";
+	var UNS_FEMALE = "wGED4K5Bs37";
+	var UNS_UNKNOWN = "zkKbIIarKWM";
+
+	var FEMALE = "V2LdgcGgFQt";
+	var MALE = "Z2hvpF7mhh7";
+	var UNKNOWN_SEX = "jNbFhhnUsQv";
+
+	var AGE_5 = "HDXcEOGT2s1";
+	var AGE_5_14 = "moktBQGym51";
+	var AGE_14 = "rN9ELJVdEpo";
+	var AGE_UNKNOWN = "gPGNI7bWhDB";
+
+	var NEW_UNDER_5 = "hKq5WASZw8q";
+	var NEW_5_14 = "mTyLqDjpQ5b";
+	var NEW_OVER_14 = "DDliBAHqwGV";
+	var NEW_AGE_UNKNOWN = "dVuOzmU4xbI";
+	var UNS_UNDER_5 = "rZwYGlqR8GG";
+	var UNS_5_14 = "P6R9XEaqQbz";
+	var UNS_OVER_14 = "UQMTeRPY2U0";
+	var UNS_AGE_UNKNOWN = "nIbrdHllMKh";
+
+	var ORIGIN_AUTOC_NEW = "WynvvdELtqm";
+	var ORIGIN_AUTOC_REL = "LUVeZjOsibr";
+	var ORIGIN_AUTOC_UNS = "wYB0E3USJ7L";
+	var ORIGIN_IMPORT_NEW = "pWZT12mjhUC";
+	var ORIGIN_IMPORT_REL = "QO2kKL8ySPc";
+	var ORIGIN_IMPORT_UNS = "A5TSwm9Wivn";
+	var ORIGIN_UNKNOWN_NEW = "Lx8tyhhseZZ";
+	var ORIGIN_UNKNOWN_REL = "lGFgLYweSNS";
+	var ORIGIN_UNKNOWN_UNS = "EGvT9lj2BOy";
+
+	/* Diagnosis DataElements */
+	var VL_Lab_RDT_tested_type = "rFy4bKMa977";
+	var VL_Lab_RDT_results_type = "o1smtpQE1tm";
+	var POSITIVE_NEW = "jRcT6HVKb2t";
+	var POSITIVE_RELAPSE = "QKqVJ13mGZI";
+	var POSITIVE_UNSP = "YXktM46YiXo";
+
+	/* Indicators*/
+	var UN_WPP = new Array(4);
+	var POP_AGE_U15 = 0;
+	var POP_AGE_OVER15 =  1;
+	var POP_GENDER_FEMALE = 2;
+	var POP_GENDER_MALE = 3;
+	UN_WPP[POP_AGE_U15] = "hB6weZHPrQs";
+	UN_WPP[POP_AGE_OVER15] = "fcvWkgE2D81";
+	UN_WPP[POP_GENDER_FEMALE] = "YqYnthOMpKZ";
+	UN_WPP[POP_GENDER_MALE] = "l8oBc9hn1OH";
+
+	var LAB_PARASITO_RESULT_NEWUNSP = new Array(4);
+	LAB_PARASITO_RESULT_NEWUNSP[VL_INDEX] = "wcQXFCgeirI"; // IA_VL_LAB_parasito_result_type_NewUnsp
+	LAB_PARASITO_RESULT_NEWUNSP[CL_INDEX] = "I0UeqrXgFP3"; // IA_CL_LAB_parasito_result_type_NewUnsp
+	LAB_PARASITO_RESULT_NEWUNSP[ACL_INDEX] = "xlKiq2a2VnC"; // IA_ACL_LAB_parasito_result_type_NewUnsp
+	LAB_PARASITO_RESULT_NEWUNSP[ZCL_INDEX] = "w0Jp3JgB4QV"; // IA_ZCL_LAB_parasito_result_type_NewUnsp
+
+	var LAB_PARASITO_TESTED_NEWUNSP = new Array(4);
+	LAB_PARASITO_TESTED_NEWUNSP[VL_INDEX] = "apw84Yy3Bmm"; // IA_VL_LAB_parasito_tested_type_NewUnsp
+	LAB_PARASITO_TESTED_NEWUNSP[CL_INDEX] = "LtmgT3l81DD"; // IA_CL_LAB_parasito_Suspects_NewUnsp
+	LAB_PARASITO_TESTED_NEWUNSP[ACL_INDEX] = "wXzlrrmB33B"; //  IA_ACL_LAB_parasito_Suspects_NewUnsp
+	LAB_PARASITO_TESTED_NEWUNSP[ZCL_INDEX] = "ZfIJmWMYXuz"; // IA_ZCL_LAB_parasito_Suspects_NewUnsp
+
+	var DIRECT_EXAM_DIAGNOSED = new Array(4);
+	DIRECT_EXAM_DIAGNOSED[VL_INDEX] = "waGzv39rlKk"; // IA_VL_directExam_diagCases
+	DIRECT_EXAM_DIAGNOSED[CL_INDEX] = "KMCo5B0frEb"; // IA_CL_directExam_diagCases
+	DIRECT_EXAM_DIAGNOSED[ACL_INDEX] = "NQcaaslXLbQ"; // IA_ACL_directExam_diagCases
+	DIRECT_EXAM_DIAGNOSED[ZCL_INDEX] = "o3OxTZj5SN9"; // IA_ZCL_directExam_diagCases
+
+	var POSITIVE_SLIDES_PROP = new Array(4);
+	POSITIVE_SLIDES_PROP[VL_INDEX] = "GacG3QWCHcd"; // IA_VL_positiveSlides_PROP
+	POSITIVE_SLIDES_PROP[CL_INDEX] = "YJJniMaZ9dy"; // IA_CL_positiveSlides_PROP
+	POSITIVE_SLIDES_PROP[ACL_INDEX] = "CsrJBUGBpuW"; // IA_ACL_positiveSlides_PROP
+	POSITIVE_SLIDES_PROP[ZCL_INDEX] = "wUoGgWWIyUP"; // IA_ZCL_positiveSlides_PROP
+
+	var NEW_AND_UNSP_CASES = new Array(4);
+	NEW_AND_UNSP_CASES[VL_INDEX] = "TAi5pNjuxmq"; // IA_VL_EPI_NewUnsp_INT
+	NEW_AND_UNSP_CASES[CL_INDEX] = "CeO5dTNMbPp"; // IA_CL_EPI_NewUnsp_INT
+	NEW_AND_UNSP_CASES[ACL_INDEX] = "ZUL3QhfRZBT"; // IA_ACL_EPI_NewUnsp_INT
+	NEW_AND_UNSP_CASES[ZCL_INDEX] = "LCa3hY8xkst"; // IA_ZCL_EPI_NewUnsp_INT
+
+	var TREAT_COMPLETED = new Array(4);
+	TREAT_COMPLETED[VL_INDEX] = "dUns9PpQ58C"; // NTD_LSH_VL_TREAT_completed_I
+	TREAT_COMPLETED[CL_INDEX] = "foObvaWTV2q"; // NTD_LSH_CL_TREAT_completed_I
+	TREAT_COMPLETED[ACL_INDEX] = "uSRDXhpcEjS"; // NTD_LSH_ACL_TREAT_completed_I
+	TREAT_COMPLETED[ZCL_INDEX] = "ZtbetBov4Nk"; // NTD_LSH_ZCL_TREAT_completed_I
+
+	var TREAT_OUTCOME_CURE = new Array(4);
+	TREAT_OUTCOME_CURE[VL_INDEX] = "Ks5Jju6anpF"; // IA_NTD_VL_ITO_cureRate
+	TREAT_OUTCOME_CURE[CL_INDEX] = "kVPOCIEBIyW"; // IA_NTD_CL_ITO_cureRate 
+	TREAT_OUTCOME_CURE[ACL_INDEX] = "IeniC1gZeI4"; // IA_NTD_ACL_ITO_cureRate
+	TREAT_OUTCOME_CURE[ZCL_INDEX] = "Gf2RLaWerOl"; // IA_NTD_ZCL_ITO_cureRate
+
+	var TREAT_OUTCOME_FAIL = new Array(4);
+	TREAT_OUTCOME_FAIL[VL_INDEX] = "jEdZE79G6KZ"; // IA_NTD_VL_ITO_failureRate
+	TREAT_OUTCOME_FAIL[CL_INDEX] = "VoqodpvVc0l"; // IA_NTD_CL_ITO_failureRate 
+	TREAT_OUTCOME_FAIL[ACL_INDEX] = "adkROLW4Kdr"; // IA_NTD_ACL_ITO_failureRate
+	TREAT_OUTCOME_FAIL[ZCL_INDEX] = "ep15GwmenJh"; // IA_NTD_ZCL_ITO_failureRate
+
+	var TREAT_OUTCOME_FATAL = new Array(4);
+	TREAT_OUTCOME_FATAL[VL_INDEX] = "RcXtqpnzUkF"; // IA_NTD_VL_ITO_fatalityRate
+	TREAT_OUTCOME_FATAL[CL_INDEX] = "h0wM7ryy0mK"; // IA_NTD_CL_ITO_fatalityRate 
+	TREAT_OUTCOME_FATAL[ACL_INDEX] = "LsjoXBjbXbL"; // IA_NTD_ACL_ITO_fatalityRate
+	TREAT_OUTCOME_FATAL[ZCL_INDEX] = "XUDNMjVo899"; // IA_NTD_ZCL_ITO_fatalityRate
+
+	var SCREEN_PASSIVE = new Array(4);
+	SCREEN_PASSIVE[VL_INDEX] = "ECAJUz3nff5"; // NTD_LSH_VL_SCREEN_passive_I
+	SCREEN_PASSIVE[CL_INDEX] = "zo5BQlapP45"; // NTD_LSH_CL_SCREEN_passive_I
+	SCREEN_PASSIVE[ACL_INDEX] = "vq1FX8vBEi1"; // NTD_LSH_ACL_SCREEN_passive_I
+	SCREEN_PASSIVE[ZCL_INDEX] = "kknHr7KtRTs"; // NTD_LSH_ZCL_SCREEN_passive_I
+
+	var INCIDENCE_FOR_MAPS = new Array(4);
+	INCIDENCE_FOR_MAPS[VL_INDEX] = "k8OBrohsSSg"; //  VL_EPI_INC_PopData_LSH_10000
+	INCIDENCE_FOR_MAPS[CL_INDEX] = "Yw3FULKBFgt"; // CL_EPI_INC_PopData_LSH_10000
+	INCIDENCE_FOR_MAPS[ACL_INDEX] = "wR0vjRjXpO8"; // ACL_EPI_INC_PopData_LSH_10000
+	INCIDENCE_FOR_MAPS[ZCL_INDEX] = "bkNwROwt8lc"; // ZCL_EPI_INC_PopData_LSH_10000
+
+	var INCIDENCE_FOR_CHARTS = new Array(4);
+	INCIDENCE_FOR_CHARTS[VL_INDEX] = "R8mWrVeFBog";	 // VL_EPI_INC_PopUN_10000
+	INCIDENCE_FOR_CHARTS[CL_INDEX] = "e16AVRh07kk";	 // CL_EPI_INC_PopUN_10000
+	INCIDENCE_FOR_CHARTS[ACL_INDEX] = "VxWuCmDA1x8"; // ACL_EPI_INC_PopUN_10000
+	INCIDENCE_FOR_CHARTS[ZCL_INDEX] = "hRzNpxG8Qg3"; // ZCL_EPI_INC_PopUN_10000
+
+	var POP_AT_RISK = new Array(4);
+	POP_AT_RISK[VL_INDEX] = "qZrDWm2KJOh";
+	POP_AT_RISK[CL_INDEX] = "FwXQC7ARUBf";
+	POP_AT_RISK[ACL_INDEX] = "NYzjVXzaod5";
+	POP_AT_RISK[ZCL_INDEX] = "b4CaeIjuNqc";
+
+	// Control & Surveillance
+
+	var Leish_GEN_LNCP_year = "X628bzppb3C";
+
+	// CL Surv Type applies also to ACL and ZCL
+	var CL_GEN_Surv_Type = "MLBu7WOihjq";
+ 	var VL_GEN_Surv_Type = "dwTbQkNmLeN";
+
+	var Leish_GEN_VectorControl = "Bwow2Lb2bG2";
+
+	var Leish_GEN_VectorControl_Insecticide = "kGGckm5yhkI";
+	
+	var CL_GEN_Guidelines_year = "oNCY7n0S94E";
+	var VL_GEN_Guidelines_year = "M8lRhrml0VN";
+
+	var CL_GEN_Surv_Notif = "GQ7hSCfnCt9";
+	var VL_GEN_Surv_Notif = "uuF031QMFkW";
+
+	var Leish_GEN_ReservoirControl = "Kir30itliay";
+
+	var CL_GEN_Surv_HF = "yTIKdvsDjHe";
+	var VL_GEN_Surv_HF = "p7IL1FciQ7v";
+
+
+	// Treatment & medicines
+
+	var CL_GEN_TxFree = "TUt8fEPjgPB";
+	var VL_GEN_TxFree = "CyR30L4QvB6";
+
+	var EML = [];
+	var EML_MIN = 0, EML_MAX = 6;
+	var EML_LIST_SEPARATOR = ', ';
+	var EML_NONE = '-';
+
+	var AMPHOTERICINB = EML_MIN;
+	var LIPOSOMALAMP = 1;
+	var MEGLUMINE = 2;
+	var MILTEFOSINE = 3;
+	var PAROMOMYCIN = 4;
+	var PENTAMIDINE = 5;
+	var SSG = EML_MAX;
+
+	EML[AMPHOTERICINB] = [];
+	EML[LIPOSOMALAMP] = [];
+	EML[MEGLUMINE] = [];
+	EML[MILTEFOSINE] = [];
+	EML[PAROMOMYCIN] = [];
+	EML[PENTAMIDINE] = [];
+	EML[SSG] = [];
+
+	EML[AMPHOTERICINB].ID = "v9HkT2GJGZc";
+	EML[LIPOSOMALAMP].ID = "hsOZ4rKMBlE";
+	EML[MEGLUMINE].ID = "FZ0d8oYBDFD";
+	EML[MILTEFOSINE].ID = "k7EuWr0KUPM";
+	EML[PAROMOMYCIN].ID = "jQccvr2Adlb";
+	EML[PENTAMIDINE].ID = "z8PUIRxPGB9";
+	EML[SSG].ID = "ZzOK74NB4wN";
+
+	EML[AMPHOTERICINB].NAME = "Amphotericin B deoxycholate";
+	EML[LIPOSOMALAMP].NAME = "Liposomal amphotericin B";
+	EML[MEGLUMINE].NAME = "Meglumine antimoniate";
+	EML[MILTEFOSINE].NAME = "Miltefosine";
+	EML[PAROMOMYCIN].NAME = "Paromomycin";
+	EML[PENTAMIDINE].NAME = "Pentamidine";
+	EML[SSG].NAME = "Sodium stibogluconate (SSG)";
+
+
+	var RG_footnote_active = "GBOpGIZ0QDU";
+	var RG_footnote_page = "SrHddMhflZZ";
+	var RG_footnote_text = "rWAis0fAWw9";
+
+	var builtUrl;
+
+	var totalPopulation;
+	var un_wpp_data = Array(4);
+	var pop_at_risk_values = Array(6);
+	var new_and_usnp_cases = Array(5);
+	var total_treated = Array(5);
+	var screen_passive = Array(5);
+	var lab_parasito_result = Array(4);
+	var lab_parasito_tested = Array(4);
+	var direct_exam_diagnosed = Array(4);
+	var positive_slides_prop = Array(4);
+	var toutcome_cure = Array(5);
+	var toutcome_fail = Array(5);
+	var toutcome_fatal = Array(5);
+
+	var editingElement;
+
+	var footNoteCounter = 0;
+
+	var NULL_AGGR_TYPE = null;
+	var NULL_FILTER = null;
+	var NULL_VALUE = null;
+	
+	/* Classes */
+
+	var EDITABLE = "editableElement";
+	var FOOTNOTABLE = "footnotable";
+
+	var SORTABLE_LIST_1_NAME = "sortable1";
+	var SORTABLE_LIST_2_NAME = "sortable2";
+	var SORTABLE_LIST_3_NAME = "sortable3";
+
+	var charts_array = [];
+
+	/* HTML elements */
+
+	var CGI_TABLE_NAME = "cgiTable";
+	var EPI_TABLE_NAME = "epiTable";
+	var MONTHLY_TABLE_NAME = "monthlyTable";
+	var CAS_TABLE_NAME = "casTable";
+	var TAM_TABLE_NAME = "tamTable";
+	var DIAG_TABLE_NAME = "diagTable";
+	var TOUTCOME_TABLE_NAME = "toutcomeTable";
+
+	var BUTTON_PREFIX = '_BUTTON_';
+	var DIV = "divFor";
+	var CHART = "chart";
+	var MONTHLY = "monthly";
+	var YEARLY = "yearly";
+
+	var LEGENDSET_POOL = "legendPool";
+	var LEGENDSET_PREFIX = "legendSet";
+	var LEGEND_PREFIX = "legend";
+	var LEGENDCHART_POOL = "legendChartPool";
+	var LEGENDCHART_PREFIX = "legendChart";
+	var LEISH_COLUMN_DETAIL_PREFIX = "LeishDetail";
+	var LEVEL_PREFIX = "level";
+	var MAP_PREFIX = "map";	
+	var MAP_STYLE_PREFIX = "mapStyle";
+	var OPTION_PREFIX = '_OPTION_';
+	var TEXT_UNDER_EPI = 'TEXT_UNDER_EPI';
+	var TEXT_UNDER_DIAG1 = 'TEXT_UNDER_DIAG1';
+	var TEXT_UNDER_DIAG2 = 'TEXT_UNDER_DIAG2';
+
+	var generatedYears = [], organisationUnits = [];
+
+
+	var dialog, editor;
+	var NONE = 0;
+	var NEW_FOOTNOTE = 1;
+	var ACTIVE_FOOTNOTE = 2;
+	var CP_FOOTNOTE = 3;
+	var footnoteMode = NONE;
+
+	var RESIZEDISABLED = 0;
+	var RESIZENOTASBENE = 1;
+	var RESIZESECTIONS = 2;
+	var resizeMode = RESIZEDISABLED;
+
+	var minCases, maxCases, minIncd, maxIncd;
+	var defaultMinCases, defaultMaxCases, defaultMinIncd, defaultMaxIncd;
+
+	var ds = {};
+
+	/****************************************************************************************************
+ 	 **********                    	     STATIC CONTENT FUNCTIONS         	           	       **********
+	 ****************************************************************************************************/
+	function fillTableHead(tableName, extName, firstColumn, headObjects){
+		var html = '<th class="align_to_left titlesBlue '+EDITABLE+' '+FOOTNOTABLE+'">'+firstColumn+'</th>';
+		
+		for (var i=0; i<headObjects.length;i++){
+			html +='<th class="'+EDITABLE+' '+FOOTNOTABLE+'">'+headObjects[i]+'</th>';
+		}
+		document.getElementById(tableName + extName).innerHTML = html;
+	}
+
+	function generateCheckboxes(htmlObject, labels, title, prefix, newLineOn){
+		var html = '<legend>'+title+'</legend>';
+		for (var i=0; i<labels.length; i++){
+			html+='<input id="' + prefix + BUTTON_PREFIX + i + '" type="checkbox" class="' + prefix + '" checked="checked" />';
+			html+='<label for="' + prefix + BUTTON_PREFIX + i + '">' + labels[i] + '</label>';
+			if(i===newLineOn){
+				html+='<br>';
+			}
+		}
+		    
+		htmlObject.html(html);
+	}
+
+	function generateMapConfigurationList(htmlObject, labels, prefix, keepHTML){
+		var html = '';
+
+		if (keepHTML) {
+			html = htmlObject.html();
+		}
+		
+		for (var i=0; i<labels.length; i++){
+			html+='<option id="' + prefix + OPTION_PREFIX + i + '" value="' + i + '" >';
+			html+=labels[i];
+			html+='</option>';
+		}
+		htmlObject.html(html);
+	}
+
+	function setTextUnderTables(elementId, idprefi, labels, labelsDesc, firstText){
+
+		var html = '';
+
+		if (firstText == true){
+			html +='<span class="' + EDITABLE + '">N/A not applicable</span>';
+		} else if (firstText == false){
+			html +='';
+		} else {
+			html +=firstText;
+		}
+		for (var i = 0; i < labels.length; i++){
+			html +='<span id="'  +idprefi + i + '" class="' + EDITABLE+'">' + labels[i] + ' = ' + labelsDesc[i] + '</span>';
+		}
+
+		$("#"+elementId).html(html);
+	}
+
+
+
+
+	/****************************************************************************************************
+ 	 **********                    	    FUNCTIONS CALLING THE API         	           	       **********
+	 ****************************************************************************************************/
+
+	function getFootnotes(subNationalLevel){
+
+		var params = {
+			skipPaging : true
+		}; 
+		return $.when(getParents(ds.countryID)).then(function(data){
+			var orgUnits = "";
+			if (typeof data.organisationUnits !== 'undefined' ) {
+				orgUnits = data.organisationUnits[0].path.replace(/^\/|\/$/, "").replace(/\//g, ";");
+			}
+			storedFootnotes = [];
+			activeFootnotesPage1 = [];
+			activeFootnotesPage2 = [];
+			
+			var dimensions = [];
+			dimensions.push([RG_footnote_page]);
+			dimensions.push([RG_footnote_text]);
+			dimensions.push([RG_footnote_active]);
+			dimensions.push(["ou",orgUnits]);
+
+			var filters = [];
+
+			extraParams = "&ouMode=SELECTED&startDate=2010-01-01&endDate=2030-12-31&page=1&pageSize=10000";
+
+
+			return getQueryEvents(FOOTNOTES, dimensions, filters, OUTPUT_TYPE.EVENT, extraParams);
+		}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " footnotes.");}); 
+		
+	}
+
+	function fillFootNotes(data){
+		var pageIndex = getHeaderIndex(data.headers, RG_footnote_page);
+		var fnIndex = getHeaderIndex(data.headers, RG_footnote_text);
+		var activeIndex = getHeaderIndex(data.headers, RG_footnote_active);
+
+		var page, active, fnText;
+		for (var i = 0; i<data.rows.length; i++) {
+			active = data.rows[i][activeIndex];
+			fnText = data.rows[i][fnIndex];
+
+			if (!!parseInt(active)){ // !! converts int to boolean
+				page = data.rows[i][pageIndex];
+				if (page.localeCompare("2")==0) {
+					activeFootnotesPage2.push(fnText);
+				} else {
+					activeFootnotesPage1.push(fnText);
+				}
+			} else {
+				storedFootnotes.push(fnText);
+			}
+		}
+	}
+
+
+	function getParents(id){
+		var params = {
+			fields: "path",
+			paging: false
+		};
+
+		var builtUrl = buildAPIUrl(ORG_UNITS, params);
+		builtUrl += "&filter=id:eq:"+id;
+		return $.ajax({
+			url: builtUrl
+		}).then(function(data) {
+			return data;
+		}).fail(function(data) {
+			console.log ("ERROR. getParents");
+			console.log (data);
+		});
+	}
+
+	function getLegendSet(index){
+		var legendUrl = "../../legendSets/"+LEGENDS[index];
+
+		return $.ajax({
+			url: legendUrl
+		}).then(function(data) {
+			mapLegends[index] = [];
+			var legendSetName = data.name;
+			return $.ajax({
+				url: legendUrl+"/legends/"
+			}).then(function(data) {
+				for (var i =0; i<data.legends.length; i++){
+
+					mapLegends[index][i] = {};
+					mapLegends[index][i].legendSetName = legendSetName;
+					mapLegends[index][i].legendNames = data.legends[i].name;
+					mapLegends[index][i].legendColors = data.legends[i].color;
+					mapLegends[index][i].startValue = data.legends[i].startValue;
+					mapLegends[index][i].endValue = data.legends[i].endValue;
+				}
+				mapLegends[index] =  reOrderLegendSet(mapLegends[index]);
+			}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " legends for " + legendSetName);}); 
+			
+		}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " legendSets: " + LEGENDS[index]);}); 
+	}
+
+	function generateMap(index, dimentionType, orgUnitId, year, thematic){
+		
+		var base = "../../..";
+		var idHtmlElement = MAP_PREFIX+(index);
+		var dimension = INCIDENCE_FOR_MAPS[index];
+		var legendSetID = 	LEGENDS[index];
+
+		var mapStyle = MAP_STYLE[map_style[index]];
+
+		// Resizes the map contener
+		$("#" + MAP_PREFIX + index).height(map_height[index]);
+		$("#" + MAP_PREFIX + index).width(map_width[index]);
+	
+		// Move back the legend to the legendPool
+		$("#" + LEGENDSET_POOL).append($('#'+LEGENDSET_PREFIX+index));
+		
+		//restore map to its initial value
+		$('#'+idHtmlElement).html(initalMapDiv[index]);
+		
+
+		var itemsOnRow = [];
+		itemsOnRow.push({id: "LEVEL-"+map_levels[index][0]});
+		itemsOnRow.push({id: orgUnitId});
+
+		var boundaryLevels = [];
+		boundaryLevels.push({id: "LEVEL-"+boundaries_map_levels[index][0]});
+		boundaryLevels.push({id: orgUnitId});
+
+		// url has to be defined outside
+		mapPlugin.url = base;
+
+		mapPlugin.load({
+			el: idHtmlElement,
+			basemap: mapStyle,
+			mapViews: [
+			{
+				rows: [{dimension: "ou", items: boundaryLevels}],
+				layer: "boundary",
+				labels: false, // labels of the regions
+				opacity:map_opacity[index]/100
+			},
+			{
+				columns: [{dimension: "dx", items: [{id: dimension, dimensionItemType: dimentionType}]}],
+				rows: [{dimension: "ou", items: itemsOnRow}],
+				filters: [{
+						dimension: "pe",
+						items: [{id: year}]}],
+				valueType: "in",
+				layer: thematic,
+				legendSet: {id: legendSetID},
+				labels: false, // labels of the regions
+				opacity:map_opacity[index]/100
+			}
+			]
+		});
+
+	}
+
+	// Callback function when changes occurs
+	function onMapReady(mutationRecord, observer) {
+		var id = mutationRecord[mutationRecord.length-1].target.id;
+		console.log("map ready " + id);
+
+		// gets the last number of the DIV id, e.g. "3" for "map3"
+		var index = parseInt(id.slice(-1));
+
+		// hides default legend button
+		$('#' + MAP_PREFIX + index).find(".leaflet-control-legend").hide();
+
+		// removes spinner in case it is still there
+		$('#' + MAP_PREFIX + index + " div.spinner").remove();
+
+		// moves custom legend on top of the map
+		moveLegend(index, $('#'+id).find(LEGEND_POSITIONS[BOTTOM_RIGHT]), LEGEND_TO_REPORT);
+	}
+
+	function prepareMapListeners() {
+		const target0 = document.getElementById("map0");
+		const target1 = document.getElementById("map1");
+		const target2 = document.getElementById("map2");
+		const target3 = document.getElementById("map3");
+
+		// Create a new instance of MutationObserver with callback in params
+		const observer = new MutationObserver(onMapReady);
+
+		// Setup config
+		const config = {
+			childList: true
+		};
+
+		observer.observe(target0, config);
+		observer.observe(target1, config);
+		observer.observe(target2, config);
+		observer.observe(target3, config);
+	}
+
+
+	function getDEUsedByMetadata(){
+
+		console.log ("getDEUsedByMetadata");
+		var promises = [];
+		var ds_indexes = [];
+		var p_indexes = [];
+		for (var uid in dsinfo) {
+			if (dsinfo[uid][ASSG]){
+				promises.push(getDEusedByDataSet(uid));
+				promises.push(getCOCusedByDataSet(uid));
+				ds_indexes.push(uid);
+			}
+		}
+		for (uid in pinfo) {
+			if (pinfo[uid][ASSG]){
+				promises.push(getDEusedByProgram(uid));
+				p_indexes.push(uid);
+			}
+		}
+
+		// so we can retrieve the order of requests once all promises are resolved
+		promises.push(ds_indexes);
+		promises.push(p_indexes);
+		return Promise.all(promises)
+		.then(function(result) {
+			console.log("all promises");
+			console.log(result);
+
+			ds_indexes = result[result.length - 2];
+			p_indexes = result[result.length - 1];
+
+			for (var i = 0; i < ds_indexes.length; i++) {
+				// *2 since we have generated two promises per dataset, first one for DE
+				dsinfo[ds_indexes[i]][DE_IDX] = [...result[i*2].listGrid.rows];
+				de_assigned = new Map([...de_assigned, ...new Map(result[i*2].listGrid.rows)]); //converts array into a set and merges two sets into one
+				// *2+1 since we have generated two promises per dataset, second one for COC
+				coc_assigned = new Map([...coc_assigned, ...new Map(result[i*2+1].listGrid.rows)]);
+			}
+
+			var shift = ds_indexes.length;
+			for (i = shift; i < shift + p_indexes.length; i++) {
+				pinfo[p_indexes[i-shift]][DE_IDX] = [...result[i+shift].listGrid.rows];
+				de_assigned = new Map([...de_assigned, ...new Map(result[i+shift].listGrid.rows)]); //converts array into a set and merges two sets into one
+
+			}
+			return;
+		}); 
+	}
+
+	function getCOCusedByDataSet(dsuid){
+		return new Promise((resolve, reject) => {
+			console.log("getCOCusedByDataSet: " + dsuid);
+
+			var params = {
+				var: "datasetuid:" + dsuid,
+				paging: false
+			};
+
+			return $.when(getv3(SQLVIEWS + "/" + SQL_COC_DS + "/data", params))
+			.done(function(result){
+				console.log("got getCOCusedByDataSet: " + dsuid);
+
+				// not interested in store COC in dsinfo array
+				return resolve(result);
+			}).fail( function(){
+				addToErrorFeedback(ERROR_API_TEXT_START + " COC used by dataSet " + dsuid);
+				return reject();
+			}); 
+		})
+
+
+	}
+
+	function getDEusedByDataSet(dsuid){
+		return new Promise((resolve, reject) => {
+			console.log("getDEusedByDataSet: " + dsuid);
+			var params = {
+				var: "datasetuid:" + dsuid,
+				paging: false
+			};
+
+			return $.when(getv3(SQLVIEWS + "/" + SQL_DE_DS + "/data", params))
+			.done(function(result){
+				console.log("got getDEusedByDataSet: " + dsuid);
+
+				dsinfo[dsuid][DE_IDX] = result.dataelements;
+				return resolve(result);
+			}).fail( function(){
+				addToErrorFeedback(ERROR_API_TEXT_START + " DE used By dataSet " + dsuid);
+				return reject();
+			}); 
+		})
+	}
+
+	function getDEusedByProgram(puid){
+		return new Promise((resolve, reject) => {
+			console.log("getDEusedByProgram: " + puid);
+
+			var params = {
+				var: "programuid:" + puid,
+				paging: false
+			};
+
+			return $.when(getv3(SQLVIEWS + "/" +SQL_DE_P + "/data", params))
+			.done(function(result){
+				console.log("got getDEusedByProgram: " + puid);
+
+				pinfo[puid][DE_IDX] = result.dataelements;
+				return resolve(result);
+			}).fail( function(){
+				addToErrorFeedback(ERROR_API_TEXT_START + " DE used by program " + puid);
+				return reject();
+		}); 
+	})
+
+	}
+
+	function generateInfoTable(result){
+		infoTable = '<table id="tooltipTable" class="w3-table-all w3-tiny">'
+					+ '<thead><tr><th>SubN level</th><th>#ou</th><th>#shapes</th><th>Example</th></tr></thead><tbody>';
+		for (var i = 0; i<result.listGrid.rows.length; i++){
+			infoTable += '<tr><td>' + (result.listGrid.rows[i][0] - WIDP_OU_SHIFT) + '</td><td>'
+					+ result.listGrid.rows[i][1] + '</td><td>'
+					+ result.listGrid.rows[i][2] + '</td><td>'
+					+ result.listGrid.rows[i][3] + '</td><tr>';
+		}
+		infoTable += '</tbody></table>';
+	}
+
+	function getOULevels(min, max){
+		var params = {
+			var: "ouid:" + ds.countryID,
+			paging: false
+		};
+
+		var extraParams = "&var=minLevel:" + min + "&var=maxLevel:" + max;
+
+		return $.when(getv3(SQLVIEWS + "/" + SQL_OU_LEVELS + "/data", params, extraParams))
+		.done(function(result){
+			generateInfoTable(result);
+			$( '#ouInfoHover' ).tooltip({ content: infoTable, html: true, placement: "bottom" });
+			var widp_level, ou_qty, ou_name;
+			$("#subnationalLevelSelector option").prop('disabled',true); // disables all
+			for(var i=0; i< result.listGrid.rows.length; i++){
+				widp_level = result.listGrid.rows[i][0];
+				$("#subnationalLevelSelector option:eq("+(widp_level - WIDP_OU_SHIFT)+")").prop('disabled',false);
+			}
+			$("#subnationalLevelSelector option:eq("+NATIONAL_LEVEL+")").prop('disabled',false);
+			$( "#subnationalLevelSelector" ).selectmenu( 'refresh', true);
+		}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " ou levels");}); 
+	}
+
+	function getIndicatorInfo(arrayOfArrays, indType, field1, field2){
+
+		var params = {
+			paging: false,
+			fields: "id,"+field1+","+field2,
+			filter: ["id:in:["+arrayOfArrays.join()+"]"], 
+		};
+		builtUrl = buildAPIUrl(indType, params);
+		return $.ajax({
+			url: builtUrl
+		}).then(function(data) {
+				
+			var field1Array, field2Array, id, indInfo;
+			for (var i = 0; i< data[indType].length; i++){
+				id = data[indType][i].id;
+				field1Array = data[indType][i][field1].split("{"); // e.g. data.indicators[4].numerator
+				field2Array = data[indType][i][field2].split("{"); // e.g. data.programIndicators[4].filter
+				indInfo = {};
+				indInfo.de = new Set(); 
+				indInfo.i = new Set(); 
+				indicators_info.set(id, indInfo);
+
+				fillIndicatorInfo(id, field1Array, field1);
+				fillIndicatorInfo(id, field2Array, field1);
+
+			}
+
+			var notReadyIndicators = getNotPresentIndicators();
+			console.log(notReadyIndicators);
+
+			if (notReadyIndicators.length > 0){
+				return 	$.when(	getIndicatorInfo(notReadyIndicators, "programIndicators", "filter", "expression"))
+								.then( function(){return getIndicatorInfo(notReadyIndicators, "indicators", "numerator", "denominator");});
+			} else {
+				return;
+			}
+		}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " indicators information");}); 
+	}
+
+
+	function fillIndicatorInfo(id, array, field1){
+		var type, de_start, de_end;
+
+		if (field1.localeCompare("numerator") == 0){ // indicator
+			de_start = 0;
+			de_end = 11;
+		} else if (field1.localeCompare("filter") == 0){ // programIndicator
+			de_start = 12;
+			de_end = 23;
+		} else {
+			console.log ("ERROR in fillIndicatorInfo. Field type not expected.");
+		}
+		
+		for (var n=1; n < array.length; n++){
+			type = array[n-1][array[n-1].length-1]; // gets the last character of the previous element (to get the #, I, D or N)
+			switch (type){
+				case "#": // dataElement
+					indicators_info.get(id).de.add(array[n].substring(de_start,de_end)); // gets the ID of an string type A0123456789.B0123456789} *...
+					break;
+				case "D":
+					indicators_info.get(id).de.add(array[n].substring(12,23)); // gets the second ID of an string type A0123456789.B0123456789} *...
+					break;
+				case "I":
+					indicators_info.get(id).i.add(array[n].substring(0,11)); // gets the ID of an string type A0123456789.B0123456789} *...
+					break;
+			}
+		}
+	}
+
+	function allDEInIndicatorAreReachable(ind_id){
+		var ind_object = indicators_info.get(ind_id);
+		var reachable = true;
+		ind_object.de.forEach(de => {
+			if(!de_assigned.has(de)){
+
+				//console.log ("DE " + de + " NOT FOUND")
+				reachable = false;
+			} else {
+				//console.log ("DE " + de + " OK")
+			}
+		});
+
+		ind_object.i.forEach(i => {
+			//console.log ("reachable " + reachable + " i " + i + ": " + allDEInIndicatorAreReachable(i));
+			reachable = reachable && allDEInIndicatorAreReachable(i);
+		});
+
+		return reachable;
+	}
+
+	function getNotPresentIndicators() {
+		var notPresentIndicators = [];
+		for (let [index, ind_object] of indicators_info.entries()) {
+			ind_object.i.forEach(i => {
+				if(!indicators_info.has(i)){
+					notPresentIndicators.push(i);
+				}
+			});
+		}
+		return notPresentIndicators;
+	}
+
+
+	function test_ind_info(){			
+		console.log("********** TEST INDICATOR INFO *****************");
+		for (let [index, ind_object] of indicators_info.entries()) {
+			console.log("*** TEST OF " + index);
+
+			if (allDEInIndicatorAreReachable(index)){
+				console.log (index + " I OK");
+
+			} else {
+				console.log (index + " I has DE that are not in the list");
+			}
+			
+			console.log("*** - *** ");
+
+		}
+	}
+
+
+	/* getting country General Information from API */
+	function get_cgi() {
+		console.log("get_cgi" + defaultSubnationalLevel);
+		var params = {
+			dataSet: GI,
+			period: ds.year,
+			orgUnit: ds.countryID
+		};
+
+		builtUrl = buildAPIUrl(DATAVALUESETS, params);
+		return $.ajax({
+			url: builtUrl
+		}).then(function(data) {
+			console.log("get_cgi then" + defaultSubnationalLevel);
+
+				return fillCountryGeneralInformation(data);
+		}).fail( function(){
+			console.log("get_cgi fail" + defaultSubnationalLevel);
+			addToErrorFeedback(ERROR_API_TEXT_START + " Country General Information.");
+		}); 
+	}
+
+	function get_gho_ntds() {
+
+		var params = {
+			dataSet: GHO_NTDS,
+			period: ds.year,
+			orgUnit: ds.countryID
+		};
+
+		builtUrl = buildAPIUrl(DATAVALUESETS, params);
+		return $.ajax({
+			url: builtUrl
+		}).then(function(data) {
+				return fillGHO(data);
+		}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " GHO data.");}); 
+	}
+
+	function get_subnational_endemicity_for(program, year, level, ind, column) {
+
+		var dimensions = [];
+		dimensions.push(["pe",year]);
+
+		var filters = [];
+		filters.push(["ou",ds.countryID+";"+LEVEL+subNationalLevelToAbs(level)]);
+		filters.push([ind,"IN",SUB_ENDEMICITY.ENDEMIC_OPTION_CODE]);
+
+		return $.when(getAggregateEvents(program, dimensions, NULL_VALUE, filters, NULL_AGGR_TYPE, SKIP_PAGING, SKIP_META, OUTPUT_TYPE.EVENT))
+			.done(function(result){
+				var data = getAnalyticValueForKey(result, YEARLY_MODE);
+				array[THIRD_LEVEL_ROW][column] =  formatIntValue((data[0] || WHEN_NO_DATA), SAME, LOCALE_FORMAT);
+			}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " subnational Endemicity.");}); 
+	}
+	
+	function get_monthly_cases_for(program, year, de, row) {
+			var dimensions = [];
+		//	var filters = [];
+
+			var periods = generateMonthlyPeriodsForYear(year, ";");
+
+			dimensions.push(["pe",periods]);
+			dimensions.push(["ou",ds.countryID]);
+
+			return $.when(getAggregateEvents(program, dimensions, de, NULL_FILTER, AGGR_TYPE.SUM, SKIP_PAGING, SKIP_META, OUTPUT_TYPE.EVENT))
+				.done(function(result){
+					var data = getAnalyticValueForKey(result, MONTHLY_MODE);
+					return fillMonthlyArray(row, data);
+				}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " monthly cases for " + program + " " + year + " DE: " + de);}); 
+	}
+
+
+	/* getting cl cases from API */
+	function get_cl_cases() {
+
+		var params = {
+			dataSet: CL_DETAILED,
+			period: ds.year,
+			orgUnit: ds.countryID
+		};
+
+		builtUrl = buildAPIUrl(DATAVALUESETS, params);
+		return $.ajax({
+			url: builtUrl
+		}).then(function(data) {
+			return data;
+		}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " CL cases.");}); 
+	}
+
+
+	/* getting cl cases from API */
+	function get_azcl_cases() {
+		var params = {
+			dataSet: AZCL_DETAILED,
+			period: ds.year,
+			orgUnit: ds.countryID
+		};
+
+		builtUrl = buildAPIUrl(DATAVALUESETS, params);
+		return $.ajax({
+			url: builtUrl
+		}).then(function(data) {
+			return data;
+		}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " ACL/ZCL cases.");}); 
+	}
+
+
+	/* getting vl cases from API */
+	function get_vl_cases() {
+		var params = {
+			dataSet: VL_DETAILED,
+			period: ds.year,
+			orgUnit: ds.countryID
+		};
+
+		builtUrl = buildAPIUrl(DATAVALUESETS, params);
+		return $.ajax({
+			url: builtUrl
+		}).then(function(data) {
+			return data;
+		}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " VL cases.");}); 
+	}
+
+	/**
+	* gets analytics data from dx for pe ds.year
+	* filter: ou: ds.countryID
+	* yearsToInclude: number of years to include starting by the current year
+	* thenFunction(data, thenFParams)
+	*/
+	function getAnalyticsDataForDX(dx_dimension, yearsToInclude, thenFunction, thenFParams){
+		console.log ("getAnalyticsDataForDX " + dx_dimension.toString());
+		var dx_dimension_treated = "";
+		if (Array.isArray(dx_dimension)){
+			for (var i = 0; i<dx_dimension.length; i++){
+				dx_dimension_treated = dx_dimension_treated + dx_dimension[i] + ";";
+			}
+			dx_dimension_treated = dx_dimension_treated.slice(0, -1);
+		} else {
+			dx_dimension_treated = dx_dimension;
+		}
+
+		var params = {
+			dimension: ["dx:"+dx_dimension_treated,"pe:"+ds.year],
+			filter: ["ou:"+ds.countryID],
+			displayProperty : "NAME",
+			skipMeta:"true"
+		};
+
+		for (var i=0; i<yearsToInclude; i++){
+			params.dimension[1] +=";"+(ds.year-i);
+		}
+		var builtUrl = buildAPIUrl(ANALYTICS, params);
+		return $.ajax({
+			url: builtUrl
+		}).then(function(data) {
+			return thenFunction(data, thenFParams)
+		}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " analytics data:" + dx_dimension.toString());}); 
+	}
+
+	function getPopulationAtRiskFor(indicator, column, subNationalLevel){
+
+		var absolute_level =  WIDP_OU_SHIFT + subNationalLevel
+
+		var params = {
+			dimension: ["dx:"+indicator,"pe:"+ds.year, "ou:"+ds.countryID+";LEVEL-"+absolute_level], //TODO: adapt to each country
+			displayProperty : "NAME",
+			skipMeta:"true"
+		};
+
+		var builtUrl = buildAPIUrl(ANALYTICS, params);
+		return $.ajax({
+			url: builtUrl
+		}).then(function(data) {
+				return fillPopulationAtRiskArray(data, column);
+		}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " Population at Risk.");}); 
+	}
+
+
+	/****************************************************************************************************
+ 	 **********                      FILLING LOGICAL STRUCTURES (ARRAYS)               	       **********
+	 ****************************************************************************************************/
+
+	 /***
+
+	 */
+	function fillMonthlyArray(row, data) {
+
+		for (var i= 1; i<=12; i++){
+			monthlyArray[row][i] = formatIntValue((data[i] || WHEN_NO_DATA), SAME, INTEGER_FORMAT);
+		}
+		
+		//Object.keys(data).forEach(function (key) {
+		//});
+		
+	}	 
+
+	function fillNewCasesArray(data, params){
+		var column = params[0];
+		historicNewCases[column] = getAnalyticValueForKey(data, YEARLY_MODE);
+	}	
+				
+	function fillIndicatorArray(data, extraFParams){
+		var arrayReference = extraFParams[0];
+		var arrayName = extraFParams[1];
+		var dx_header = getHeaderIndex(data.headers, "dx"); 
+		var value_header = getHeaderIndex(data.headers, "value"); 
+
+		if(Array.isArray(data.rows)) {
+
+			for (var i = 0; i<data.rows.length; i++){
+				id = data.rows[i][dx_header];
+				index = arrayReference.indexOf(id);
+				if(WHEN_NON_APPLICABLE.localeCompare(checkI(id))==0){
+					//console.log("N/A: index "+index+ " - id: "+id);
+					arrayName[index] = WHEN_NON_APPLICABLE;
+				} else if (typeof data.rows != "undefined" && i < data.rows.length){
+					arrayName[index] = parseFloat(data.rows[i][value_header]);
+				} else {
+					console.log("Unexpected error on fillIndicatorArray");
+					console.log("id: "+data.rows[i][dx_header] + "value_header: " + data.rows[i][value_header]);
+				}
+			} 
+		} else {
+			console.log("Unexpected error on fillIndicatorArray. data.rows is not an array");
+			console.log(data.rows);
+		}
+
+	}
+
+
+	function fillIncidenceChartArray(data, params){
+		var column = params[0];
+		historicIncidenceChart[column] = getAnalyticValueForKey(data, YEARLY_MODE);
+	}
+
+	function fillPopulationAtRiskArray(data, column){
+		index = column - 1;
+		headerIndex = getHeaderIndex(data.headers, "value");
+		pop_at_risk_values[index] = parseInt(sumValueForHeader(data, headerIndex));
+		if (!isNaN(pop_at_risk_values[index])) {
+
+			percentage =  percentageText(pop_at_risk_values[index], totalPopulation, 0, true);
+
+			array[RISK_ROW][column] = '<div class="prev_fraction sameLine">' + percentage + 
+									'</div><div class="fraction_text sameLine">' + 
+									formatIntValue(pop_at_risk_values[index], SAME, LOCALE_FORMAT) + '/<br>' +
+									formatIntValue((totalPopulation || WHEN_NO_DATA), SAME, LOCALE_FORMAT) + '</div>';
+		} else {
+			array[RISK_ROW][column] = WHEN_NO_DATA; // This is a workaround related with indicators. Ideally, indicator should return blank but it's returning NaN when no data.
+		}
+	}
+
+	function fillArray_IncidenceRow(){
+		var incidence, incidence_text;
+		for (var i = VL_INDEX; i<= ZCL_INDEX ; i++) {
+			// array[row][col], col = index + 1
+			incidence = percentageText(new_and_usnp_cases[i] * 100, pop_at_risk_values[i], 2, false); // incd = 10000 * cases / pop_at_risk. 2 decimal places
+			incidence_text = (!isNaN(incidence) || typeof incidence === 'string' ) ? incidence : WHEN_NO_DATA; // shows No data if denominator = 0 or no data
+			array[INCD_ROW][i+1] = incidence_text;
+		}
+		for (var i = PKDL_INDEX; i<= MCL_INDEX ; i++) {
+			array[INCD_ROW][i+1] = WHEN_NON_APPLICABLE;
+		}
+	}
+
+	/**
+	 * fills country endemicity row
+	 * */
+	function fillGHO(data){
+
+		var dataValues = data.dataValues;
+		var endemicty_code, endemicity_text;
+
+		for (var i = 0; i<COUNTRY_ENDEMICITY.length; i++){
+			endemicty_code = getValueForKey(dataValues, DE_KEY, COUNTRY_ENDEMICITY[i], VALUE_KEY);
+			switch (endemicty_code){
+				case ENDEMICITY_OS.ENDEMIC_OPTION_CODE:
+					endemicity_text = ENDEMICITY_OS.ENDEMIC_OPTION_NAME;
+					break;				
+				case ENDEMICITY_OS.PREVIOUSLY_REPORTED_OPTION_CODE:
+					endemicity_text = ENDEMICITY_OS.PREVIOUSLY_REPORTED_OPTION_NAME;
+					break;				
+				case ENDEMICITY_OS.NO_ENDEMIC_OPTION_CODE:
+					endemicity_text = ENDEMICITY_OS.NO_ENDEMIC_OPTION_NAME;
+					break;
+				case WHEN_NO_DATA:
+					endemicity_text = WHEN_NO_DATA;
+					break;
+				case WHEN_NON_APPLICABLE:
+					endemicity_text = WHEN_NON_APPLICABLE;
+					break;
+				default:
+					endemicity_text = ERROR;
+			}
+			array[COUNTRY_ENDEMICITY_ROW][i+1] = endemicity_text;
+		}
+	}
+	
+	function fillUN_WPP(){
+
+		generalInformationArray[CIG_ROW_SEX][1] = (percentageText(un_wpp_data[POP_GENDER_FEMALE], 100, 1, false) || WHEN_NO_DATA) + " / " + (percentageText(un_wpp_data[POP_GENDER_MALE], 100, 1, false) || WHEN_NO_DATA);
+		generalInformationArray[CIG_ROW_AGEG][1] = (percentageText(un_wpp_data[POP_AGE_U15], 100, 0, false) || WHEN_NO_DATA) + " / " + (percentageText(un_wpp_data[POP_AGE_OVER15], 100, 0, false)  || WHEN_NO_DATA);
+	
+	}
+
+	// work around instead of using indicators, due to 
+	// https://jira.dhis2.org/browse/DHIS2-8059
+    // https://jira.dhis2.org/browse/DHIS2-8060
+	 
+	function fillNewAndUnspCasesWorkaround(column, new_cases, unspecified){
+		if (column == VL_COLUMN || column == CL_COLUMN || column == ACL_COLUMN || column == ZCL_COLUMN){
+			new_and_usnp_cases[column-1] = add([new_cases, unspecified]);
+		}
+	}
+
+	/*
+		column :
+		epiDE : Epidemiology Data getElement
+	*/
+	function fillArray(dataValues, column, epiDE, epiPKDLMCLCases) {
+		/* Edidemiology table */
+	
+		// type of cases
+		var new_cases = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_NEW_CASES,epiDE], VALUE_KEY);
+		var relapse = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_RELAPSE,epiDE], VALUE_KEY);
+		var unspecified = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED,epiDE], VALUE_KEY);
+		var total_cases_type = add([new_cases, relapse, unspecified]);
+
+		fillNewAndUnspCasesWorkaround(column, new_cases, unspecified);
+		
+		array[NEW_ROW][column] = formatIntValue((new_cases || WHEN_NO_DATA), SAME, LOCALE_FORMAT);
+		array[RELAPSE_ROW][column] = formatIntValue((relapse || WHEN_NO_DATA), SAME, LOCALE_FORMAT);
+		array[TOTAL_ROW][column] = formatIntValue((total_cases_type || WHEN_NO_DATA), SAME, LOCALE_FORMAT);
+
+		// sex distribution 
+		var new_unknown = getValueForKey(dataValues, [CC_KEY, DE_KEY],[NEW_UNKNOWN, GENDER_DE[column]], VALUE_KEY);
+		var uns_unknown = getValueForKey(dataValues, [CC_KEY, DE_KEY],[UNS_UNKNOWN, GENDER_DE[column]], VALUE_KEY);
+		var unknown = add([new_unknown, uns_unknown]);
+
+		var new_male = getValueForKey(dataValues, [CC_KEY, DE_KEY],[NEW_MALE, GENDER_DE[column]], VALUE_KEY);
+		var uns_male = getValueForKey(dataValues, [CC_KEY, DE_KEY],[UNS_MALE, GENDER_DE[column]], VALUE_KEY);
+		var male = add([new_male, uns_male]);
+
+		var new_female = getValueForKey(dataValues, [CC_KEY, DE_KEY],[NEW_FEMALE, GENDER_DE[column]], VALUE_KEY);
+		var uns_female = getValueForKey(dataValues, [CC_KEY, DE_KEY],[UNS_FEMALE, GENDER_DE[column]], VALUE_KEY);
+		var female = add([new_female, uns_female]);
+
+		array[SEX_ROW][column] = percentageText(female, add([male, female, unknown]), 0, false);
+		
+		//age distribution 
+		var new_under_5 = getValueForKey(dataValues, [CC_KEY, DE_KEY],[NEW_UNDER_5, AGE_DE[column]], VALUE_KEY);
+		var uns_under_5 = getValueForKey(dataValues, [CC_KEY, DE_KEY],[UNS_UNDER_5, AGE_DE[column]], VALUE_KEY);
+		var under_5 =  add([new_under_5, uns_under_5]);
+
+		var new_5_14 = getValueForKey(dataValues, [CC_KEY, DE_KEY],[NEW_5_14, AGE_DE[column]], VALUE_KEY);
+		var uns_5_14 = getValueForKey(dataValues, [CC_KEY, DE_KEY],[UNS_5_14, AGE_DE[column]], VALUE_KEY);
+		var _5_14 =  add([new_5_14, uns_5_14]);
+
+		var new_over_14 = getValueForKey(dataValues, [CC_KEY, DE_KEY],[NEW_OVER_14, AGE_DE[column]], VALUE_KEY);
+		var uns_over_14 = getValueForKey(dataValues, [CC_KEY, DE_KEY],[UNS_OVER_14, AGE_DE[column]], VALUE_KEY);
+		var over_14 =  add([new_over_14, uns_over_14]);
+
+		var new_age_unknown = getValueForKey(dataValues, [CC_KEY, DE_KEY],[NEW_AGE_UNKNOWN, AGE_DE[column]], VALUE_KEY);
+		var uns_age_unknown = getValueForKey(dataValues, [CC_KEY, DE_KEY],[UNS_AGE_UNKNOWN, AGE_DE[column]], VALUE_KEY);
+		var age_unknown =  add([new_age_unknown, uns_age_unknown]);
+
+		var total_age_cases = add([under_5, _5_14, over_14, age_unknown]);
+
+		array[AGE_ROW][column] = threePercentages(under_5, _5_14, over_14, total_age_cases);	
+
+		//origin distribution
+		var origin_autoc = add([
+			getValueForKey(dataValues,[CC_KEY, DE_KEY],[ORIGIN_AUTOC_NEW, IMPORTED_DE[column]], VALUE_KEY),
+			getValueForKey(dataValues,[CC_KEY, DE_KEY],[ORIGIN_AUTOC_REL, IMPORTED_DE[column]], VALUE_KEY),
+			getValueForKey(dataValues,[CC_KEY, DE_KEY],[ORIGIN_AUTOC_UNS, IMPORTED_DE[column]], VALUE_KEY)
+		]);
+		var origin_imported = add([
+			getValueForKey(dataValues,[CC_KEY, DE_KEY],[ORIGIN_IMPORT_NEW, IMPORTED_DE[column]], VALUE_KEY),
+			getValueForKey(dataValues,[CC_KEY, DE_KEY],[ORIGIN_IMPORT_REL, IMPORTED_DE[column]], VALUE_KEY),
+			getValueForKey(dataValues,[CC_KEY, DE_KEY],[ORIGIN_IMPORT_UNS, IMPORTED_DE[column]], VALUE_KEY)
+		]);
+		var origin_unknown = add([
+			getValueForKey(dataValues,[CC_KEY, DE_KEY],[ORIGIN_UNKNOWN_NEW, IMPORTED_DE[column]], VALUE_KEY),
+			getValueForKey(dataValues,[CC_KEY, DE_KEY],[ORIGIN_UNKNOWN_REL, IMPORTED_DE[column]], VALUE_KEY),
+			getValueForKey(dataValues,[CC_KEY, DE_KEY],[ORIGIN_UNKNOWN_UNS, IMPORTED_DE[column]], VALUE_KEY)
+		]);
+		var total_origin_cases = add([origin_autoc, origin_imported, origin_unknown]);
+		array[IMPORTED_ROW][column] = origin_imported +
+									", " +
+									percentageText(origin_imported, total_origin_cases, 0, true);
+
+		// Data to retrive depending on Leish type
+		switch(epiDE){
+			case DE.CL_EPI_Type:
+				array[FOCI_ROW][column] = getValueForKey(dataValues, DE_KEY, DE.CL_GEN_EPID_NEW_FOCUS, VALUE_KEY);
+				array[OUTBK_ROW][column] = booleanToYesNo(getValueForKey(dataValues, DE_KEY, DE.CL_GEN_EPID_outbreak, VALUE_KEY));				
+				break;
+			case DE.ACL_EPI_Type:
+				array[FOCI_ROW][column] = getValueForKey(dataValues, DE_KEY, DE.ACL_GEN_EPID_NEW_FOCUS, VALUE_KEY);
+				array[OUTBK_ROW][column] = toBoolText_OpS_YNU_Numeric_129(getValueForKey(dataValues, DE_KEY, DE.ACL_GEN_EPID_outbreak, VALUE_KEY));				
+				break;
+			case DE.ZCL_EPI_Type:
+				array[FOCI_ROW][column] = getValueForKey(dataValues, DE_KEY, DE.ZCL_GEN_EPID_NEW_FOCUS, VALUE_KEY);
+				array[OUTBK_ROW][column] = toBoolText_OpS_YNU_Numeric_129(getValueForKey(dataValues, DE_KEY, DE.ZCL_GEN_EPID_outbreak, VALUE_KEY));				
+				break;
+			case DE.VL_EPI_Type:
+				array[FOCI_ROW][column] = getValueForKey(dataValues, DE_KEY, DE.VL_GEN_EPID_NEW_FOCUS, VALUE_KEY);
+				array[OUTBK_ROW][column] = booleanToYesNo(getValueForKey(dataValues, DE_KEY, DE.VL_GEN_EPID_outbreak, VALUE_KEY));				
+				break;
+		}
+
+		
+		/* only PKDL and MCL TODO: place that if that's true */
+
+		if (column == PKDL_COLUMN || column == MCL_COLUMN){
+			var pkdl_cases = getValueForKey(dataValues, DE_KEY, epiPKDLMCLCases, VALUE_KEY);
+			array[NEW_ROW][column] = formatIntValue((pkdl_cases || WHEN_NO_DATA), SAME, LOCALE_FORMAT);
+			array[RELAPSE_ROW][column] = WHEN_NON_APPLICABLE;
+			array[TOTAL_ROW][column] = array[NEW_ROW][column];
+			array[IMPORTED_ROW][column] = WHEN_NON_APPLICABLE; 
+
+			var male = getValueForKey(dataValues, [CC_KEY, DE_KEY],[MALE, GENDER_DE[column]], VALUE_KEY);
+			var female = getValueForKey(dataValues, [CC_KEY, DE_KEY],[FEMALE, GENDER_DE[column]], VALUE_KEY);
+			var unknown_sex = getValueForKey(dataValues, [CC_KEY, DE_KEY],[UNKNOWN_SEX, GENDER_DE[column]], VALUE_KEY);
+			var total_sex_cases = add([male, female, unknown_sex]);
+			array[SEX_ROW][column] = percentageText(female, total_sex_cases, 0, false);
+
+			var age_5 = getValueForKey(dataValues, [CC_KEY, DE_KEY],[AGE_5, AGE_DE[column]], VALUE_KEY);
+			var age_5_14 = getValueForKey(dataValues, [CC_KEY, DE_KEY],[AGE_5_14, AGE_DE[column]], VALUE_KEY);
+			var age_14 = getValueForKey(dataValues, [CC_KEY, DE_KEY],[AGE_14, AGE_DE[column]], VALUE_KEY);
+			var age_unknown = getValueForKey(dataValues, [CC_KEY, DE_KEY],[AGE_UNKNOWN, AGE_DE[column]], VALUE_KEY);
+			var total_age_cases = add([age_5, age_5_14, age_14, age_unknown]); //gPGNI7bWhDB
+
+			array[AGE_ROW][column] = threePercentages(age_5, age_5_14, age_14, total_age_cases);	
+
+			array[INCD_ROW][column] = WHEN_NON_APPLICABLE; 
+			array[RISK_ROW][column] = WHEN_NON_APPLICABLE; 
+			array[THIRD_LEVEL_ROW][column] = WHEN_NON_APPLICABLE; 
+			array[OUTBK_ROW][column] = WHEN_NON_APPLICABLE; 
+			array[FOCI_ROW][column] = WHEN_NON_APPLICABLE; 
+
+		}
+
+
+		/* Diagnosis table */
+		
+		// active and passive screening
+		if (column == PKDL_COLUMN || column == MCL_COLUMN) {
+			diagnosisArray[SCREENED_ACTIVELY_ROW][column] = WHEN_NON_APPLICABLE;
+			diagnosisArray[SCREENED_PASSIVELY_ROW][column] = WHEN_NON_APPLICABLE;
+		} else {
+			var screen_active = getValueForKey(dataValues, DE_KEY, DE_SCREEN_ACTIVE[column] , VALUE_KEY);
+			diagnosisArray[SCREENED_ACTIVELY_ROW][column] = formatIntValue((screen_active || WHEN_NO_DATA), SAME, LOCALE_FORMAT);
+			diagnosisArray[SCREENED_PASSIVELY_ROW][column] = formatIntValue((screen_passive[column-1] || WHEN_NO_DATA), SAME, LOCALE_FORMAT);
+		}
+		
+
+		if (column == VL_COLUMN) {
+
+			// cases diagnosed by RDT and %positive RDT
+			var new_rdt = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_NEW_CASES,VL_Lab_RDT_tested_type], VALUE_KEY);
+			var unsp_rdt = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED, VL_Lab_RDT_tested_type], VALUE_KEY);
+			var total_rdt = add([new_rdt, unsp_rdt]);
+
+			var positive_new_rdt = getValueForKey(dataValues, [CC_KEY, DE_KEY], [POSITIVE_NEW,VL_Lab_RDT_results_type],  VALUE_KEY);
+			var positive_unsp_rdt = getValueForKey(dataValues, [CC_KEY, DE_KEY], [POSITIVE_UNSP,VL_Lab_RDT_results_type],  VALUE_KEY);
+			var total_positive_rdt = add([positive_new_rdt, positive_unsp_rdt]);
+			
+			diagnosisArray[VL_CASES_DIAGNOSED_ROW][column] = percentageCasesAndTotal(total_positive_rdt, new_and_usnp_cases[VL_INDEX], 0, true);
+			diagnosisArray[POSITIVE_RDT_ROW][column] = percentageCasesAndTotal(total_positive_rdt, total_rdt, 0, true);
+
+			// percentage of cases with HIV-VL coinfection
+			var hiv_coinf_new = getValueForKey(dataValues,[CC_KEY, DE_KEY],[POSITIVE_NEW, DE.VL_LAB_HIVstatus_Type], VALUE_KEY); 
+			var hiv_coinf_rel = getValueForKey(dataValues,[CC_KEY, DE_KEY],[POSITIVE_RELAPSE, DE.VL_LAB_HIVstatus_Type], VALUE_KEY); 
+			var hiv_coinf_uns = getValueForKey(dataValues,[CC_KEY, DE_KEY],[POSITIVE_UNSP, DE.VL_LAB_HIVstatus_Type], VALUE_KEY); 
+			var hiv_coinf_total = add([hiv_coinf_new, hiv_coinf_rel, hiv_coinf_uns]);
+
+			diagnosisArray[HIV_COINFECTION_ROW][column] = percentageCasesAndTotal(hiv_coinf_total, total_cases_type, 0, true);
+			
+		} else {
+			diagnosisArray[VL_CASES_DIAGNOSED_ROW][column] = WHEN_NON_APPLICABLE;
+			diagnosisArray[POSITIVE_RDT_ROW][column] = WHEN_NON_APPLICABLE;
+			diagnosisArray[HIV_COINFECTION_ROW][column] = WHEN_NON_APPLICABLE;
+		}
+
+		if (column == PKDL_COLUMN || column == MCL_COLUMN) {
+			diagnosisArray[DIRECT_EXAM_DIAGNOSED_ROW][column] = WHEN_NON_APPLICABLE;
+			diagnosisArray[POSITIVE_DIRECT_EXAM_ROW][column] = WHEN_NON_APPLICABLE;
+			diagnosisArray[CLINICALLY_DIAGNOSED_ROW][column] = WHEN_NON_APPLICABLE;
+		} 
+		else {
+		
+			// Direct exam
+			diagnosisArray[DIRECT_EXAM_DIAGNOSED_ROW][column] = percentageCasesAndTotal(lab_parasito_result[column-1], new_and_usnp_cases[column-1], 0, true, direct_exam_diagnosed[column-1]);
+
+			//Positive slides
+			diagnosisArray[POSITIVE_DIRECT_EXAM_ROW][column] = percentageCasesAndTotal(lab_parasito_result[column-1], lab_parasito_tested[column-1], 0, true, positive_slides_prop[column-1]);
+
+			//Cases diagnosed clinically
+			var clinical_cases_new = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_NEW_CASES, LABCLINICAL_DE[column]], VALUE_KEY);
+			var clinical_cases_rel = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_RELAPSE, LABCLINICAL_DE[column]], VALUE_KEY);
+			var clinical_cases_uns = getValueForKey(dataValues,[CC_KEY, DE_KEY],[TYPE_UNSPECIFIED, LABCLINICAL_DE[column]], VALUE_KEY);
+			var clinical_cases_total = add([clinical_cases_new, clinical_cases_rel, clinical_cases_uns]);
+
+			diagnosisArray[CLINICALLY_DIAGNOSED_ROW][column] = percentageCasesAndTotal(clinical_cases_total, total_cases_type, 0, true);
+		}
+
+		/* Treatment table */	
+
+		if (column == VL_COLUMN || column == CL_COLUMN || column == ACL_COLUMN || column == ZCL_COLUMN){
+			
+			toutcomeArray[PROPORTION_TREATED_CASES_ROW][column] = percentageCasesAndTotal(total_treated[column-1], new_and_usnp_cases[column-1], 0, true);
+			toutcomeArray[INITIAL_CURE_RATE_ROW][column] = percentageCasesAndTotal(toutcome_cure[column-1], new_and_usnp_cases[column-1], 0, true);
+			toutcomeArray[FAILURE_RATE_ROW][column] = percentageCasesAndTotal(toutcome_fail[column-1], new_and_usnp_cases[column-1], 0, true);
+			toutcomeArray[CASE_FATALITY_ROW][column] = percentageCasesAndTotal(toutcome_fatal[column-1], new_and_usnp_cases[column-1], 0, true);
+
+		}
+
+	}
+
+	function update_map_levels_var(max){
+
+		for (var i = VL_INDEX; i<map_levels.length; i++){
+			map_levels[i] = [];
+			map_levels[i].push(max);
+			boundaries_map_levels[i] = [];
+			boundaries_map_levels[i].push(max);
+		}
+		
+	}
+
+	
+
+	/****************************************************************************************************
+ 	 **********                     		 AUXILIARY FUNCTIONS          	    		       **********
+	 ****************************************************************************************************/
+
+	function fillControlAndSurveillance(dataValues){
+		controlArray[CAS_ROW_LNCP][1] = getValueForKey(dataValues, DE_KEY, Leish_GEN_LNCP_year, VALUE_KEY); 
+		controlArray[CAS_ROW_TYPE][1] =  toBoolText_OpS_Leish_SurvType(getValueForKey(dataValues, DE_KEY, CL_GEN_Surv_Type, VALUE_KEY)) +
+											TWO_VALUES_SEPARATOR +
+											toBoolText_OpS_Leish_SurvType(getValueForKey(dataValues, DE_KEY, VL_GEN_Surv_Type, VALUE_KEY)); 
+		controlArray[CAS_ROW_PROGRAMME][1] = toBoolText_OpS_YNU_Numeric_129(getValueForKey(dataValues, DE_KEY, Leish_GEN_VectorControl, VALUE_KEY)); 
+		controlArray[CAS_ROW_IRS][1] = getValueForKey(dataValues, DE_KEY, Leish_GEN_VectorControl_Insecticide, VALUE_KEY); 
+		controlArray[CAS_ROW_NOTIF][1] = toBoolText_OpS_YNU_Numeric_129(getValueForKey(dataValues, DE_KEY, CL_GEN_Surv_Notif, VALUE_KEY)) +
+											TWO_VALUES_SEPARATOR +
+											toBoolText_OpS_YNU_Numeric_129(getValueForKey(dataValues, DE_KEY, VL_GEN_Surv_Notif, VALUE_KEY)); 
+		controlArray[CAS_ROW_GUIDELINES][1] = getValueForKey(dataValues, DE_KEY, CL_GEN_Guidelines_year, VALUE_KEY) +
+											TWO_VALUES_SEPARATOR +
+											getValueForKey(dataValues, DE_KEY, VL_GEN_Guidelines_year, VALUE_KEY); 
+		controlArray[CAS_ROW_RESER][1] = toBoolText_OpS_YNU_Numeric_129(getValueForKey(dataValues, DE_KEY, Leish_GEN_ReservoirControl, VALUE_KEY)); 
+		controlArray[CAS_ROW_FACIL][1] = getValueForKey(dataValues, DE_KEY, CL_GEN_Surv_HF, VALUE_KEY) +
+											TWO_VALUES_SEPARATOR +
+											getValueForKey(dataValues, DE_KEY, VL_GEN_Surv_HF, VALUE_KEY);
+	}
+	
+	function fillTreatmentAndMedicines(dataValues){
+		tamArray[TAM_ROW_FREEOFCHARGE][1] =  toBoolText_OpS_YNU_Numeric_129(getValueForKey(dataValues, DE_KEY, CL_GEN_TxFree, VALUE_KEY)) +
+											TWO_VALUES_SEPARATOR +
+											toBoolText_OpS_YNU_Numeric_129(getValueForKey(dataValues, DE_KEY, VL_GEN_TxFree, VALUE_KEY));
+
+		
+		
+		var eml_string = "";
+		for (var i = EML_MIN; i<=EML_MAX; i++) {
+			if ( booleanToTrueFalse(getValueForKey(dataValues, DE_KEY, EML[i].ID, VALUE_KEY), DEFAULT_FALSE)) {
+				eml_string += EML[i].NAME + EML_LIST_SEPARATOR;
+			}
+		}
+		if (eml_string.length > 0 ){
+			eml_string = eml_string.slice(0, -2);
+		} else {
+			eml_string = EML_NONE;
+		}
+
+		tamArray[TAM_ROW_EML][1] = eml_string;
+
+	}
+
+	function fillCountryGeneralInformation(data){
+
+		var dataValues = data.dataValues;
+
+		// gets population in miles, transforms it in units and adds local separators
+		var popIn1000 = getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_Pop_Tot_1000, CC_DEFAULT], VALUE_KEY);
+		totalPopulation = parseInt(popIn1000 * 1000) ;
+		generalInformationArray[CIG_ROW_POP][1] = formatIntValue((totalPopulation || WHEN_NO_DATA), SAME, LOCALE_FORMAT);
+
+		// gets GDP
+		generalInformationArray[CIG_ROW_GDP][1] = formatIntValue(
+													getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_WB_GDP_PPP_current, CC_DEFAULT], VALUE_KEY), 
+													ROUND, LOCALE_FORMAT);
+
+		// gets income group codes to show code rather than a number
+		var ressource = "dataElements/"+DE_CGI.GEN_WB_IncomeGroup;
+		var fields = "optionSet[options[name,code]]";
+		$.when(get(ressource,fields)).done(function(result){
+			var incomeCode = getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_WB_IncomeGroup, CC_DEFAULT], VALUE_KEY);
+			var incomeName = getValueForKey(result.optionSet.options, CODE_KEY, incomeCode, NAME_KEY);
+			generalInformationArray[CIG_ROW_INCOME][1] = incomeName;
+		});
+		
+		generalInformationArray[CIG_ROW_LIFE][1] = formatIntValue(
+														getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_LifeExpBirth_Female, CC_DEFAULT], VALUE_KEY), 
+														ROUND, INTEGER_FORMAT)  +
+													" / " +
+													formatIntValue(
+														getValueForKey(dataValues, [DE_KEY, CC_KEY], [DE_CGI.GEN_UN_WPP_LifeExpBirth_Male, CC_DEFAULT], VALUE_KEY),
+														ROUND, INTEGER_FORMAT)  ;
+
+
+		setOptionSelectMenu("subnationalLevelSelector", defaultSubnationalLevel);
+		return updateNumberOfDivisions(defaultSubnationalLevel); // so it waits to have the information
+	}
+
+	// updates 
+	function updateNumberOfDivisions(subNationalLevel){
+
+		return $.when(getNumberOfDivisionsFor(ds.countryID, (subNationalLevel), "name"),
+					get_subnational_endemicity_for(SUBN_ENDEMCTY, ds.year, subNationalLevel, SUB_ENDEMICITY.ACL, ACL_COLUMN),
+					get_subnational_endemicity_for(SUBN_ENDEMCTY, ds.year, subNationalLevel, SUB_ENDEMICITY.ZCL, ZCL_COLUMN),
+					get_subnational_endemicity_for(SUBN_ENDEMCTY, ds.year, subNationalLevel, SUB_ENDEMICITY.CL, CL_COLUMN),
+					get_subnational_endemicity_for(SUBN_ENDEMCTY, ds.year, subNationalLevel, SUB_ENDEMICITY.VL, VL_COLUMN))	
+				.done(function(result){
+					var numberOfDivisions = result.organisationUnits.length;
+					ds.divisionName = result.organisationUnits[0].name;
+					generalInformationArray[CIG_ROW_DIVIS][0] = LEVEL_REPORT_LABELS[subNationalLevel];
+					generalInformationArray[CIG_ROW_DIVIS][1] = numberOfDivisions + ", " + ds.divisionName;
+
+					// updates endemicity text at epi table
+					array[THIRD_LEVEL_ROW][0] = ENDEMIC_SUBN_LEVEL_LABELS[subNationalLevel];
+
+				}).fail(function(result, aaaaa,bbbb,cccc,ddd,eee,ffff,ggg,hhh){
+					addToErrorFeedback("Error updating NumberOfDivisions"); //TODO: review double notification
+					return true;
+				});
+
+	}
+
+		
+
+	function reOrderLegendSet(legendSet) {
+		if (legendSet.length <= 1) {
+			return legendSet;
+		} else {
+			var temp;
+			for(var i=1; i<legendSet.length; i++){
+				if(legendSet[0].startValue + legendSet[0].endValue > legendSet[i].startValue + legendSet[i].endValue){
+					temp = legendSet[i];
+					legendSet[i] = legendSet[0];
+					legendSet[0] = temp;
+				}
+			}
+			return legendSet.slice(0,1).concat(reOrderLegendSet(legendSet.slice(1,legendSet.length)));
+		}
+	}
+
+	function getThisYear(){
+		var d = new Date();
+		return d.getFullYear();
+	}
+
+	function getThisMonth(){
+		var d = new Date();
+    	return d.getMonth();
+	}
+
+	/* return a text about publishing date with the current month and year*/
+	function getDatePublished(){
+		var d = new Date();
+    	var thisMonth = d.getMonth();
+		var thisYear = d.getFullYear();
+		return PUBLISHED_TEXT+" "+MONTHS[getThisMonth()]+" "+getThisYear();
+	}
+	/*
+		linesOnRows : An array with the number of the rows which must have a line below
+	*/
+	function writeTable(tableName, extName, array, linesOnRows) {
+		// declare html variable (a string holder):
+		var html = '';
+		var count = 0;
+
+		var lineClass = "";
+		for (var i = 0; i < array.length; i++) {
+			if (linesOnRows[i]){
+				lineClass = BOTTOM_LINE_CLASS;
+			} else {
+				lineClass ="";
+			}
+			// add opening <tr> tag to the string:
+			html += '<tr id="'+tableName+i+'" class="'+lineClass+'">';
+			for (var j = 0; j < array[i].length; j++) {
+				// add <td> elements to the string:
+				html += '<td>' + '<span class="'+FOOTNOTABLE+' '+EDITABLE+'" >' + array[i][j] + '</span>' + '</td>';
+				count++;
+			}
+			// add closing </tr> tag to the string:
+			html += '</tr>';
+		}
+		//append created html to the table body:
+	
+		document.getElementById(tableName + extName).innerHTML = html;
+
+		// reset the count:
+		count = 0;
+	}
+
+
+	/* Fills and ul list jquery html object with the elements of the array
+
+		htmlObjectName: the name of the HTML object
+		array: a one dimension javascript array
+		classes: a string with the classes to add to li elemenets separated by spaces
+	*/
+    function fillHTMLListWithArray(htmlObjectName, array, classes){
+        var html = '';
+		for (var i=0; i<array.length; i++){
+			html+='<li class="'+classes+'">'
+			html+= array[i];
+			html+= '</li>';
+		}
+		document.getElementById(htmlObjectName).innerHTML = html;
+
+    }
+	
+
+	function makeElementsEditables(){
+		// Avoid to show menu
+		$(document).on("contextmenu", "." + EDITABLE, function(e) {
+			if (!dialog.dialog("isOpen")) {
+				// only if is not already open
+
+				editingElement = e.target;
+				// check if editing footnotes
+				if (editingElement.parentElement.classList.contains("footnote")) {
+					// editing footnote in CP
+					footnoteMode = CP_FOOTNOTE;
+
+				} else if ([SORTABLE_LIST_2_NAME, SORTABLE_LIST_3_NAME].includes(editingElement.parentElement.id)){
+					// editing active footnote in footnotes section
+					footnoteMode = ACTIVE_FOOTNOTE;
+				} else {
+					footnoteMode = NONE;
+				}
+				editor.jqteVal(editingElement.outerHTML);
+				dialog.dialog( "option", "position", { my: "left top", at: "center bottom+10%", of: editingElement } );	
+				dialog.dialog( "open" );	
+
+				return false;
+			}
+
+		});
+
+
+	}
+   /**
+	* removes all footnotes marks and footNotedElement class from parent
+	* and restarts footNoteCounter
+	*/
+	function removeAllFootnotesMarks(){
+		$('[id^="footNoteNumber"]').each(function (index, value) {
+			$(this).parent().toggleClass('footNotedElement');
+			$(this).remove();
+		});
+		footNoteCounter = 0;
+
+	}
+	
+	function makeElementsFootnotables(){
+		$(document).on("click", "." + FOOTNOTABLE, function(e) {
+			if ($(this).parents('.jqte_editor').length == 0) {
+				// only when outside the editor
+				if ($(this).hasClass('footNotedElement')) {
+					var element = $('#footNoteNumber' + footNoteCounter ); // will return element
+					if ($(this).find("[id^='footNoteNumber']").attr("id")===element.attr("id")) {  // Check if there is footnotechild and if it's the last one
+						element[0].parentNode.removeChild(element[0]); // will remove the element from DOM
+						footNoteCounter--;
+						$(this).toggleClass('footNotedElement');
+					}
+				} else {
+					footNoteCounter++;
+					$(this).append("<span id='footNoteNumber"+footNoteCounter+"' class='superindex'>"+footNoteCounter+"</span>");
+					$(this).toggleClass('footNotedElement');
+				}
+
+				event.preventDefault();
+				
+			}
+		});
+	}
+
+	function numberToTwoDigits( number){
+		return ("0" + number).slice(-2);
+	}
+
+	 /**
+     * dataObject is an object with arrays headers and rows.
+	 * 	headers containing at least two objects with a "name" property having values "pe" and "value"
+	 */
+	function getAnalyticValueForKey(dataObject, mode){
+		periodColumn = 0;
+		valueColumn = 0;
+		dxColumn = 0;
+
+		for (var j=0;j<dataObject.headers.length;j++){
+			if(dataObject.headers[j].name==="pe"){
+				periodColumn = j;
+			}
+			if(dataObject.headers[j].name==="value"){
+				valueColumn = j;
+			}			
+			if(dataObject.headers[j].name==="dx"){
+				dxColumn = j;
+			}
+		}
+		var returnValues = new Array(historicLength); 
+
+		switch(mode){
+			case YEARLY_MODE:
+				for (var i=0; i<dataObject.rows.length; i++){
+					returnValues[ds.year-dataObject.rows[i][periodColumn]] = dataObject.rows[i][valueColumn];
+				}
+				break;
+			case MONTHLY_MODE:
+				for (var i=0; i<dataObject.rows.length; i++){
+					returnValues[parseInt(dataObject.rows[i][periodColumn].slice(-2))] = dataObject.rows[i][valueColumn];
+				}
+				break;
+		}
+		return returnValues;
+	}
+
+
+	/* 	Searchs for a custom value for a customKey with a custom value through an array
+			array : the array
+			keyName : the name (or an array of) of the key to check
+			keyValue : the target (or an array of) value of the keyName
+			valueName : the name of the key of the value to return
+	*/
+	function getValueForKey(array, keyName, keyValue, valueName){
+		var returnValue = WHEN_UNDEFINED;
+		if (array === undefined){
+			return returnValue;
+		}
+		if (typeof keyName === 'string') {
+			// checks if DE or COD is assigned to one DS or P
+			if ((keyName == DE_KEY && !de_assigned.has(keyValue)) ||
+			 	(keyName == CC_KEY && !coc_assigned.has(keyValue)))
+			{
+				return WHEN_NON_APPLICABLE;
+			} else {
+				// one property check
+				$.each( array, function( index, object ) {
+					if(object[keyName]===keyValue){
+						returnValue = object[valueName];
+						return false;
+					} 
+				});
+			}
+		} else if (keyName.length > 1 && keyValue.length > 1) {
+			// checks if DE is assigned
+			if ((keyName[0] == DE_KEY && !de_assigned.has(keyValue[0])) || 
+				(keyName[1] == DE_KEY && !de_assigned.has(keyValue[1])) || 
+				(keyName[0] == CC_KEY && !coc_assigned.has(keyValue[0])) || 
+				(keyName[1] == CC_KEY && !coc_assigned.has(keyValue[1])))
+			{
+				return WHEN_NON_APPLICABLE;
+			} else {
+				// two properties check  // not used
+				$.each( array, function( index, object ) {
+					if(object[keyName[0]]===keyValue[0] && object[keyName[1]]===keyValue[1]){
+						returnValue = object[valueName];
+						return false;
+					} 
+				});
+			}
+		} else {
+			console.log('ERROR in ' + arguments.callee.name);
+			return 'ERROR in ' + arguments.callee.name ;
+		}
+		
+		return returnValue;
+	}
+
+		/* 	Searchs for a custom value for a customKey with a custom value through an array
+			array : the array
+			keyName : the name (or an array of) of the key to check
+			keyValue : the target (or an array of) alue of the keyName
+			valueName : the name of the key of the value to return
+	*/
+	function getValuesForKeyByMonth(array, keyName, keyValue, valueName){
+		var returnValue =  new Array(12); // Void array of size 12
+		if (array === undefined){
+			return returnValue;
+		}
+
+		var index, period;
+		if (typeof keyName === 'string') {
+			// one property check
+			$.each( array, function( index, object ) {
+				if(object[keyName]===keyValue){
+					period = object[PERIOD_KEY];
+					index = Number(period.slice(period.length-2, period.length)) - 1;
+					returnValue[index] = object[valueName];
+				} 
+			});
+		} else if (keyName.length > 1 && keyValue.length > 1) {
+			// two properties check
+			$.each( array, function( index, object ) {
+				if(object[keyName[0]]===keyValue[0] && object[keyName[1]]===keyValue[1]){
+					period = object[PERIOD_KEY];
+					index = Number(period.slice(period.length-2, period.length)) - 1;
+					returnValue[index] = object[valueName];
+				} 
+			});
+		} else {
+			console.log('ERROR in ' + arguments.callee.name);
+			return 'ERROR in ' + arguments.callee.name ;
+		}
+		return returnValue;
+	}
+
+	/*
+	returns WHEN_NON_APPLICABLE if DE in the indicator not assigned to this country
+	returns false otherwise (to be able to do = checkI(idx) || getValue(...))
+	*/
+	function checkI(ind_id){
+		if (!allDEInIndicatorAreReachable(ind_id)){
+			return WHEN_NON_APPLICABLE;
+		} else {
+			return false;
+		}
+	}
+
+	/*	Returns three percentages with no decimals, between parenthesis
+
+	*/
+	function threePercentages(cases1, cases2, cases3, total){
+		cases1 = parseInt(cases1) || cases1; // converts to int if possible
+		cases2 = parseInt(cases2) || cases2; // converts to int if possible
+		cases3 = parseInt(cases3) || cases3; // converts to int if possible
+
+		if (total === WHEN_UNDEFINED || total === WHEN_NON_APPLICABLE || total === undefined){
+			return total || WHEN_UNDEFINED;
+		} else {
+			if ((cases1 === WHEN_UNDEFINED || cases1 === WHEN_NON_APPLICABLE || cases1 === undefined) &&
+				(cases2 === WHEN_UNDEFINED || cases2 === WHEN_NON_APPLICABLE || cases2 === undefined) &&
+				(cases3 === WHEN_UNDEFINED || cases3 === WHEN_NON_APPLICABLE || cases3 === undefined))
+			{	
+				return cases1 || cases2 || cases3 || WHEN_UNDEFINED;
+			}
+			else if (cases1 + cases2 + cases3 != total){
+				return 	percentageText(cases1, total, 0, false) + " / " +
+						percentageText(cases2, total, 0, false) + " / " +
+						percentageText(cases3, total, 0, false) + ". WARN. Original values do not add up to total.";
+			}
+			else {
+
+				var dataset = [cases1/total*100, cases2/total*100, cases3/total*100];
+				var percentages100 = largestRemainderRound(dataset, 100);
+				
+				return 	percentageText(percentages100[0], 100, 0, false) + " / " +
+						percentageText(percentages100[1], 100, 0, false) + " / " +
+						percentageText(percentages100[2], 100, 0, false);
+
+			}
+		}
+	}
+
+
+
+	
+
+
+	/*	Returns a percentage with no decimals, the #cases and the total between parenthesis
+
+	*/
+	function percentageCasesAndTotal(numerator, denominator, precision, percentageSymbol, percentageValue){
+
+		if (numerator === WHEN_NON_APPLICABLE  ||
+			denominator === WHEN_NON_APPLICABLE) {
+			return WHEN_NON_APPLICABLE;
+		}
+		else if (numerator === WHEN_UNDEFINED || numerator === undefined ||
+			denominator === WHEN_UNDEFINED || denominator === undefined) {
+			return WHEN_UNDEFINED;
+		}
+		else if (typeof percentageValue !== "undefined" && percentageValue !== null ) {
+			// userprovides calculated percentage
+			return 	percentageText(percentageValue, 1, precision, percentageSymbol) + "  (" +
+					formatIntValue(numerator, SAME, LOCALE_FORMAT) + "/" + 
+					formatIntValue(denominator, SAME, LOCALE_FORMAT) + ")";
+		}
+		else {
+			return 	percentageText(numerator, denominator, precision, percentageSymbol) + "  (" +
+					formatIntValue(numerator, SAME, LOCALE_FORMAT) + "/" + 
+					formatIntValue(denominator, SAME, LOCALE_FORMAT) + ")";
+		}
+	}
+
+	/*	Returns a percentage with no decimals 
+			    or the numerator if cannot be converted to number. e.g. if it's a string
+	*/
+	function percentageText(numerator, denominator, precision, percentageSymbol){
+		var multiplier = Math.pow(10, precision || 0);
+		var prctgText = percentageSymbol ? "%" : "";
+
+		if (isNaN(numerator)){
+			return numerator; // It's not a number. Return numerator
+		} else if (denominator === 0 || isNaN(denominator)){
+			return WHEN_NO_DATA;
+		} else if (denominator === WHEN_UNDEFINED){
+			return WHEN_UNDEFINED;
+		}
+		return Math.round((numerator / denominator) * 100 * multiplier) /  multiplier + prctgText;
+	}
+
+	/* Returns the addition of the elements of the array if they are not 
+	*/
+	function add(arrayOfNumbers){
+		var addition = 0;
+		var counter = 0;
+		var error = "";
+		for (var number of arrayOfNumbers) {
+			if (typeof number !== "undefined" && number != WHEN_UNDEFINED && number != WHEN_NON_APPLICABLE){
+				addition = addition + Number(number);
+				counter++;
+			} else {
+				error = number || WHEN_UNDEFINED;
+			}
+		}
+		if (error.length != 0 && counter == 0){
+			return error;
+		} else {
+			return addition;
+		}
+	}
+
+	/** Creates a 2 dimension array with labels.
+		rowsNum: Length of first array dimension (number of rows)
+		rowsTitles : labels for 
+		mode : the place for labels in array. Options : LABELS_ON_COLUMNS or LABELS_ON_ROWS
+	*/
+	function  create_2_dim_array(rowsNum, rowsTitles, mode) {
+		var array = [];
+		
+		if(mode === LABELS_ON_ROWS) {
+			array[0] = [];
+			for(var i = 0; i<rowsTitles.length; i++){
+				array[0][i] = rowsTitles[i];
+			}
+			for(var i = 1; i<rowsNum; i++){
+				array[i] = [];
+			}
+		} else {
+			for(var i = 0; i<rowsNum; i++){
+				array[i] = [];
+				array[i][0] = rowsTitles[i];
+			}
+		}
+		return array;
+	}
+
+	function addPaddingToLastTableColumns(){
+		$('.lastTableColumn').removeClass('lastTableColumn');
+		$('table tr').each(function(){
+			$(this).find('th:visible:last').addClass('lastTableColumn');
+			$(this).find('td:visible:last').addClass('lastTableColumn');
+		});
+	}
+
+	function hideNoRelevantContent(){
+		// checked by default, trigger click for desactivate and for fire behaviour.
+
+		// deactivates CL content if no CL dataset is assigned to the country
+		if (!dsinfo[CL_DETAILED][ASSG] && !dsinfo[CL_DETAILED][ASSG]){
+			$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(CL_COLUMN-1)).trigger('click');
+
+			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+CL_ROW).trigger('click');
+
+			// CL charts
+			$('#'+MONTHLY + CHART + BUTTON_PREFIX + CL_INDEX).trigger('click');
+			$('#'+YEARLY + CHART + BUTTON_PREFIX + CL_INDEX).trigger('click');
+			$('#'+MAP_PREFIX + BUTTON_PREFIX + CL_INDEX ).trigger('click');
+		}
+
+		// deactivates VL content if no VL dataset is assigned to the country
+		if (!dsinfo[VL_DETAILED][ASSG] && !dsinfo[VL_SIMPLE][ASSG]){
+			$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(VL_COLUMN-1)).trigger('click');
+
+			$('#'+ MONTHLY_TABLE_NAME + BUTTON_PREFIX + VL_ROW).trigger('click');//.prop('checked', false);
+			$('#'+ MONTHLY + CHART + BUTTON_PREFIX + VL_INDEX).trigger('click');
+			$('#'+ YEARLY + CHART + BUTTON_PREFIX + VL_INDEX).trigger('click');
+			$('#'+ MAP_PREFIX+BUTTON_PREFIX + VL_INDEX ).trigger('click');
+		}
+
+		// deactivates AZCL content if no AZCL dataset is assigned to the country
+		if (!dsinfo[AZCL_DETAILED][ASSG] && !dsinfo[AZCL_SIMPLE][ASSG]){
+			$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(ACL_COLUMN-1)).trigger('click');
+			$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(ZCL_COLUMN-1)).trigger('click');
+
+			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+ACL_ROW).trigger('click');
+			$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+ZCL_ROW).trigger('click');
+			
+			$('#'+ MONTHLY + CHART + BUTTON_PREFIX + ACL_INDEX).trigger('click');
+			$('#'+ YEARLY + CHART + BUTTON_PREFIX + ACL_INDEX).trigger('click');
+			$('#'+MAP_PREFIX+BUTTON_PREFIX+ ACL_INDEX ).trigger('click');
+			$('#'+MAP_PREFIX+BUTTON_PREFIX+ ZCL_INDEX ).trigger('click');
+
+		}
+
+		updateMapsTitle();
+
+		// PKDL and MCL always deactivated
+		$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(PKDL_COLUMN-1)).trigger('click');
+		$('#'+LEISH_COLUMN_DETAIL_PREFIX+BUTTON_PREFIX+(MCL_COLUMN-1)).trigger('click');
+		
+		// Monthly previous year rows, always deactivated by default
+		$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+VL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
+		$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+CL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
+		$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+ACL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
+		$('#'+MONTHLY_TABLE_NAME+BUTTON_PREFIX+ZCL_PREVIOUS_YEAR_ROW).trigger('click');//.prop('checked', false);
+
+		$(':checkbox').button( "refresh" );
+
+	}
+
+	function resetMapsAndChartsVisibility(){
+
+		// ACL_INDEX since ACL and ZCL shares the same chart
+		for (var i = 0; i<=ACL_INDEX; i++) {
+			$('#'+ MONTHLY + CHART + i).addClass('sameLine');
+			$('#'+ MONTHLY + CHART + i).removeClass('notShown');
+			$('#'+ YEARLY + CHART + i).addClass('sameLine');
+			$('#'+ YEARLY + CHART + i).removeClass('notShown');
+
+			$('#'+ LEGEND_PREFIX + MONTHLY + CHART + i).removeClass('notShown');
+			$('#'+ LEGEND_PREFIX + YEARLY + CHART + i).removeClass('notShown');
+
+		}
+	
+		for (var i = 0; i<=ZCL_INDEX; i++) {
+			$('#'+ MAP_PREFIX + i).addClass('sameLine');
+			$('#'+ MAP_PREFIX + i).removeClass('notShown');
+		}
+
+		$("#maps_section").width("753px"); // 211mm - 44px (margin-left)
+		$("#charts_section").width("753px");
+
+	}
+
+	function resetVariables(){
+		
+		map_levels[VL_INDEX] =  DEFAULT_MAP_LEVELS;
+		map_levels[CL_INDEX] =  DEFAULT_MAP_LEVELS;
+		map_levels[ACL_INDEX] =  DEFAULT_MAP_LEVELS;
+		map_levels[ZCL_INDEX] =  DEFAULT_MAP_LEVELS;
+
+		boundaries_map_levels[VL_INDEX] =  DEFAULT_MAP_LEVELS;
+		boundaries_map_levels[CL_INDEX] =  DEFAULT_MAP_LEVELS;
+		boundaries_map_levels[ACL_INDEX] =  DEFAULT_MAP_LEVELS;
+		boundaries_map_levels[ZCL_INDEX] =  DEFAULT_MAP_LEVELS;
+
+		map_style[VL_INDEX] =  WHO_BASEMAP;
+		map_style[CL_INDEX] =  WHO_BASEMAP;
+		map_style[ACL_INDEX] =  WHO_BASEMAP;
+		map_style[ZCL_INDEX] =  WHO_BASEMAP;
+
+		map_opacity[VL_INDEX] =  DEFAULT_MAP_OPACITY;
+		map_opacity[CL_INDEX] =  DEFAULT_MAP_OPACITY;
+		map_opacity[ACL_INDEX] =  DEFAULT_MAP_OPACITY;
+		map_opacity[ZCL_INDEX] =  DEFAULT_MAP_OPACITY;
+
+		map_height[VL_INDEX] =  DEFAULT_MAP_HEIGHT;
+		map_height[CL_INDEX] =  DEFAULT_MAP_HEIGHT;
+		map_height[ACL_INDEX] =  DEFAULT_MAP_HEIGHT;
+		map_height[ZCL_INDEX] =  DEFAULT_MAP_HEIGHT;
+
+		map_width[VL_INDEX] =  DEFAULT_MAP_WIDTH;
+		map_width[CL_INDEX] =  DEFAULT_MAP_WIDTH;
+		map_width[ACL_INDEX] =  DEFAULT_MAP_WIDTH;
+		map_width[ZCL_INDEX] =  DEFAULT_MAP_WIDTH;
+
+		charts_array = [];
+
+		footNoteCounter = 0;
+
+		generatedYears = [], organisationUnits = [];
+		
+		infoTable = "";
+
+		disableResizes();
+
+	}
+
+	function updateMapsTitle(){
+		var text = [];
+		var separator = " and ";
+
+		if ($('#'+MAP_PREFIX+BUTTON_PREFIX+ ZCL_INDEX ).prop( "checked")){
+			text.push(COLUMNS_LABELS[ZCL_INDEX]);
+			text.push(separator);
+			separator = ", ";
+		}
+		if ($('#'+MAP_PREFIX+BUTTON_PREFIX+ ACL_INDEX ).prop( "checked")){
+			text.push(COLUMNS_LABELS[ACL_INDEX]);
+			text.push(separator);
+			separator = ", ";
+		}
+		if ($('#'+MAP_PREFIX+BUTTON_PREFIX+ CL_INDEX ).prop( "checked")){
+			text.push(COLUMNS_LABELS[CL_INDEX]);
+			text.push(separator);
+			separator = ", ";
+		}
+		if ($('#'+MAP_PREFIX+BUTTON_PREFIX+ VL_INDEX ).prop( "checked")){
+			text.push(COLUMNS_LABELS[VL_INDEX]);
+			text.push(separator);
+			separator = ", ";
+		}
+		text.pop();
+		text = text.reverse();
+
+		$('#mapsTitleDis').html(text.join(""));
+		$('#mapsTitleLvl').html(ds.divisionName + " level");
+		$('#mapsTitleYear').html("(" + ds.year + ")");
+		underlineMapsTitle();
+		$('#chartTitleFirstYear').html( ds.year - (historicLength - 1)); // historicLength includes current year
+		$('#chartTitleLastYear').html( ds.year );
+ 
+	}
+
+	/* jQueryUI auxiliary functions */
+	function setButtonDisabledTo(id, value){
+		$( "#" + id ).prop('disabled', value);
+		$( "#" + id ).button( "refresh" );
+	}
+
+	function setOptionSelectMenu(id, value){
+		$( "#" + id ).val(value);
+		$( "#" + id ).selectmenu("refresh");
+	}
+
+	function drawLegendSet(htmlElementID, index){
+		var html = '<div class="'+EDITABLE+' legentSetTitle">' + mapLegends[index][0].legendSetName + '</div>';
+		html+='<br>';
+		
+		
+		for(var i=0; i<mapLegends[index].length; i++){
+			html+='<div>';
+			html+='<div class="legendRectangle sameLine" style="background:'+ mapLegends[index][i].legendColors +'"></div>';
+			html+='<div class="legentSetElementText sameLine '+EDITABLE+'">  ' + mapLegends[index][i].legendNames + '</div>';
+			html+='</div>';
+
+		}
+
+		$("#"+htmlElementID).html(html);
+	}
+
+	/****************************************************************************************************
+	 **********                               CHARTS functions                                 **********
+	 ****************************************************************************************************/
+
+	/* Retrieves the data of vl and cl or acl/zcl, configures the monthly charts and generates them.
+	*/
+	function generate_cl_vl_new_monthly_charts (){
+	
+		var colors = [COLORS.blue, COLORS.soft_blue, COLORS.green, COLORS.soft_green];
+		var labels = [ACL_CHART_LEGEND +ds.year, ACL_CHART_LEGEND +(ds.year-1), ZCL_CHART_LEGEND + ds.year, ZCL_CHART_LEGEND  + (ds.year-1)];
+		
+		var acl_current_year = monthlyArray[ACL_ROW].slice(1,monthlyArray[ACL_ROW].length);
+		var zcl_current_year = monthlyArray[ZCL_ROW].slice(1,monthlyArray[ZCL_ROW].length);
+		var acl_previous_year = monthlyArray[ACL_PREVIOUS_YEAR_ROW].slice(1,monthlyArray[ACL_PREVIOUS_YEAR_ROW].length);
+		var zcl_previous_year = monthlyArray[ZCL_PREVIOUS_YEAR_ROW].slice(1,monthlyArray[ZCL_PREVIOUS_YEAR_ROW].length);
+		var dataarrays = [acl_current_year, acl_previous_year, zcl_current_year, zcl_previous_year];
+		lineChart(MONTHLY+CHART+ACL_INDEX, CL_CASES_CHART_TITLE, MONTHS_ABBREV, CL_CASES_CHART_Y_TITLE, labels, dataarrays, colors, true);
+		drawLegendChart(LEGEND_PREFIX + MONTHLY + CHART + ACL_INDEX, labels, ["line","line","line","line"], colors);
+		moveLegendChart(ACL_INDEX, LEGEND_PREFIX + MONTHLY + CHART, DIV+MONTHLY+CHART, LEGEND_TO_REPORT);
+
+
+
+		colors = [COLORS.blue, COLORS.soft_blue];
+		labels = [CL_CHART_LEGEND + ds.year, CL_CHART_LEGEND + (ds.year-1)];
+		var cl_current_year = monthlyArray[CL_ROW].slice(1,monthlyArray[CL_ROW].length);
+		var cl_previous_year = monthlyArray[CL_PREVIOUS_YEAR_ROW].slice(1,monthlyArray[CL_PREVIOUS_YEAR_ROW].length);
+		var dataarrays = [cl_current_year, cl_previous_year];
+		lineChart(MONTHLY+CHART+CL_INDEX, CL_CASES_CHART_TITLE, MONTHS_ABBREV, CL_CASES_CHART_Y_TITLE, labels, dataarrays, colors, true);
+		drawLegendChart(LEGEND_PREFIX + MONTHLY + CHART + CL_INDEX, labels, ["line","line"], colors);
+		moveLegendChart(CL_INDEX, LEGEND_PREFIX + MONTHLY + CHART, DIV+MONTHLY+CHART, LEGEND_TO_REPORT);
+
+		var vl_current_year = monthlyArray[VL_ROW].slice(1,monthlyArray[VL_ROW].length);
+		var vl_previous_year = monthlyArray[VL_PREVIOUS_YEAR_ROW].slice(1,monthlyArray[VL_PREVIOUS_YEAR_ROW].length);
+		var vl_data_arrays = [vl_current_year, vl_previous_year];
+		var vl_colors = [COLORS.violet, COLORS.soft_violet];
+		var vl_labels = [VL_CHART_LEGEND + ds.year, VL_CHART_LEGEND + (ds.year-1)];
+		lineChart(MONTHLY+CHART+VL_INDEX, VL_CASES_CHART_TITLE, MONTHS_ABBREV, VL_CASES_CHART_Y_TITLE, vl_labels, vl_data_arrays, vl_colors, true);
+		drawLegendChart(LEGEND_PREFIX + MONTHLY + CHART + VL_INDEX, vl_labels, ["line","line"], vl_colors);
+		moveLegendChart(VL_INDEX, LEGEND_PREFIX + MONTHLY + CHART, DIV+MONTHLY+CHART, LEGEND_TO_REPORT);
+
+	}
+
+	/* Retrieves the data of vl and cl or acl/zcl, configures the yearly charts and generates them.
+		*/
+	function generate_cl_vl_new_and_incidence_yearly_charts(){
+
+		var dataLabelArray = [ACL_CHART_INCIDENCE_LEGEND, ZCL_CHART_INCIDENCE_LEGEND, ACL_CHART_CASES_LEGEND, ZCL_CHART_CASES_LEGEND];
+		var chartType = ["line","line","bar","bar"];
+		var dataArray = [historicIncidenceChart[ACL_COLUMN], historicIncidenceChart[ZCL_COLUMN], historicNewCases[ACL_COLUMN], historicNewCases[ZCL_COLUMN]];
+		var colorArray = [COLORS.blue, COLORS.green, COLORS.soft_blue, COLORS.soft_green];
+		var dataChartIDs= [DATASID.RIGHT, DATASID.RIGHT, DATASID.LEFT, DATASID.LEFT];
+		lineBarChart(YEARLY+CHART+ACL_INDEX, CL_INCIDENCE_CHART_TITLE, dataLabelArray, CL_INCIDENCE_CHART_Y1_TITLE, CL_INCIDENCE_CHART_Y2_TITLE, chartType, dataArray, colorArray, dataChartIDs);
+		drawLegendChart(LEGEND_PREFIX + YEARLY + CHART + ACL_INDEX, dataLabelArray, chartType, colorArray);
+		moveLegendChart(ACL_INDEX, LEGEND_PREFIX + YEARLY + CHART, DIV+YEARLY +CHART, LEGEND_TO_REPORT);
+
+		dataLabelArray = [VL_CHART_INCIDENCE_LEGEND, VL_CHART_CASES_LEGEND];
+		chartType = ["line","bar"];
+		dataArray = [historicIncidenceChart[VL_COLUMN], historicNewCases[VL_COLUMN]];
+		colorArray = [COLORS.violet, COLORS.soft_violet];
+		dataChartIDs= [DATASID.RIGHT, DATASID.LEFT];
+		lineBarChart(YEARLY+CHART+VL_INDEX, VL_INCIDENCE_CHART_TITLE, dataLabelArray, VL_INCIDENCE_CHART_Y1_TITLE, VL_INCIDENCE_CHART_Y2_TITLE, chartType, dataArray, colorArray, dataChartIDs);
+		drawLegendChart(LEGEND_PREFIX + YEARLY + CHART + VL_INDEX, dataLabelArray, chartType, colorArray);
+		moveLegendChart(VL_INDEX, LEGEND_PREFIX + YEARLY + CHART, DIV+YEARLY +CHART, LEGEND_TO_REPORT);
+
+		dataLabelArray = [CL_CHART_INCIDENCE_LEGEND, CL_CHART_CASES_LEGEND];
+		chartType = ["line","bar"];
+		dataArray = [historicIncidenceChart[CL_COLUMN], historicNewCases[CL_COLUMN]];
+		colorArray = [COLORS.blue, COLORS.green];
+		dataChartIDs= [DATASID.RIGHT, DATASID.LEFT];
+		lineBarChart(YEARLY+CHART+CL_INDEX, CL_INCIDENCE_CHART_TITLE, dataLabelArray, CL_INCIDENCE_CHART_Y1_TITLE, CL_INCIDENCE_CHART_Y2_TITLE, chartType, dataArray, colorArray, dataChartIDs);
+		drawLegendChart(LEGEND_PREFIX + YEARLY + CHART + CL_INDEX, dataLabelArray, chartType, colorArray);
+		moveLegendChart(CL_INDEX, LEGEND_PREFIX + YEARLY + CHART, DIV+YEARLY +CHART, LEGEND_TO_REPORT);
+
+	}
+
+
+
+	/* 	Generates an any-lines-number line Chart. 
+		htmlElementID: the id of the canvas/html element where put the Chart
+		x_labels: The labels for the x-axis  
+		dataLabelArray: an array with the label of each data line
+		dataArray: the data
+		colorArray: an Array of rgba colors
+		previousYearMode: true if wanted to put previous years in dotted colors.
+						  currentYear data must be preceed the previousYear data
+		Note: All the array must have same size !
+	*/
+	function lineChart(	htmlElementID, title, x_labels, yTitle, dataLabelArray, dataArray, colorArray, previousYearMode){
+
+		
+		var theDataSets = [];
+		var aDataSet = {};
+		for (var i = 0; i<dataLabelArray.length; i++){
+			aDataSet = {};
+			aDataSet.label = dataLabelArray[i];
+			aDataSet.fill = false;
+			aDataSet.data = dataArray[i];
+			aDataSet.backgroundColor = colorArray[i];
+			aDataSet.borderColor = colorArray[i];
+			aDataSet.borderWidth = 2;
+			aDataSet.lineTension = 0;
+			aDataSet.pointRadius = 2;
+			aDataSet.spanGaps = false;
+			if (previousYearMode && i%2 == 1){
+				// previousYearMode Enabled
+				aDataSet.borderDash = [4];
+			}
+			theDataSets[i] = aDataSet;
+		}
+		
+		var ctx = document.getElementById(htmlElementID);
+		charts_array[htmlElementID] = new Chart(ctx, {
+		type: 'line',
+		data: {
+			labels: x_labels,
+			datasets: theDataSets
+			},
+			options: {
+				scales: {
+					yAxes: [{
+						ticks: {
+							beginAtZero:true
+						},
+						scaleLabel:{
+							display: true,
+							labelString: yTitle
+						}
+					}]
+				},
+				title:{
+					display: true,
+					text: title
+				},
+				legend: {
+					display: false
+				},
+				responsive: false
+			}
+		});
+	}
+
+	function lineBarChart(htmlElementID, title, dataLabelArray, y1Title, y2Title, chartType, dataArray, colorArray, dataChartIDs){
+		var theDataSets = [];
+		var aDataSet = {};
+		for (var i = 0; i<dataLabelArray.length; i++){
+			aDataSet = {};
+			aDataSet.label = dataLabelArray[i];
+			aDataSet.fill = false;
+			aDataSet.data = dataArray[i].reverse();
+			aDataSet.backgroundColor = colorArray[i];
+			aDataSet.borderColor = colorArray[i];
+			aDataSet.borderWidth = 2;
+			aDataSet.lineTension = 0;
+			aDataSet.pointRadius = 2;
+			aDataSet.spanGaps = false;
+			aDataSet.type = chartType[i];
+			aDataSet.yAxisID = dataChartIDs[i];
+			theDataSets[i] = aDataSet;
+		}
+
+		var yearLabels = [];
+		for (var i=0; i<historicLength;i++){
+			yearLabels[historicLength-i-1] = ds.year-i;
+		}
+
+
+		var ctx = document.getElementById(htmlElementID);
+		charts_array[htmlElementID] = new Chart(ctx, {
+			type: 'bar',
+			data: {
+				labels: yearLabels,
+				datasets: theDataSets
+			},
+			options: {
+				scales: {
+					yAxes: [{
+						id: DATASID.LEFT,
+						type: 'linear',
+						position: 'left',
+						stacked: true,
+						ticks: {
+							beginAtZero:true
+						},
+						scaleLabel:{
+							display: true,
+							labelString: y1Title
+						}
+					},{
+						id: DATASID.RIGHT,
+						type: 'linear',
+						position: 'right',
+						ticks: {
+							beginAtZero:true
+						},
+						scaleLabel:{
+							display: true,
+							labelString: y2Title
+						}
+					}],
+					xAxes: [{
+                            stacked: true
+                        }],
+				},
+				title:{
+						display: true,
+						text: title
+				},
+				legend: {
+					display: false
+				},
+				responsive: false
+			}
+		});
+	}
+
+	function updateScale(chart, minCases, maxCases, minIncd, maxIncd) {
+
+		charts_array[chart].options.scales.yAxes[0].ticks = {
+				min: minCases,
+				max: maxCases,
+			};
+		if (charts_array[chart].options.scales.yAxes.length > 1) {
+			charts_array[chart].options.scales.yAxes[1].ticks = {
+				min: minIncd,
+				max: maxIncd,
+			};
+		}
+		charts_array[chart].update();
+	}
+
+	/****************************************************************************************************
+	 **********                               MAPS functions                                 **********
+	 ****************************************************************************************************/
+
+	 function moveLegend(index, destination, destinationCode){
+		var legendObject = $('#' + LEGENDSET_PREFIX + index);
+
+		if (destinationCode == LEGEND_TO_REPORT){
+			legendObject.resizable({ disabled: true });
+			legendObject.removeClass("resizable");
+		} else {
+			editingLegend = legendObject;
+			editingLegend.resizable('destroy'); // prevents bug on last elements
+			editingLegend.resizable();
+		}
+		destination.append(legendObject);
+	 }
+
+	 function moveLegendChart(index, source, destination, destinationCode){
+		var legendObject = $('#' + source + index);
+
+		if (destinationCode == LEGEND_TO_REPORT){
+			legendObject.resizable({ disabled: true });
+			legendObject.removeClass("resizable");
+		} else {
+			editingLegend = legendObject;
+			editingLegend.resizable( "enable" );
+		}
+		$('#' + destination + index).append(legendObject);
+	 }
+
+	function updateLegend(event) {
+		event.preventDefault();
+		var legend_index =   parseInt($('#legendSelector').val()) -1 ; //first option is the "select text"
+		var position_index =  $('#positionLegendSelector').val();
+
+		moveLegend(legend_index, $('#'+MAP_PREFIX+ legend_index).find(LEGEND_POSITIONS[position_index]), LEGEND_TO_REPORT);
+
+		cleanUpdateLegendForm();
+	}
+
+	function updateMap(event) {
+		event.preventDefault();
+		var selected_map_index =  parseInt($('#mapSelector').val()) - 1 ; //first option is the "select text"
+
+		// stores selected settings
+		map_levels[selected_map_index] = [$( "#ou_slider_range" ).slider( "values", 0 )];
+		boundaries_map_levels[selected_map_index] = [$( "#ou_boundaries_slider_range" ).slider( "values", 0 )];
+		map_style[selected_map_index] = $('#mapStyleSelector').val();
+		map_opacity[selected_map_index] = parseInt($( "#opacity_slider" ).slider( "option", "value"));
+		map_height[selected_map_index] = parseInt($( "#height_slider" ).slider( "option", "value"));
+		map_width[selected_map_index] = parseInt($( "#width_slider" ).slider( "option", "value"));
+
+		// saves the legend in the pool
+		moveLegend(selected_map_index, $("#" + LEGENDSET_POOL), LEGEND_TO_LEGEND_POOL);
+
+		// removes the loaded map
+		mapPlugin.unmount(MAP_PREFIX + selected_map_index);
+
+		// generates a new map
+		generateMap(selected_map_index, "INDICATOR", ds.countryID, ds.year, "thematic");
+		cleanUpdateMapForm();
+	}
+
+	function updateChart(event){
+		event.preventDefault();
+		if($("#chartPreview").html()){
+			var min_value = 0;
+			var type = $("#chartPreview").children()[0].id.split(CHART)[0];
+			var id_num = $("#chartPreview").children()[0].id.split(CHART)[1];
+			minCases = Number($("#minCases").val());
+			maxCases = Number($("#maxCases").val());				
+			minIncd = Number($("#minIncd").val());
+			maxIncd = Number($("#maxIncd").val());
+			updateScale(type+CHART+id_num, minCases, maxCases, minIncd, maxIncd);
+			$("#chartPreview").contents().appendTo("#"+DIV+type+CHART+id_num);
+
+		}
+		cleanUpdateChartForm();
+	
+	}
+
+	function cancelUpdateChart(event){
+		if($("#chartPreview").html()){
+			var min_value = 0;
+			var type = $("#chartPreview").children()[0].id.split(CHART)[0];
+			var id_num = $("#chartPreview").children()[0].id.split(CHART)[1];
+			updateScale(type+CHART+id_num, defaultMinCases, defaultMaxCases, defaultMinIncd, defaultMaxIncd);
+			$("#chartPreview").contents().appendTo("#"+DIV+type+CHART+id_num);
+		}	
+		cleanUpdateChartForm();
+	}
+
+	function cleanUpdateChartForm(){
+		$("#minIncd").val(null);
+		$("#maxIncd").val(null);
+		$("#minCases").val(null);
+		$("#maxCases").val(null);
+		$( "#chartSelector" ).prop("selectedIndex", 0);
+		$( "#chartSelector" ).selectmenu( 'refresh', true);
+		setButtonDisabledTo("updateChartButton",true);
+		setButtonDisabledTo("cancelChartButton",true);
+	}
+
+	function cleanUpdateMapForm(){
+		$( "#ou_slider_range" ).slider( "option", "disabled", true );
+		$( "#ou_boundaries_slider_range" ).slider( "option", "disabled", true );
+		$( "#mapStyleSelector" ).selectmenu( "option", "disabled", true );
+		$( "#opacity_slider" ).slider( "option", "disabled", true );
+		$( "#height_slider" ).slider( "option", "disabled", true );
+		$( "#width_slider" ).slider( "option", "disabled", true );
+		setButtonDisabledTo("updateMapButton", true);
+		$( "#mapSelector" ).val(0);
+		$( "#mapSelector" ).selectmenu( 'refresh', true);
+	}
+
+	function cleanUpdateLegendForm(){
+		$( "#font_size_slider" ).slider( "option", "disabled", true );
+		$( "#font_size_slider" ).slider( "option", "value", DEFAULT_LEGEND_FONT_SIZE );
+
+		setButtonDisabledTo("updateLegendButton", true);
+		setOptionSelectMenu("positionLegendSelector", BOTTOM_RIGHT);
+
+		setOptionSelectMenu("legendSelector", $("#legendSelector option:first").val());
+		$( "#legendSelector" ).selectmenu( 'refresh', true);
+	}
+	
+	function generateLegends(){
+
+		return $.when(getLegendSet(VL_INDEX),
+				getLegendSet(CL_INDEX),
+				getLegendSet(ACL_INDEX),
+				getLegendSet(ZCL_INDEX)
+		).done(function(result){
+			drawLegendSet(LEGENDSET_PREFIX + VL_INDEX, VL_INDEX);
+			drawLegendSet(LEGENDSET_PREFIX + CL_INDEX, CL_INDEX);
+			drawLegendSet(LEGENDSET_PREFIX + ACL_INDEX, ACL_INDEX);
+			drawLegendSet(LEGENDSET_PREFIX + ZCL_INDEX, ZCL_INDEX);
+		});
+	}
+
+	/**
+	labels, chartTypes and colors must have the same length
+	*/
+	function drawLegendChart(target, labels, chartTypes, colors){
+		var html = '';
+		var divForGroups = '';
+		var divForGroupsEnd = '';
+
+		if (labels.length > 2){
+			divForGroups = '<div>';
+			divForGroupsEnd = '</div>';
+		}
+
+		for (var i = 0; i<labels.length; i++){
+			html += i%2?'':divForGroups; // if even start div
+			html += '<div class="oneLegendChart sameLine"><div class="sameLine '+chartTypes[i]+'" style="background:'+colors[i]+'"></div><div class="sameLine">&nbsp;'+labels[i]+'</div></div>'
+			html += i%2?divForGroupsEnd:''; // If odd finish div
+		}
+		$("#" + target).html(html);
+	}
+
+	function recreateDIV(parent, id, classes){
+		if ($("#" + id).length > 0) {
+			$("#" + id).html('<div id="'+id+'" class="'+classes+'" ></div>');
+		} else {
+			$("#" + parent).append('<div id="'+id+'" class="'+classes+'" ></div>');
+		}
+	}
+
+	function resetLegends(){
+		recreateDIV(LEGENDSET_POOL, LEGENDSET_PREFIX + VL_INDEX, "legendSet");
+		recreateDIV(LEGENDSET_POOL, LEGENDSET_PREFIX + CL_INDEX, "legendSet");
+		recreateDIV(LEGENDSET_POOL, LEGENDSET_PREFIX + ACL_INDEX, "legendSet");
+		recreateDIV(LEGENDSET_POOL, LEGENDSET_PREFIX + ZCL_INDEX, "legendSet");
+
+		// move recreated legends that have an active map
+		for (var i=0; i<MAP_CHECKBOXES_LABELS.length; i++){
+			if ( $('#'+ MAP_PREFIX+BUTTON_PREFIX + i ).prop( "checked") && 
+			$("#" + LEGENDSET_POOL).find('#' + LEGENDSET_PREFIX + i).length > 0) {
+				moveLegend(i, $('#' + MAP_PREFIX + i).find(LEGEND_POSITIONS[BOTTOM_RIGHT]), LEGEND_TO_REPORT);	
+			}
+		}
+
+		// generate legend content
+		generateLegends();
+	}
+
+	function generateMaps(){
+
+		return $.when(
+			mapPlugin.unmount(MAP_PREFIX + VL_INDEX),
+			mapPlugin.unmount(MAP_PREFIX + CL_INDEX),
+			mapPlugin.unmount(MAP_PREFIX + ACL_INDEX),
+			mapPlugin.unmount(MAP_PREFIX + ZCL_INDEX),
+			generateMap(VL_INDEX, "INDICATOR", ds.countryID, ds.year, "thematic"),
+			generateMap(CL_INDEX, "INDICATOR", ds.countryID, ds.year, "thematic"),
+			generateMap(ACL_INDEX, "INDICATOR", ds.countryID, ds.year, "thematic"),
+			generateMap(ZCL_INDEX, "INDICATOR", ds.countryID, ds.year, "thematic")
+		).done(function(result){
+			console.log("maps updated");
+		}).fail( function(){addToErrorFeedback(ERROR_API_TEXT_START + " maps.");}); 
+
+	}
+
+	function resetNotaBeneShapes(){
+		$("#notaBeneMaps").remove();
+		$("#notaBene").remove();
+		$("#maps_section").append('<div id="notaBeneMaps"  class="notasBene draggable"><div class="editableElement"></div></div>');
+		$("#footer_section").append('<div id="notaBene" class="notasBene draggable"><div class="editableElement"></div></div>');
+	}
+
+	function fillNotaBene(){
+		var text = "Data source: Ministry of Health, " +
+					ds.countryName +
+					"<br>WHO " + getThisYear() + ". All rights reserved.";
+		$('#notaBene div').html(text);
+		
+	}
+
+	function fillNotaBeneMaps(){
+		var text = "The boundaries and names shown and the designations used on this map do not imply the expression of any opinion whatsoever " +
+					"on the part of the World Health Organization concerning the legal status of any country, territory, city or area or of " +
+					"its authorities, or concerning the delimitation of its frontiers or boundaries. Dotted and dashed lines on maps represent " +
+					"approximate border lines for which there may not yet be full agreement. <br>Map production: WHO/UCN/NTD";
+		$('#notaBeneMaps div').html(text);
+		
+	}
+
+
+	/****************************************************************************************************
+	 **********                               FOOTNOTES functions                                 **********
+	 ****************************************************************************************************/
+
+// TODO: move those vars up
+  	var storedFootnotes = [];
+    var activeFootnotesPage1 = [];
+	var activeFootnotesPage2 = [];
+
+	function addNewFootnote(){
+		var liClass = "ui-state-default";
+		var html='';
+		html+='<li class="'+liClass+' '+EDITABLE+'">';
+		html+= $("#newFootnoteText").html();
+		html+= '</li>';
+		document.getElementById(SORTABLE_LIST_1_NAME).innerHTML += html;
+
+		deleteNewFootnote();
+	}
+
+	function deleteNewFootnote(){
+		$("#newFootnoteText").html('');
+	}
+
+
+	function writeFootnotes(){
+		var footnotesZone1 = $("#footnotes1");
+		var footnotesZone2 = $("#footnotes2");
+
+		footnotesZone1.html('');
+		footnotesZone2.html('');
+
+		var elements = $("#sortable2 li");
+        var html = '';
+		for (var i=0; i<elements.length; i++){
+			html+='<div class="footnote"><span class="superindex">'+(i+1)+'</span><span class="'+EDITABLE+'">'
+			html+= elements[i].innerHTML;
+			html+= '</span></div>';
+		}
+		footnotesZone1.append(html);
+		
+		elements = $("#sortable3 li");
+    	html = '';
+		var base = i;
+		for (var i=0; i<elements.length; i++){
+			html+='<div class="footnote"><span class="superindex">'+(i+base+1)+'</span><span class="'+EDITABLE+'">'
+			html+= elements[i].innerHTML;
+			html+= '</span></div>';
+		}
+		footnotesZone2.append(html);
+	}
+
+
+	/****************************************************************************************************
+	 **********                            COUNTRY-SELECTOR                                    **********
+	****************************************************************************************************/	
+	
+	function country_selector_open(){
+		document.getElementById("country-selector").style.display = "block";
+	}
+
+	function country_selector_relocate(){
+		//Pace.restart();
+		document.getElementById('tabs-6').appendChild(
+			document.getElementById("country-selector")
+		);
+		$("#country-selector").css({width: 'fit-content', position: 'relative'});
+
+	}
+
+	function error_report_open(){
+		document.getElementById("error-report").style.display = "block";
+	}
+
+	function error_report_close(){
+		cleanErrorFeedback();
+		document.getElementById("error-report").style.display = "none";
+	}
+	
+	function initializeDialogs (){
+
+		/****************************************************************************************************
+		 **********                               EDITOR                                           **********
+		****************************************************************************************************/
+
+		dialog = $( "#dialog-editor" ).dialog({
+			autoOpen: false,
+			height: 230,
+			width: 450,
+			modal: true,
+			title: "Edit field",
+			position: { my: "center", at: "center", collision: "none" },
+			buttons: {
+				//"Save changes": saveChanges,
+				"Save changes and close": saveChangesAndClose,
+				Cancel: function() {
+					deleteNewFootnote();
+					footnoteMode = NONE;
+					dialog.dialog( "close" );
+				}
+			},
+			close: function(event) {
+				event.preventDefault();
+				footnoteMode = NONE;
+				return false;
+				//allFields.removeClass( "ui-state-error" );
+			}
+		});
+	}
+
+
+	function saveChangesAndClose(){
+		switch(footnoteMode){
+			case NEW_FOOTNOTE:
+				editingElement.innerHTML = editor.jqteVal();
+				addNewFootnote();
+				break;
+			case ACTIVE_FOOTNOTE:
+				sortableNo = parseInt(editingElement.parentElement.id.slice(-1));
+				pageNumber = sortableNo - 1;
+				position = $(editingElement).index();
+				editingElement.outerHTML = editor.jqteVal();
+				$("#footnotes"+pageNumber+" > div:eq("+position+") > span.editableElement")[0].innerHTML = $("#sortable"+(sortableNo)+" > li:eq("+position+")")[0].innerHTML;
+				break;
+			case CP_FOOTNOTE:
+				pageNumber = parseInt(editingElement.parentElement.parentElement.id.slice(-1));
+				sortableNo = pageNumber + 1;
+				position = $(editingElement.parentElement).index();
+				editingElement.outerHTML = editor.jqteVal();
+				$("#sortable"+sortableNo+" > li:eq("+position+")")[0].innerHTML = $("#footnotes"+pageNumber+" > div:eq("+position+") > span.editableElement")[0].innerHTML;
+				break;
+			default:
+				editingElement.outerHTML = editor.jqteVal();
+				break;
+		}
+		dialog.dialog( "close" );
+		footnoteMode = NONE;
+	}
+
+
+	/****************************************************************************************************
+	 **********                               LISTENERS                                        **********
+	 ****************************************************************************************************/
+
+	 function refreshToggleStatus(){
+
+		$(":checkbox."+LEISH_COLUMN_DETAIL_PREFIX).each(function(){
+			if( !this.checked ) {
+				$( this ).trigger('change');
+				// selects appropiate footnote and hides it since that part of the two tables has no changed
+				var id_num = $( this ).prop('id').split('_').pop(); // gets the X on LeishDetail_BUTTON_X
+				$("#" + TEXT_UNDER_EPI + id_num).toggle();
+				$("#" + TEXT_UNDER_DIAG1 + id_num).toggle();
+			}
+		});
+		
+	 }
+
+	 function addListenersToCheckboxes(){
+		// Listener ACL/ZCL PKDL buttons
+		$(":checkbox."+LEISH_COLUMN_DETAIL_PREFIX).change(function() {
+				var index = Number(this.id.slice(this.id.length-1, this.id.length));
+				$('#epiTable tr, #diagTable tr, #toutcomeTable tr').each(function() {
+					$(this).find("td,th").eq(index+1).toggle(); // +1 since first column are texts
+				});
+
+				addPaddingToLastTableColumns();
+				
+				// text descriptions under tables
+				$('#textUnderEpiTable').each(function() {
+					$(this).find("span").eq(index+1).toggle(); // +1 since N/A is at first position
+				});
+				$('#textUnderDiagTable1').each(function() {
+					$(this).find("span").eq(index).toggle();
+				});
+			}
+		);
+		
+		// Listener monthly buttons
+		$(":checkbox."+MONTHLY_TABLE_NAME).change(function() {
+			var index = Number(this.id.slice(this.id.length-1, this.id.length));
+			var startingid = this.id.slice(0, -1-BUTTON_PREFIX.length);
+			$("#"+startingid+index).toggle();
+			addPaddingToLastTableColumns();
+		});
+		
+		// Listener chart buttons
+		$(":checkbox."+MONTHLY+CHART+", "+":checkbox."+YEARLY+CHART).change(function() {
+			var index = Number(this.id.slice(this.id.length-1, this.id.length));
+			var type = this.id.split(CHART+BUTTON_PREFIX)[0];
+			//var chartSelectorIndex = index + 1;
+
+			// enables or disables the updatedMapButton
+			var selected_chart_index = parseInt($('#chartSelector').val());
+			var selected_chart_type = $("#chartSelector option:selected" ).text().split(" ")[1];
+
+			if(selected_chart_index == index && selected_chart_type.localeCompare(type) == 0 ){
+				var checked = $("#"+type+CHART+BUTTON_PREFIX+index).prop('checked');			
+				cleanUpdateChartForm();
+			}
+			
+			// enables or disables the options of the list
+			var changeOption = $('#' + type + CHART + OPTION_PREFIX + index);
+			changeOption.prop('disabled', function(_, attr){ return !attr});
+
+			// togles the chart
+
+			var theCanvas = $('#'+type + CHART + index);
+			theCanvas.toggleClass('sameLine');
+			theCanvas.toggleClass('notShown');		
+			var theLegendChart = $('#'+LEGEND_PREFIX + type + CHART + index);	
+			theLegendChart.toggleClass('notShown');		
+
+			$( "#chartSelector" ).selectmenu( 'refresh', true);
+		});
+
+		$("#one_legend_per_line").change(function() {
+			$("#chartPreview .oneLegendChart").toggleClass('sameLine');
+			$("#chartPreview legendChart").css("display","value");
+			if(this.checked) {
+				$("#chartPreview .legendChart").css("display","block");
+			} else {
+				$("#chartPreview .legendChart").css("display","flex");
+			}
+		});
+
+		//Listener for maps
+		$(":checkbox."+MAP_PREFIX).change(function() {
+			var index = Number(this.id.slice(this.id.length-1, this.id.length));
+			var mapSelectorIndex = index + 1;
+			var startingid = this.id.slice(0, -1-BUTTON_PREFIX.length);
+
+			// enables or disables the updatedMapButton
+			var selected_map =  parseInt($('#mapSelector').val()) - 1 ; //first option is the "select text"
+			if(selected_map==index){
+				var checked = $("#"+MAP_PREFIX+BUTTON_PREFIX+index).prop('checked');			
+				cleanUpdateMapForm();
+			}
+
+			// enables or disables the options of the list
+			var theMap = $("#"+MAP_PREFIX+index);
+			theMap.toggleClass('sameLine');
+			theMap.toggleClass('notShown');		
+			var changeOption = $('#' + startingid + OPTION_PREFIX + mapSelectorIndex);
+			changeOption.prop('disabled', function(_, attr){ return !attr});
+			$( "#mapSelector" ).selectmenu( 'refresh', true);
+
+			updateMapsTitle();
+
+		});
+
+		$(".radioButton").change(function() {
+
+			switch($(this)[0].id){
+				case "disableResize":
+					disableResizes();
+					break;
+				case "resizeNotasBene":
+					disableResizes();
+					$("#notaBeneMaps").resizable();
+					$("#notaBene").resizable();
+					resizeMode = RESIZENOTASBENE;
+					break;
+				case "resizeSections":
+					disableResizes();
+					$(".resizeSections").resizable({
+						helper: "ui-resizable-helper"
+					});
+					resizeMode = RESIZESECTIONS;
+					break;
+					 
+			}
+
+		});
+
+		// enables the updatedMapButton
+		$('#mapSelector').on('selectmenuchange', function() {
+			var selected_map = parseInt($("#mapSelector").val()) - 1 ; // first option is the "select map"
+
+			if (selected_map >= 0) { // "Select map" option
+				$( "#ou_slider_range" ).slider( "option", "disabled", false );
+				$( "#ou_boundaries_slider_range" ).slider( "option", "disabled", false );
+				$( "#mapStyleSelector" ).selectmenu( "option", "disabled", false );
+				$( "#opacity_slider" ).slider( "option", "disabled", false );
+				$( "#height_slider" ).slider( "option", "disabled", false );
+				$( "#width_slider" ).slider( "option", "disabled", false );
+				setButtonDisabledTo("updateMapButton", false);
+
+				// updates style selector
+				setOptionSelectMenu("mapStyleSelector", map_style[selected_map]);
+
+				// updates level slides
+				$( "#ou_slider_range" ).slider( "values", 0 , map_levels[selected_map][0]);
+				$( "#ou_level_slider" ).val( WHO_OU_TEXT_LVL[map_levels[selected_map][0]-1]);
+				$( "#ou_boundaries_slider_range" ).slider( "values", 0 , boundaries_map_levels[selected_map][0]);
+				$( "#ou_boundaries_level_slider" ).val( WHO_OU_TEXT_LVL[boundaries_map_levels[selected_map][0]-1]);
+
+
+				// update opacity
+				$( "#opacity_slider" ).slider( "option", "value", map_opacity[selected_map] );
+
+				// update width
+				$( "#height_slider" ).slider( "option", "value", $("#"+MAP_PREFIX+selected_map).height() );
+
+				// update heigth
+				$( "#width_slider" ).slider( "option", "value", $("#"+MAP_PREFIX+selected_map).width() );
+
+			} else  { 
+			
+				cleanUpdateMapForm();
+
+			}
+
+		}).change();
+
+		// enables the updatedChartButton
+		$('#chartSelector').on('selectmenuchange', function() {
+			setButtonDisabledTo("updateChartButton",false);
+			setButtonDisabledTo("cancelChartButton",false);
+			var index = parseInt($('#chartSelector').val());
+			var type = $("#chartSelector option:selected" ).text().split(" ")[1];
+
+			// puts back the already present chart
+			if($("#chartPreview").html()){
+				var old_type = $("#chartPreview").children()[0].id.split(CHART)[0];
+				var old_index = $("#chartPreview").children()[0].id.split(CHART)[1];
+				$("#chartPreview").contents().appendTo("#"+DIV+old_type+CHART+old_index);
+			}
+			
+			// puts the selected one in the chartPreview
+			$("#"+DIV+type+CHART+index).contents().appendTo("#chartPreview");
+			
+			// retrieves current values from chart
+			if (typeof  charts_array[type+CHART+index].scales.right != 'undefined'){
+
+				defaultMinCases = charts_array[type+CHART+index].scales.left.min;
+				defaultMaxCases = charts_array[type+CHART+index].scales.left.max;
+				defaultMinIncd = charts_array[type+CHART+index].scales.right.min;
+				defaultMaxIncd = charts_array[type+CHART+index].scales.right.max;
+				
+				$("#minIncd").val(defaultMinIncd);
+				$("#maxIncd").val(defaultMaxIncd);
+			} else {
+				defaultMinCases = charts_array[type+CHART+index].scales["y-axis-0"].min;
+				defaultMaxCases = charts_array[type+CHART+index].scales["y-axis-0"].max;
+			
+			}
+			$("#minCases").val(defaultMinCases);
+			$("#maxCases").val(defaultMaxCases);
+		
+			// checks or unchecks box whether the legends have sameLine class or not 		
+			if ($("#chartPreview .oneLegendChart").hasClass('sameLine')){
+				$("#one_legend_per_line").prop("checked", false);
+			} else {
+				$("#one_legend_per_line").prop("checked", true);
+			}
+			$("#one_legend_per_line").button( "refresh" );
+
+
+		}).change();
+
+		$(".chartParams").change(function(){
+			
+			if($("#chartPreview").html()){
+				var min_value = 0;
+				var type = $("#chartPreview").children()[0].id.split(CHART)[0];
+				var id_num = $("#chartPreview").children()[0].id.split(CHART)[1];
+				minCases = Number($("#minCases").val());
+				maxCases = Number($("#maxCases").val());				
+				minIncd = Number($("#minIncd").val());
+				maxIncd = Number($("#maxIncd").val());
+				updateScale(type+CHART+id_num, minCases, maxCases, minIncd, maxIncd);
+			}
+		});
+
+	
+
+
+
+		 $('#legendSelector').on('selectmenuchange', function() {
+
+			// restores font-size to previous legend
+			if ($("#legendPool .legentSetElementText:first").length > 0 ){
+				editingLegend.find(".legentSetElementText").css({ 'font-size': legendSetFontSize });
+				editingLegend.find(".legentSetTitle").css({ 'font-size': legendSetFontSize + 2 });
+			}
+			
+			var selected_legend = parseInt($("#legendSelector").val()) - 1 ; // first option is the "select legend"
+		
+			// move back the legend to it map
+			var position_index =  $('#positionLegendSelector').val();
+			for (var i=0; i<MAP_CHECKBOXES_LABELS.length; i++){
+				if ( $("#" + LEGENDSET_POOL).find('#' + LEGENDSET_PREFIX + i).length > 0) {
+					moveLegend(i, $('#' + MAP_PREFIX + i).find(LEGEND_POSITIONS[position_index]), LEGEND_TO_REPORT);	
+				}
+			}
+
+			if (selected_legend >= 0) {
+				setButtonDisabledTo("updateLegendButton", false);
+				$( "#font_size_slider" ).slider( "option", "disabled", false );
+
+				lastLegendPosition = getLastPosition(selected_legend);
+				setOptionSelectMenu("positionLegendSelector", lastLegendPosition);
+
+				moveLegend(selected_legend, $("#" + LEGENDSET_POOL), LEGEND_TO_LEGEND_POOL);
+
+				legendSetFontSize = parseInt($("#legendPool .legentSetElementText:first").css('font-size'));//.replace(/[^-\d\.]/g, ''); // removes px from number
+				$( "#font_size_slider" ).slider( "option", "value", legendSetFontSize );
+
+			} else { // "select legend" option
+				cleanUpdateLegendForm();
+			}
+
+		}).change();
+
+		$("#subnationalLevelSelector").on('selectmenuchange', function() {
+			var subNationaSelectedLevel = parseInt($("#subnationalLevelSelector").val());
+
+			$.when(
+				getPopulationAtRiskFor(POP_AT_RISK[VL_INDEX], VL_COLUMN, subNationaSelectedLevel),
+				getPopulationAtRiskFor(POP_AT_RISK[CL_INDEX], CL_COLUMN, subNationaSelectedLevel),
+				getPopulationAtRiskFor(POP_AT_RISK[ACL_INDEX], ACL_COLUMN, subNationaSelectedLevel),
+				getPopulationAtRiskFor(POP_AT_RISK[ZCL_INDEX], ZCL_COLUMN, subNationaSelectedLevel)
+				)
+			.then( function(){
+				return $.when( //DELETE update_epi_and_cgi_tables+
+					fillArray_IncidenceRow(),
+					updateNumberOfDivisions(subNationaSelectedLevel)
+				).done(function(result){
+					// recalculates maps to selected subnational level
+					if ($("#maps_to_selectedSubLevel").prop('checked')){
+						update_map_levels_var(WIDP_OU_SHIFT + subNationaSelectedLevel);
+						updateMapsTitle();
+						generateMaps();
+					}
+					writeTable(CGI_TABLE_NAME, "Body", generalInformationArray, LINES_BELOW_LABELS_CGI);
+					underlineDivisionName();
+					writeTable(EPI_TABLE_NAME, "Body", array, LINES_BELOW_LABELS_EPI);
+					// It writes the entire table data, so put also the headers
+					fillTableHead(EPI_TABLE_NAME, "Head", TABLE_TITLE_EPI, COLUMNS_LABELS);
+
+					// rewrites also DiagTable and Toutcome table since buttons are going to be clicked
+					writeTable(DIAG_TABLE_NAME, "Body", diagnosisArray, LINES_BELOW_LABELS_DIAG);
+					writeTable(TOUTCOME_TABLE_NAME, "Body", toutcomeArray, LINES_BELOW_LABELS_TREAT);
+					fillTableHead(DIAG_TABLE_NAME, "Head", TABLE_TITLE_DIAG, COLUMNS_LABELS);
+					fillTableHead(TOUTCOME_TABLE_NAME, "Head", TABLE_TITLE_TOUTCOME, COLUMNS_LABELS.slice(0,4));
+
+					
+
+
+					refreshToggleStatus();
+					removeAllFootnotesMarks(); // removes all footnotes marks since refreshed elements will lost its footnote mark
+				});
+			});
+
+
+
+		}).change();
+
+	 }
+
+	 function disableResizes() {
+		if (resizeMode == RESIZENOTASBENE) {
+			$("#notaBeneMaps").resizable( "destroy" );
+			$("#notaBene").resizable( "destroy" );
+		} 
+		if (resizeMode == RESIZESECTIONS) {
+			$(".resizeSections").resizable( "destroy" );
+		}
+		resizeMode = RESIZEDISABLED;
+	 }
+
+	/* AFTER AND BEFORE printing actions */
+	var beforePrint = function() {
+		// hides zoom buttons on maps
+		$('#' + MAP_PREFIX + VL_INDEX).find(".leaflet-control-zoom").hide();
+		$('#' + MAP_PREFIX + CL_INDEX).find(".leaflet-control-zoom").hide();
+		$('#' + MAP_PREFIX + ACL_INDEX).find(".leaflet-control-zoom").hide();
+		$('#' + MAP_PREFIX + ZCL_INDEX).find(".leaflet-control-zoom").hide();
+		
+		var width = $(document).width();
+		var cmtoinch = width / 210;
+		heigthofA4 = Math.round(297 * cmtoinch);
+		var heigth = $(document).height();
+
+		var footnotes1Top = $("#footnotes1").position().top;
+		var remainingPage1 = heigthofA4 - (footnotes1Top + $("#footnotes1").height() + 44); // 44 for margin
+
+		if (remainingPage1 > 0) {
+			$("#charts_section").css("margin-bottom", remainingPage1);
+		}
+
+		lastPageHeigh = heigth % heigthofA4;
+		remainingPage2 = heigthofA4 - lastPageHeigh; // remaining blank space.
+
+		$("#toutcomeTable").css("margin-bottom", remainingPage2); // puts the remaining blank space after last table
+
+
+	};
+
+	var afterPrint = function() {
+		// restores zoom buttons on maps
+		$('#' + MAP_PREFIX + VL_INDEX).find(".leaflet-control-zoom").show();
+		$('#' + MAP_PREFIX + CL_INDEX).find(".leaflet-control-zoom").show();
+		$('#' + MAP_PREFIX + ACL_INDEX).find(".leaflet-control-zoom").show();
+		$('#' + MAP_PREFIX + ZCL_INDEX).find(".leaflet-control-zoom").show();
+
+		$("#toutcomeTable").css("margin-bottom", "0px");
+		$("#charts_section").css("margin-bottom", "0px");
+
+	};
+
+	if (window.matchMedia) {
+		var mediaQueryList = window.matchMedia('print');
+		mediaQueryList.addListener(function(mql) {
+			if (mql.matches) {
+				beforePrint();
+			} else {
+				afterPrint();
+			}
+		});
+	}
+
+	//window.onbeforeprint = beforePrint;
+	//window.onafterprint = afterPrint;
+	/* END AFTER AND BEFORE printing actions */
+
+
+	/* AUX functions  */
+
+	 function getLastPosition(selectedlegend){
+		for (var i=0; i<LEGEND_POSITIONS.length; i++){
+			console.log("getLastPosition");
+			console.log($('#' + MAP_PREFIX + selectedlegend));
+			console.log($('#' + MAP_PREFIX + selectedlegend).find(LEGEND_POSITIONS[i]));
+			console.log($('#' + MAP_PREFIX + selectedlegend).find(LEGEND_POSITIONS[i]).find('#'+LEGENDSET_PREFIX + selectedlegend));
+			if ($('#' + MAP_PREFIX + selectedlegend).find(LEGEND_POSITIONS[i]).find('#'+LEGENDSET_PREFIX + selectedlegend).length > 0 ){
+				return i;
+			}
+		}
+	 }
+	
+    function fillOrgUnits(data, length, start){
+        var orgUnit;
+        for(var i=0;i<length;i++){
+            orgUnit = {};
+            orgUnit.value = data[i].id;
+            orgUnit.label = data[i].shortName;
+            organisationUnits.push(orgUnit);
+        }
+	}
+
+	/**
+	* Generates a list of years from next year until 1900 and stores in generatedYears
+	*/
+	function generateYears(){
+		var year;
+		for (i = new Date().getFullYear() + 1; i > 1900; i--)
+		{
+			year = {};
+			year.value = i;
+			year.label = i;
+			generatedYears.push(year);
+		}
+	}
+
+	/****************************************************************************************************
+ 	 **********                    	                  START HERE         	           	       **********
+	 ****************************************************************************************************/
+
+    $(document).ready(function(){
+
+		document.getElementById("country_profile_and_panel").style.display = "none";
+
+		editor = $("#editor");
+		editor.jqte();	
+
+		initializeDialogs();
+		generateUserManualUrl();
+		
+		/* Listeners */
+		// Editor for footnotes
+		$("#newfootnote").click(function() {
+			footnoteMode = NEW_FOOTNOTE;
+			editingElement = $("#newFootnoteText")[0];
+			editor.jqteVal(editingElement.innerHTML);
+
+			dialog.dialog( "option", "position", { my: "left top", at: "center bottom+10%", of: this } );	
+			dialog.dialog( "open" );	
+
+		});
+		
+		$( "#updateLegendButton" ).on( 'click', event, updateLegend);
+		$( "#resetLegendButton" ).on( 'click', event, resetLegends);
+		$( "#updateMapButton" ).on( 'click', event, updateMap);
+		$( "#updateChartButton" ).on( 'click', event, updateChart);
+		$( "#cancelChartButton" ).on( 'click', event, cancelUpdateChart);
+		
+		// save initial map state
+		initalMapDiv[VL_INDEX] = $('#map' + VL_INDEX).html();
+		initalMapDiv[CL_INDEX] = $('#map' + CL_INDEX).html();
+		initalMapDiv[ACL_INDEX] = $('#map' + ACL_INDEX).html();
+		initalMapDiv[ZCL_INDEX] = $('#map' + ZCL_INDEX).html();
+
+		prepareMapListeners();
+		
+		// New footnote arrives 
+		$( "#sortable2" ).on( "sortupdate", function( event, ui ) {
+			writeFootnotes();
+		} );	
+		// New footnote arrives 
+		$( "#sortable3" ).on( "sortupdate", function( event, ui ) {
+			writeFootnotes();
+		} );
+
+		//TODO: fix contextmenu
+		$(document).on("contextmenu",function(e){
+			if(e.target.nodeName != "INPUT" && e.target.nodeName != "TEXTAREA")
+				e.preventDefault();
+				return false;
+		});
+
+		$.when(getNumberOfDivisions(3, "id,shortName"), generateYears())
+			.done(function(nbOfDivisions){
+
+				fillOrgUnits(nbOfDivisions.organisationUnits, nbOfDivisions.organisationUnits.length);
+				
+				autocompleteSearcher("yearField", generatedYears, doNothing, 1, 200);
+				autocompleteSearcher("targetCountry", organisationUnits, doNothing, 2, 200);
+
+				country_selector_open();
+				//DEBUG_AutomaticallyfillInitialForm();
+
+			});
+			
+		makeElementsEditables();
+		makeElementsFootnotables();
+		
+	});
+
+	function generateUserManualUrl(){
+		$(".usermanual").attr("href", "files/user_manual.pdf?antiCache="+ new Date().getTime());
+	}
+
+	function checkMetadataAssignedToThisCountry(){
+		saveSelectedYearAndCountry();
+
+		var datasets = [];
+		datasets.push(CL_DETAILED, CL_SIMPLE, VL_DETAILED, VL_SIMPLE, 
+						AZCL_DETAILED, AZCL_SIMPLE, GI, POPULATION_DATA, GHO_NTDS);
+
+		var programs = [];
+		programs.push(CL_MONTHLY, VL_MONTHLY, FOOTNOTES, SUBN_ENDEMCTY);
+
+		var datasetFilter = "id:in:["+datasets+"]";
+		var programFilter = "id:in:["+programs+"]";
+		var ouFilter = "organisationUnits.id:in:["+ ds.countryID +"]";
+		var FILTER = "&filter=";
+		var ds_filters = FILTER + datasetFilter + FILTER + ouFilter;
+		var p_filters = FILTER + programFilter + FILTER + ouFilter;
+	
+		var params = {
+			fields: "id",
+			paging: false
+		}
+	
+		return $.when(getv3(DATASETS, params, ds_filters), getv3(PROGRAMS, params, p_filters))
+		.done(function(dataSetResult, programResult){
+			if (typeof  dataSetResult.dataSets != 'undefined') {
+				var dsRes = dataSetResult.dataSets;
+				for (var i=0; i < dsRes.length; i++){
+					if (dsRes[i].id in dsinfo){
+						dsinfo[dsRes[i].id][ASSG] = true;
+					}
+				}
+			}
+			if (typeof  programResult.programs != 'undefined') {
+				var pRes = programResult.programs;
+				for (var i=0; i < pRes.length; i++){
+					if (pRes[i].id in pinfo){
+						pinfo[pRes[i].id][ASSG] = true;
+					}
+				}
+			}
+			var notAssginedMtd = "";
+			var IS_NOT_ASSG = " is not assigned to this country.</br>";
+			if (!dsinfo[GI][ASSG] ){
+				notAssginedMtd += dsinfo[GI][NAME] + IS_NOT_ASSG;
+			}		
+			if (!dsinfo[POPULATION_DATA][ASSG] ){
+				notAssginedMtd += dsinfo[POPULATION_DATA][NAME] + IS_NOT_ASSG;
+			}
+			if (!dsinfo[GHO_NTDS][ASSG] ){
+				notAssginedMtd += dsinfo[GHO_NTDS][NAME] + IS_NOT_ASSG;
+			}
+			if (!pinfo[FOOTNOTES][ASSG] ){
+				notAssginedMtd += pinfo[FOOTNOTES][NAME] + IS_NOT_ASSG;
+			}
+			if (!pinfo[SUBN_ENDEMCTY][ASSG] ){
+				notAssginedMtd += pinfo[SUBN_ENDEMCTY][NAME] + IS_NOT_ASSG;
+			}
+			if (notAssginedMtd.length > 0){
+				return showFeedbackToUser(notAssginedMtd);
+			} else {
+				return startPreparingReport();
+			}
+
+
+
+
+		});
+	}
+
+	function DEBUG_AutomaticallyfillInitialForm()
+	{
+
+		$( "#targetCountry" ).val("Algeria"); //val("Federal Democratic Republic of Nepal");///val("Burkina Faso"); //val("Algeria");
+		$( "#targetCountry" ).text("mNa42CHbkO7"); //text("pZZriU4sY0l");//  .text("hmZE3mVAZFf");text("mNa42CHbkO7");
+		$( "#yearField" ).val(2017); // val(2016);
+
+		checkMetadataAssignedToThisCountry();
+
+	}
+
+	// underlines provisional text with a red underline
+	function underlineDivisionName(){
+		$( "#cgiTable6 > td:nth-child(2) > span").css( "text-decoration","underline red");
+	}
+
+	function underlineMapsTitle(){
+		$("#mapsTitleDis, #mapsTitleLvl").css( "text-decoration","underline red");
+	}
+
+	function showFeedbackToUser(text){
+		$("#metadataFeedback").html(text);
+	}
+
+	function cleanErrorFeedback(){
+		$("#errorFeedback").html('');
+
+	}
+
+	function addToErrorFeedback(text){
+		$("#errorFeedback").append("<li>" + text + "</li>");
+		console.log ("added to errorFeedback: " + text);
+		error_report_open();
+	}
+
+	function saveSelectedYearAndCountry() {
+		// retrieves values from form
+		ds.countryName =  $( "#targetCountry" ).val(); 
+		ds.countryID =  $( "#targetCountry" ).text(); 
+		ds.year = $( "#yearField" ).val(); 
+	}
+
+	function startPreparingReport() {
+	
+		cleanErrorFeedback();
+		resetVariables();
+		resetMapsAndChartsVisibility();
+
+		$( "#country_name" ).text(ds.countryName);
+		$( "#year" ).text(ds.year);
+		$( "#published_date").text(getDatePublished());
+
+		generateCheckboxes($("#leish_detail_checkboxes"), COLUMNS_LABELS, "Leishmaniasis types to show:", LEISH_COLUMN_DETAIL_PREFIX, -1);
+		generateCheckboxes($("#monthlyCheckboxes"), MONTHLY_LABELS, "Leishmaniasis types to show in monthly table:", MONTHLY_TABLE_NAME, -1);
+		generateCheckboxes($("#monthlyChartCheckboxes"), MONTHLY_CHART_LABELS, "Monthly charts to show", MONTHLY+CHART, -1);
+		generateCheckboxes($("#yearlyChartCheckboxes"), YEARLY_CHART_LABELS, "Yearly charts to show", YEARLY+CHART, -1);
+		generateCheckboxes($("#mapCheckboxes"), MAP_CHECKBOXES_LABELS, "Maps to show", MAP_PREFIX, -1);
+
+		addListenersToCheckboxes();
+
+		$( "#sortable1, #sortable2, #sortable3" ).sortable({
+		connectWith: ".connectedSortable"
+		}).disableSelection();
+		$('input[type=checkbox]').checkboxradio();
+		$( "#tabs" ).tabs({heightStyle: "content"});
+		$( "#tabs" ).tabs( "option", "active", 0); // activates first tab (important when regenerating the report from other tab)
+		country_selector_relocate();
+
+		// corrects bug on checkboxes
+		$( ".ui-state-hover" ).removeClass( "ui-state-hover" );
+
+
+		// maps jqueryui    
+		$( "#mapSelector" ).selectmenu();
+		$( "#chartSelector" ).selectmenu();
+		$( "#legendSelector" ).selectmenu();
+		$( "#positionLegendSelector" ).selectmenu();
+		$( "#subnationalLevelSelector" ).selectmenu();
+		$( "#mapStyleSelector" ).selectmenu({disabled:true});
+		$( "#updateMapButton").button();
+		$( "#updateChartButton").button();
+		$( "#cancelChartButton").button();
+		$( "#updateLegendButton").button();
+		$( "#resetLegendButton").button();
+		$( ".radioButton" ).checkboxradio();
+
+		var mapOptions =  ["Select map"].concat(MAP_CHECKBOXES_LABELS);
+		var legendOptions = ["Select legend"].concat(MAP_CHECKBOXES_LABELS);
+		generateMapConfigurationList($("#mapSelector"), mapOptions, MAP_PREFIX, false);
+		generateMapConfigurationList($("#chartSelector"), MONTHLY_CHART_LABELS, MONTHLY+CHART, false);
+		generateMapConfigurationList($("#chartSelector"), YEARLY_CHART_LABELS, YEARLY+CHART, true);
+		generateMapConfigurationList($("#legendSelector"), legendOptions, LEGENDSET_PREFIX, false);
+		generateMapConfigurationList($("#positionLegendSelector"), LEGEND_POSITION_LABELS, LEGEND_PREFIX, false);
+		generateMapConfigurationList($("#mapStyleSelector"), MAP_STYLE_LABELS, MAP_STYLE_PREFIX, false);
+
+		// Disables Google options
+		// $('#' + MAP_STYLE_PREFIX + OPTION_PREFIX + GOOGLE_STREETS).prop('disabled', function(_, attr){ return !attr});
+		// $('#' + MAP_STYLE_PREFIX + OPTION_PREFIX + GOOGLE_HYBRID).prop('disabled', function(_, attr){ return !attr});
+		$( "#mapStyleSelector" ).selectmenu( 'refresh', true);
+
+		setOptionSelectMenu("mapStyleSelector", WHO_BASEMAP);
+		
+		generateMapConfigurationList($("#subnationalLevelSelector"), LEVEL_CONFIG_LABELS, LEVEL_PREFIX, false);
+
+		resetNotaBeneShapes();
+		fillNotaBene();
+		fillNotaBeneMaps();
+
+		setTextUnderTables("textUnderEpiTable", TEXT_UNDER_EPI, COLUMNS_LABELS, COLUMNS_LABELS_DESC, PUT_NA_TEXT);
+		setTextUnderTables("textUnderDiagTable1", TEXT_UNDER_DIAG1, 
+								DIAG_LEGEND_LABELS, 
+								DIAG_LEGEND_LABELS_DESC, 
+								false);
+		setTextUnderTables("textUnderDiagTable2", TEXT_UNDER_DIAG2, DIAG_LEGEND_LABELS_2, DIAG_LEGEND_LABELS_DESC_2, PUT_NA_TEXT);
+
+		// Org unit level slider
+		var sliderRange = $( "#ou_slider_range" );
+		sliderRange.slider({
+			range: false,
+			min: 1,
+			max: 7,
+			values: [ map_levels[VL_INDEX][0]], // if multiple values set: values = [firstValue, lastValue]
+			slide: function( event, ui ) {
+				$( "#ou_level_slider" ).val( WHO_OU_TEXT_LVL[ui.values[ 0 ]-1]);
+			},
+			disabled:true
+
+		});
+		$( "#ou_level_slider" ).val( WHO_OU_TEXT_LVL[sliderRange.slider( "values", 0 )-1] );
+
+		// Boundaries Org unit level slider
+		var sliderRange = $( "#ou_boundaries_slider_range" );
+		sliderRange.slider({
+			range: false,
+			min: 1,
+			max: 7,
+			values: [ boundaries_map_levels[VL_INDEX][0]], // if multiple values set: values = [firstValue, lastValue]
+			slide: function( event, ui ) {
+				$( "#ou_boundaries_level_slider" ).val( WHO_OU_TEXT_LVL[ui.values[ 0 ]-1]);
+			},
+			disabled:true
+
+		});
+		$( "#ou_boundaries_level_slider" ).val( WHO_OU_TEXT_LVL[sliderRange.slider( "values", 0 )-1] );
+
+		// Opacitity slider  
+		var opacity_slider_handle = $( "#opacity_slider_handle" );
+		$( "#opacity_slider" ).slider({
+		min: 0,
+		max: 100,
+		value: DEFAULT_MAP_OPACITY,
+		create: function() {
+			opacity_slider_handle.text( $( this ).slider( "value" ) );
+		},
+		slide: function( event, ui ) {
+			opacity_slider_handle.text( ui.value );
+		},
+		change: function( event, ui ) {
+			opacity_slider_handle.text( ui.value );
+		},
+		disabled:true
+		});
+		
+		// height slider  
+		var height_slider_handle = $( "#height_slider_handle" );
+		$( "#height_slider" ).slider({
+		min: 100,
+		max: 900,
+		value: DEFAULT_MAP_HEIGHT,
+		create: function() {
+			height_slider_handle.text( $( this ).slider( "value" ) );
+		},
+		slide: function( event, ui ) {
+			height_slider_handle.text( ui.value );
+		},
+		change: function( event, ui ) {
+			height_slider_handle.text( ui.value );
+		},
+		disabled:true
+		});
+		
+		// width slider  
+		var width_slider_handle = $( "#width_slider_handle" );
+		$( "#width_slider" ).slider({
+		min: 100,
+		max: 900,
+		value: DEFAULT_MAP_WIDTH,
+		create: function() {
+			width_slider_handle.text( $( this ).slider( "value" ) );
+		},
+		slide: function( event, ui ) {
+			width_slider_handle.text( ui.value );
+		},
+		change: function( event, ui ) {
+			width_slider_handle.text( ui.value );
+		},
+		disabled:true
+		});
+
+		// Font size slider  
+		legendSetFontSize = DEFAULT_LEGEND_FONT_SIZE;
+		var font_size_slider_handle = $( "#font_size_slider_handle" );
+		$( "#font_size_slider" ).slider({
+			min: 6,
+			max: 24,
+			value: DEFAULT_LEGEND_FONT_SIZE,
+			create: function() {
+				font_size_slider_handle.text( $( this ).slider( "value" ) );
+			},
+			slide: function( event, ui ) {
+				font_size_slider_handle.text( ui.value );
+				editingLegend.find(".legentSetElementText").css({ 'font-size': ui.value });
+				editingLegend.find(".legentSetTitle").css({ 'font-size': ui.value + 2 });
+			},
+			change: function( event, ui ) {
+				font_size_slider_handle.text( ui.value );
+			}
+		});
+
+		cleanUpdateMapForm();
+		cleanUpdateChartForm();
+		cleanUpdateLegendForm();
+		
+		fillTableHead(CGI_TABLE_NAME, "Head", TABLE_TITLE_CGI, []);
+		fillTableHead(EPI_TABLE_NAME, "Head", TABLE_TITLE_EPI, COLUMNS_LABELS);
+		fillTableHead(MONTHLY_TABLE_NAME, "Head", ds.year, MONTHS_ABBREV);
+		fillTableHead(CAS_TABLE_NAME, "Head", TABLE_TITLE_CAS, []);
+		fillTableHead(DIAG_TABLE_NAME, "Head", TABLE_TITLE_DIAG, COLUMNS_LABELS);
+		fillTableHead(TAM_TABLE_NAME, "Head", TABLE_TITLE_TAM, []);
+		fillTableHead(TOUTCOME_TABLE_NAME, "Head", TABLE_TITLE_TOUTCOME, COLUMNS_LABELS.slice(0,4));
+
+
+		// Dragable activation
+		$( ".draggable" ).draggable({ grid: [ 2, 2 ] });	
+		//$( ".resizable" ).resizable();
+
+
+		// fillCountryGeneralInformation(LEVEL2); //TODO: Manage error when not level 2
+
+		// Code to execute after API calls have been done.
+		// $.when(ajax1(), ajax2(), ajax3(), ajax4()).done(function(a1, a2, a3, a4){
+		// http://stackoverflow.com/questions/3709597/wait-until-all-jquery-ajax-requests-are-done
+//        var async2 = $.when( a3() ).then(function(){ return a4(); });
+
+	
+		$.when(	getDEUsedByMetadata(), 
+				getIndicatorInfo([...UN_WPP, ...LAB_PARASITO_RESULT_NEWUNSP, ...LAB_PARASITO_TESTED_NEWUNSP, ...DIRECT_EXAM_DIAGNOSED, 
+									...POSITIVE_SLIDES_PROP, ...NEW_AND_UNSP_CASES, ...TREAT_COMPLETED, ...TREAT_OUTCOME_CURE, 
+									...TREAT_OUTCOME_FAIL, ...TREAT_OUTCOME_FATAL, ...SCREEN_PASSIVE, ...INCIDENCE_FOR_MAPS, 
+									...INCIDENCE_FOR_CHARTS, ...POP_AT_RISK, ],
+									"indicators", "numerator", "denominator"))
+		.then( function(){
+			return $.when(
+			get_cgi(), // gets totalPopulation var who is neeeded for popAtRisk
+			getOULevels(MIN_OU_LEVEL, MAX_OU_LEVEL),
+			
+			).done( function(){
+				return;
+			})
+		}) 
+		.then( function(){
+		 	return $.when(
+			get_cl_cases(), // gets cl cases who is needed for EPI incidence
+			get_vl_cases(), 
+			get_azcl_cases(),
+			getPopulationAtRiskFor(POP_AT_RISK[VL_INDEX], VL_COLUMN, defaultSubnationalLevel),	
+			getPopulationAtRiskFor(POP_AT_RISK[CL_INDEX], CL_COLUMN, defaultSubnationalLevel),
+			getPopulationAtRiskFor(POP_AT_RISK[ACL_INDEX], ACL_COLUMN, defaultSubnationalLevel),
+			getPopulationAtRiskFor(POP_AT_RISK[ZCL_INDEX], ZCL_COLUMN, defaultSubnationalLevel),
+			//getAnalyticsDataForDX(NEW_AND_UNSP_CASES, 1, fillIndicatorArray, [NEW_AND_UNSP_CASES, new_and_usnp_cases]), // replaced by fillNewAndUnspCasesWorkaround
+			getAnalyticsDataForDX(UN_WPP, 1, fillIndicatorArray, [UN_WPP, un_wpp_data]),
+			getAnalyticsDataForDX(SCREEN_PASSIVE, 1, fillIndicatorArray, [SCREEN_PASSIVE, screen_passive]),
+			getAnalyticsDataForDX(TREAT_COMPLETED, 1, fillIndicatorArray, [TREAT_COMPLETED, total_treated]),	
+			getAnalyticsDataForDX(LAB_PARASITO_RESULT_NEWUNSP, 1, fillIndicatorArray, [LAB_PARASITO_RESULT_NEWUNSP, lab_parasito_result]),
+			getAnalyticsDataForDX(LAB_PARASITO_TESTED_NEWUNSP, 1, fillIndicatorArray, [LAB_PARASITO_TESTED_NEWUNSP, lab_parasito_tested]),
+			getAnalyticsDataForDX(DIRECT_EXAM_DIAGNOSED, 1, fillIndicatorArray, [DIRECT_EXAM_DIAGNOSED, direct_exam_diagnosed]),
+			getAnalyticsDataForDX(POSITIVE_SLIDES_PROP, 1, fillIndicatorArray, [POSITIVE_SLIDES_PROP, positive_slides_prop]),
+			getAnalyticsDataForDX(TREAT_OUTCOME_CURE, 1, fillIndicatorArray, [TREAT_OUTCOME_CURE, toutcome_cure]),
+			getAnalyticsDataForDX(TREAT_OUTCOME_FAIL, 1, fillIndicatorArray, [TREAT_OUTCOME_FAIL, toutcome_fail]),
+			getAnalyticsDataForDX(TREAT_OUTCOME_FATAL, 1, fillIndicatorArray, [TREAT_OUTCOME_FATAL, toutcome_fatal])
+			//get_indicators_values) // gets popAtRisks who is needed for EPI incidence
+			).done( function(data_cl, data_vl, data_azcl){
+				fillUN_WPP();
+				fillArray(data_cl.dataValues, CL_COLUMN, DE.CL_EPI_Type); 
+				fillArray(data_cl.dataValues, MCL_COLUMN, DE.MCL_EPI_Type, DE.MCL_GEN_EPID_cases); 
+				fillArray(data_vl.dataValues, VL_COLUMN, DE.VL_EPI_Type, "");
+				fillArray(data_vl.dataValues, PKDL_COLUMN, DE.VL_EPI_Type, DE.PKDL_GEN_EPID_cases);
+				//TODO: move to a proper place
+
+				var vlArray = data_vl.dataValues || [];
+				var clArray = data_cl.dataValues || [];
+				var aczlArray = data_azcl.dataValues || [];
+				var leishArray = [].concat.apply([], [vlArray, clArray, aczlArray]);
+
+				fillControlAndSurveillance(leishArray);
+				fillTreatmentAndMedicines(leishArray);
+
+				fillArray(data_azcl.dataValues, ACL_COLUMN, DE.ACL_EPI_Type, ""); 
+				fillArray(data_azcl.dataValues, ZCL_COLUMN, DE.ZCL_EPI_Type, ""); 
+
+				return fillArray_IncidenceRow();
+			
+			} )
+		})	
+		.then( function(){
+	
+			return $.when( 
+				generateLegends(),
+				generateMaps(),
+				get_gho_ntds(),
+				getAnalyticsDataForDX(INCIDENCE_FOR_CHARTS[VL_INDEX], historicLength, fillIncidenceChartArray, [VL_COLUMN]),
+				getAnalyticsDataForDX(INCIDENCE_FOR_CHARTS[CL_INDEX], historicLength, fillIncidenceChartArray, [CL_COLUMN]),
+				getAnalyticsDataForDX(INCIDENCE_FOR_CHARTS[ACL_INDEX], historicLength, fillIncidenceChartArray, [ACL_COLUMN]),
+				getAnalyticsDataForDX(INCIDENCE_FOR_CHARTS[ZCL_INDEX], historicLength, fillIncidenceChartArray, [ZCL_COLUMN]),
+				getAnalyticsDataForDX(NEW_AND_UNSP_CASES[VL_INDEX], historicLength, fillNewCasesArray, [VL_COLUMN]),
+				getAnalyticsDataForDX(NEW_AND_UNSP_CASES[CL_INDEX], historicLength, fillNewCasesArray, [CL_COLUMN]),
+				getAnalyticsDataForDX(NEW_AND_UNSP_CASES[ACL_INDEX], historicLength, fillNewCasesArray, [ACL_COLUMN]),
+				getAnalyticsDataForDX(NEW_AND_UNSP_CASES[ZCL_INDEX], historicLength, fillNewCasesArray, [ZCL_COLUMN]),
+				get_monthly_cases_for(CL_MONTHLY, ds.year, DE_MONTHLY.CL_CASES, CL_ROW),
+				get_monthly_cases_for(CL_MONTHLY, ds.year-1, DE_MONTHLY.CL_CASES, CL_PREVIOUS_YEAR_ROW),
+				get_monthly_cases_for(VL_MONTHLY, ds.year, DE_MONTHLY.VL_CASES, VL_ROW),
+				get_monthly_cases_for(VL_MONTHLY, ds.year-1, DE_MONTHLY.VL_CASES, VL_PREVIOUS_YEAR_ROW),
+				get_monthly_cases_for(CL_MONTHLY, ds.year, DE_MONTHLY.ACL_CASES, ACL_ROW),
+				get_monthly_cases_for(CL_MONTHLY, ds.year-1, DE_MONTHLY.ACL_CASES, ACL_PREVIOUS_YEAR_ROW),
+				get_monthly_cases_for(CL_MONTHLY, ds.year, DE_MONTHLY.ZCL_CASES, ZCL_ROW),
+				get_monthly_cases_for(CL_MONTHLY, ds.year-1, DE_MONTHLY.ZCL_CASES, ZCL_PREVIOUS_YEAR_ROW),
+				getFootnotes(defaultSubnationalLevel))
+				.done(function(lgds,mps,gho,dx1,dx2,dx3,dx4,dx5,dx6,dx7,dx8,
+								m1,m2,m3,m4,m5,m6,m7,m8,fndata){
+			// the code here will be executed when all four ajax requests resolve.
+			// a1, a2, a3 and a4 are lists of length 3 containing the response text,
+			// status, and jqXHR object for each of the four ajax calls respectively.
+
+
+				writeTable(CGI_TABLE_NAME, "Body", generalInformationArray, LINES_BELOW_LABELS_CGI);
+				underlineDivisionName();
+				writeTable(EPI_TABLE_NAME, "Body", array, LINES_BELOW_LABELS_EPI);
+				writeTable(MONTHLY_TABLE_NAME, "Body", monthlyArray, LINES_BELOW_LABELS_MONTHLY);
+				writeTable(CAS_TABLE_NAME, "Body", controlArray, LINES_BELOW_LABELS_CAS);
+				writeTable(DIAG_TABLE_NAME, "Body", diagnosisArray, LINES_BELOW_LABELS_DIAG);
+				writeTable(TOUTCOME_TABLE_NAME, "Body", toutcomeArray, LINES_BELOW_LABELS_TREAT);
+				writeTable(TAM_TABLE_NAME, "Body", tamArray, LINES_BELOW_LABELS_TAM);
+
+				generate_cl_vl_new_monthly_charts();
+				generate_cl_vl_new_and_incidence_yearly_charts();
+
+				fillFootNotes(fndata);
+				fillHTMLListWithArray(SORTABLE_LIST_1_NAME, storedFootnotes, 'ui-state-default '+EDITABLE);
+				fillHTMLListWithArray(SORTABLE_LIST_2_NAME, activeFootnotesPage1, 'ui-state-highlight '+EDITABLE);
+				fillHTMLListWithArray(SORTABLE_LIST_3_NAME, activeFootnotesPage2, 'ui-state-highlight '+EDITABLE);
+				writeFootnotes();
+
+				hideNoRelevantContent();
+
+				$("#disableResize").prop('checked', true);
+				$( ".radioButton" ).checkboxradio("refresh");
+
+				document.getElementById("country_profile_and_panel").style.display = "block";
+
+				addPaddingToLastTableColumns(); // adds class to last visible table columns
+		
+		})})
+		.fail(function(data) {
+
+			if (defaultSubnationalLevel == 1){
+				// try againg against level 0
+				defaultSubnationalLevel = 0;
+				startPreparingReport();
+			} else {
+	
+				console.log ("ERROR. WHEN");
+				console.log (data);
+			}
+
+		});
+
+	}
+		/****  **********  ******  ********  ******  ******   *****  *//***** ********  *****  *** *//****
+	 ****  **                                TEST ZONE                                          **********
+	 ** ********    ******** **** ********* ******* ************   *********** *********** ******* *******/
+
+
+</script>
+
+<!--
+	/****************************************************************************************************
+     **********		   																		   **********
+ 	 **********            	  		  	      3. HTML CODE              	    			   **********
+ 	**********		   																		   **********
+	 ****************************************************************************************************/
+	-->
+
+
+		<link rel="stylesheet" href="css/pace_loading_bar.css" type="text/css" />
+		<meta charset="UTF-8">
+		<title>Leishmaniasis Country Profile Generator</title>
+		<link rel="stylesheet" href="css/jquery-te-1.4.0.css" type="text/css" />
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" type="text/css" crossorigin="anonymous" />
+		<link rel="stylesheet" href="https://jqueryui.com/resources/demos/style.css" type="text/css" />
+		<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400" />
+		<link rel="stylesheet" href="css/style.css" type="text/css" />
+	
+	
+		<!-- <link rel="stylesheet" href="../../../dhis-web-commons/javascripts/ext/resources/css/ext-plugin-gray.css" type="text/css" />-->
+		<!---<link rel="stylesheet" href="../../../dhis-web-mapping/extjs/resources/css/ext-all-gray.css" type="text/css" />-->
+</head>
+
+<body>
+	<div id="country_profile_and_panel">
+
+		<div class="non-printable configuration-section section"><hr>
+
+			<div id="tabs">
+				<ul>
+					<li><a href="#tabs-1">General</a></li>
+					<li><a href="#tabs-2">Charts</a></li>
+					<li><a href="#tabs-3">Maps</a></li>
+					<li><a href="#tabs-4">Footnotes</a></li>
+					<li><a href="#tabs-5">Help</a></li>
+					<li><a href="#tabs-6">New CP</a></li>
+				</ul>
+				<div id="tabs-1">		
+					<fieldset id="leish_detail_checkboxes"></fieldset>
+					<fieldset id="monthlyCheckboxes"></fieldset>
+					<p><select name="subnationalLevelSelector" id="subnationalLevelSelector"></select>
+						<input id="maps_to_selectedSubLevel" type="checkbox" checked="checked" />
+						<label for="maps_to_selectedSubLevel"> recalculate maps to this level</label>
+						<a href="#" id="ouInfoHover" title=""><img border="0" alt="?" src="img/icons/question-30.png"></a>
+					</p>
+				</div>
+				<div id="tabs-2">	
+					<fieldset id="monthlyChartCheckboxes"></fieldset>
+					<fieldset id="yearlyChartCheckboxes"></fieldset>
+					<fieldset id="chartConfiguration"><legend>Configure chart</legend>
+						<table id="chartConfigTable">
+							<tr>
+								<td colspan="3"><select name="chartSelector" id="chartSelector">
+								<option disabled selected value>Select a chart</option>
+								</select></td>
+							</tr>
+							<tr>
+								<td></td>
+								<td>min value</td>
+								<td>max value</td>
+							</tr>
+							<tr>
+								<td>Cases: </td>
+								<td><input type="number" class="chartParams" step="10" id="minCases"  min="0"  /></td>
+								<td><input type="number" class="chartParams" step="10" id="maxCases"  min="0" /></td>
+							</tr>
+							<tr>
+								<td>Incd: </td>
+								<td><input type="number" class="chartParams" step=".1" id="minIncd"  min="0"  /></td>
+								<td><input type="number" class="chartParams" step=".1" id="maxIncd"  min="0" /></td>
+							</tr>
+			
+							<tr>
+								<td colspan="3">
+								<input id="one_legend_per_line" type="checkbox" checked="checked" />
+								<label for="one_legend_per_line">one-column legend</label>
+								<button disabled id="updateChartButton" class="ui-button ui-widget ui-corner-all">Update Chart</button>
+								<button id="cancelChartButton" class="ui-button ui-widget ui-corner-all">Cancel</button></td>
+							</tr>
+						</table>
+						<div id ="chartPreview"></div>
+					</fieldset>
+				</div>
+				<div id="tabs-3">		
+					<fieldset id="mapCheckboxes"></fieldset>
+					<fieldset id="mapConfiguration"><legend>Configure map</legend>
+						<div class="row">
+							<div class="col">
+								<select name="mapSelector" id="mapSelector">
+									<option disabled selected value>Select a Map</option>
+								</select>
+								<p>
+									<label for="ou_level_slider">OrgUnit level:</label>
+									<input type="text" id="ou_level_slider" readonly style="border:0; color:#f6931f; font-weight:bold;  width:260px ">
+									<div id="ou_slider_range"></div>
+								</p>
+								<p>
+									<label for="ou_boundaries_level_slider">Boundaries level:</label>
+									<input type="text" id="ou_boundaries_level_slider" readonly style="border:0; color:#f6931f; font-weight:bold;  width:260px ">
+									<div id="ou_boundaries_slider_range"></div>
+								</p>
+								<select name="mapStyleSelector" id="mapStyleSelector"></select>
+								<p> Opacity:
+									<div id="opacity_slider"><div id="opacity_slider_handle" class="ui-slider-handle"></div></div>
+								</p>
+								<p> Height:
+									<div id="height_slider"><div id="height_slider_handle" class="ui-slider-handle"></div></div>
+								</p>
+								<p>	Width:
+									<div id="width_slider"><div id="width_slider_handle" class="ui-slider-handle"></div></div>
+								</p>
+								<button id="updateMapButton" class="ui-button ui-widget ui-corner-all">Update Map</button>
+							</div>
+							<div class="col">
+								<p>
+									<select name="legendSelector" id="legendSelector">
+									<option disabled selected value>Select a Legend</option>
+									</select>
+								</p>
+								<p><select name="positionLegendSelector" id="positionLegendSelector"></select></p>
+								<p> Font size :
+									<div id="font_size_slider"><div id="font_size_slider_handle" class="ui-slider-handle"></div></div>
+								</p>
+								<div id="legendPool">
+									<div id="legendSet0" class="legendSet" ></div>
+									<div id="legendSet1" class="legendSet" ></div>
+									<div id="legendSet2" class="legendSet" ></div>
+									<div id="legendSet3" class="legendSet" ></div>	
+								</div>
+								<br>
+								<p><button id="updateLegendButton" class="ui-button ui-widget ui-corner-all">Update Legend</button></p>
+								<p><button id="resetLegendButton" class="ui-button ui-widget ui-corner-all" title="Use if legends didn't load properly or dissapeared">Recreate all legends</button></p>
+							</div>
+							<div class="col">
+								<p>
+									<fieldset>
+										<legend>Resize elements: </legend>
+										<label for="disableResize">Disabled</label>
+										<input type="radio" name="Resizes" class="radioButton" id="disableResize">
+										<label for="resizeNotasBene">Resize Notas Bene</label>
+										<input type="radio" name="Resizes" class="radioButton" id="resizeNotasBene">
+										<label for="resizeSections">Resize Sections <i>(Maps and Charts)</i></label>
+										<input type="radio" name="Resizes" class="radioButton" id="resizeSections">
+									</fieldset>
+								</p>			
+							</div>	
+						</div>
+
+					</fieldset>
+				</div>
+				<div id="tabs-4">
+					<div class="FixedHeightContainer">
+						<div class="Content">
+							<h6 class="subHeader">Stored footnotes</h6>
+							<ul id="sortable1" class="connectedSortable">
+							</ul>
+						</div>
+						<div class="Content"> 
+							<h6 class="subHeader">Footnotes page 1</h6>
+							<ul id="sortable2" class="connectedSortable">
+							</ul>
+						</div>
+						<div class="Content">
+							<h6 class="subHeader">Footnotes page 2</h6>
+							<ul id="sortable3" class="connectedSortable">
+							</ul>
+						</div>
+					</div>
+					<button id="newfootnote" class="ui-button ui-widget ui-corner-all">
+						<span class="ui-icon ui-icon-document"></span> Add new footnote
+					</button>
+					<div id="newFootnoteText" style="display:none"></div>
+
+				</div>
+				<div id="tabs-5">
+					<div class="comment">
+						This Configuration Area wont be printed<br>
+						- Left click to add a footnote number.<br>
+						- Right click to edit an element.
+					</div>
+
+					Download here the LCPG manual: 
+					<a class="usermanual" target="_blank"><img class="resize" src="img/icons/pdf.png" border=0></a>
+					<br>
+					Guide to generate LCP: 
+					<a target="_blank" href="https://docs.google.com/document/d/1umecgF-AEG_CkLN3EAF3N5IGa6By9U_HbNXZKuIl4aI/edit?usp=sharing"><img class="resize" src="img/icons/googledocs.png" border=0></a>
+				</div>
+				<div id="tabs-6">
+
+				</div>
+			</div>
+			<hr>
+		</div>
+
+		<div id="legendChartPool" >
+			<div id="legendmonthlychart0" class="legendChart draggable" ></div>
+			<div id="legendmonthlychart1" class="legendChart draggable" ></div>
+			<div id="legendmonthlychart2" class="legendChart draggable" ></div>
+			<div id="legendyearlychart0" class="legendChart draggable" ></div>
+			<div id="legendyearlychart1" class="legendChart draggable" ></div>
+			<div id="legendyearlychart2" class="legendChart draggable" ></div>
+		</div>
+
+		<div id="heading_section" class="section blue_section">
+			<div id="head_logo_div">
+				<img id="head_logo_img" src="img/WHO-EN-W-H.png"/>
+			</div>
+
+			<div class="head_container">	
+				<div id="title">
+					<div class="editableElement sameLine">Leishmaniasis country profile  —&nbsp;</div>
+					<div class="editableElement sameLine" id="year"></div>
+				</div>
+				<div class="editableElement comment" id="published_date"></div>
+				<div class="align_to_left editableElement" id="country_name"></div>
+			</div>
+		</div>
+
+		<div class="section">
+			<table id="cgiTable" class="display" cellspacing="0" width="100%">
+					<thead>
+						<tr id ="cgiTableHead"></tr>
+					</thead>
+					<tbody id="cgiTableBody"></tbody>
+			</table>
+		</div>
+
+		<div class="section">
+			<table id="epiTable" class="display" cellspacing="0" width="100%">
+					<thead>
+						<tr id ="epiTableHead"></tr>
+					</thead>
+					<tbody id="epiTableBody"></tbody>
+			</table>
+		</div>
+
+		<div class="section">
+			<h4 id ="monthlyTableTitle" class="editableElement footnotable titlesBlue" >Monthly distribution of new cases (January-December)</h4>
+
+			<table id="monthlyTable" class="display" cellspacing="0" width="100%">
+					<thead>
+						<tr id ="monthlyTableHead"></tr>
+					</thead>
+					<tbody id="monthlyTableBody"></tbody>
+			</table>
+			<div id="textUnderEpiTable" class="textUnderTable"></div>
+		</div>
+
+		<div id="charts_section" class="section">
+
+			<div class="resizeSections">
+				<div id ="divFormonthlychart0" class="sameLine draggable"><canvas class="chart" id="monthlychart0" width="356" height="160" ></canvas></div>
+				<div id ="divFormonthlychart1"class="sameLine draggable"><canvas class="chart" id="monthlychart1" width="356" height="160" ></canvas></div>
+				<div id ="divFormonthlychart2" class="sameLine draggable"><canvas class="chart" id="monthlychart2" width="356" height="160" ></canvas></div>
+			</div>
+			<h4 class="editableElement footnotable titlesBlue" >Number of new cases and Incidence rate/10,000 at the national level from <span id ="chartTitleFirstYear"></span> to <span id ="chartTitleLastYear"></span></h4>
+			<div class="resizeSections">
+				<div id ="divForyearlychart0" class="sameLine draggable"><canvas class="chart" id="yearlychart0" width="356" height="160" ></canvas></div>
+				<div id ="divForyearlychart1" class="sameLine draggable"><canvas class="chart" id="yearlychart1" width="356" height="160" ></canvas></div>
+				<div id ="divForyearlychart2" class="sameLine draggable"><canvas class="chart" id="yearlychart2" width="356" height="160" ></canvas></div>
+			</div>
+		</div>
+
+		<div class="section">
+			<div id="footnotes1"></div>
+		</div>
+
+		<div class="pagebreak"></div>
+
+		<div id = "maps_section" class="section resizeSections">
+			<h4 class="editableElement footnotable titlesBlue" >Disease distribution of new <span style="text-decoration: underline red" id ="mapsTitleDis"></span> cases at <span style="text-decoration: underline red" id ="mapsTitleLvl"></span> per 10,000 population <span id ="mapsTitleYear"></span></h4>
+			<div> <!-- div to apply padding-->
+				<div id="map0" class= "map sameLine draggable"></div>
+				<div id="map1" class= "map sameLine draggable"></div>
+				<div id="map2" class= "map sameLine draggable"></div>
+				<div id="map3" class= "map sameLine draggable"></div>
+			</div>
+			<div id="notaBeneMaps"  class="notasBene draggable"><div class="editableElement"></div></div>
+		</div>
+
+
+		<div class="section">
+			<table id="casTable" class="display" cellspacing="0" width="100%">
+					<thead>
+						<tr id ="casTableHead"></tr>
+					</thead>
+					<tbody id="casTableBody"></tbody>
+			</table>
+
+		</div>
+
+		<div class="section">
+			<table id="diagTable" class="display" cellspacing="0" width="100%">
+					<thead>
+						<tr id ="diagTableHead"></tr>
+					</thead>
+					<tbody id="diagTableBody"></tbody>
+			</table>
+			<div id="textUnderDiagTable2" class="textUnderTable"></div>
+		</div>
+
+
+		<div class="section">
+			<table id="tamTable" class="display" cellspacing="0" width="100%">
+					<thead>
+						<tr id ="tamTableHead"></tr>
+					</thead>
+					<tbody id="tamTableBody"></tbody>
+			</table>
+			<table id="toutcomeTable" class="display" cellspacing="0" width="100%">
+					<thead>
+						<tr id ="toutcomeTableHead"></tr>
+					</thead>
+					<tbody id="toutcomeTableBody"></tbody>
+			</table>
+		</div>
+
+		<div class="section">
+			<div id="textUnderDiagTable1" class="textUnderTable"></div>
+			<div id="footnotes2"></div>
+		</div>
+
+		<div id="footer_section" class="section blue_section">
+			<div id="head_logo_div_f">
+				<img id="head_logo_img_f" src="img/WHO-EN-W-H.png"/>
+			</div>
+
+			<div id="notaBene" class="notasBene draggable"><div class="editableElement"></div></div>
+
+		</div>
+	</div>
+
+
+
+	<div id="dialog-editor">
+		<textarea id="editor"></textarea>
+	</div>
+
+
+	<div class="form-popup" id="error-report">
+		<div id="errorFeedbackTitle">There was a problem retrieving the following information: </div><br>
+		<div id= "errorFeedback"></div>
+		<button class="btn btnSafeOption" onclick="error_report_close(); startPreparingReport();" >Relaunch</button>	
+		<button class="btn btnRiskyOption" onclick="error_report_close()">Close this window</button>
+	</div>
+
+	<div class="form-popup" id="country-selector">
+		<form action="javascript:checkMetadataAssignedToThisCountry()" class="form-container">
+	  
+		  <h2><div class="formTitle">Generate <br> Country Profile </div></h2>
+		  
+		  <label for="targetCountry"><b>Country</b></label>
+		  <input  id="targetCountry" type="text" placeholder="Enter and select country name" name="targetCountry" required>
+	  
+		  <label for="yearField"><b>Year</b></label>
+		  <input id="yearField" type="text" placeholder="Enter and select year" name="yearField" required>
+							
+		  <div id= "metadataFeedback"></div>
+		  <button type="submit" class="btn btnSafeOption" >Start preparing CP</button>
+		  <br><br>
+		  <div class="download_manual">Download here the LCPG manual: 
+				<a class="usermanual" target="_blank"><img class="resize" src="img/icons/pdf.png" border=0></a>
+		  </div>
+		</form>
+		<div id="footer"> LCPG v0.47 - 2020.11.06</div>
+	</div>
+</body>
+</html>

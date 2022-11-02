@@ -1,0 +1,19 @@
+VL
+
+#CCFFCC No case reported
+#ffffcc 0<1
+#fed976 [1.0-2.5]
+
+#fc4e2a [2.5-10]
+
+#800026 =10.0
+
+CL, ACL, ZCL
+
+#CCFFCC No case reported
+#ffffcc 0<10
+#fed976 [10-50]
+
+#fc4e2a [50-100]
+
+#800026 =100

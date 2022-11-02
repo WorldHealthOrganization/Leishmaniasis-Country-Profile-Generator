@@ -1,0 +1,3 @@
+[submodule "commons"]
+	path = commons
+	url = https://github.com/WISCENTD-UPC/dhis2commons.git

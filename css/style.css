@@ -1,0 +1,677 @@
+/****************************************************************************************************
+ **********		   																		   **********
+ **********                                1. CSS STYLES                                   **********
+ **********		   																		   **********
+ ****************************************************************************************************/
+
+
+@media print {
+   .non-printable {
+       display: none;
+    }
+    body {-webkit-print-color-adjust: exact;}
+}
+
+@media all { 
+  div.pagebreak{ /* it should be under print and here only display:none, but that's not working */ 
+    display:block;
+    page-break-before:always;
+  }
+}
+
+@page {
+        size:  A4;   /* auto is the initial value */
+        margin: 0mm;  /* this affects the margin in the printer settings */		
+}
+
+html
+{
+	background-color: #FFFFFF; 
+	margin: 0px;  /* this affects the margin on the html before sending to printer */
+}
+
+body
+{
+	border: solid 0px blue ;
+	margin: 0mm 0mm 0mm 0mm; /* margin you want for the content */
+    font-family:'Century Gothic',san-serif !important;
+
+}
+
+table {
+	font-size: 11px !important;
+	margin-top: 20px;
+  margin-bottom:5px;
+}
+
+table td {
+	padding:2px;
+}
+
+/* creates a margin extending the row background colors */
+table th:first-child, table td:first-child {
+  padding-left: 44px;
+}   
+
+#tooltipTable {
+  margin: 0px;
+}
+
+/* creates a margin extending the row background colors */
+#tooltipTable th, #tooltipTable td{
+  padding: 3px 6px 3px 6px !important;
+  text-align: center;
+}   
+
+#ouInfoHover img {
+  vertical-align: middle;
+  padding-left: 4px;
+  padding-bottom: 4px;
+}
+
+/* sets same configuration as titles inside tables*/
+h4 {
+  margin: 0px;
+  font-size: 15px !important;
+}
+
+.titlesBlue {
+  color: #029ADE;
+  font-size: 16px;
+}
+
+h6 {
+	margin: 0px;
+}
+
+.section
+{
+	border-bottom: 0px solid #ccc;  /* line at the end of the section */
+	margin-bottom: 0px; 
+	padding-bottom: 0px;
+  font-size: 15px;
+  max-width: 211mm; /* size of A4 + 1 (avoids white right border)*/
+}
+
+
+/* HEADER section */ 
+/* Organize content of div in equal-sized colons*/
+
+.head_container > * {
+   padding-left: 44px;
+}
+
+.blue_section {
+  background-color: #1e80b8;
+  color: white;
+  margin:0px;
+  padding:0px;
+  height: 26mm;
+}
+
+#heading_section{
+  height: 26mm;
+}
+
+#title {
+	padding-top:6px;
+  font-size: 22px;
+  font-weight: bolder;
+}	
+
+#published_date {
+    font-size:11px;
+    font-weight: italic;
+}
+
+#country_name {
+	padding-top:0px;
+	font-size: 40px;
+	font-weight: bolder;
+}
+
+#head_logo_div{
+   float: right;
+   display:flex;
+   height:100%;
+   padding-right: 30px;
+}
+#head_logo_img {
+	width:180px;
+  align-self: center;
+}
+
+#footer_section{
+  height: 20mm;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-column-gap: 5px;
+  margin-top: 5px;
+}
+
+/* aligns children vertically to center */
+#footer_section * {
+    align-items:center;
+    justify-content:center;
+}
+
+#head_logo_div_f{
+  display:flex;
+  grid-column-start: 2;
+}
+
+#head_logo_img_f {
+ width:130px;
+    
+}
+
+/* END of HEADER section */ 
+
+.comment {
+	font-style: italic;
+	font-size: 11px;
+}
+
+.footnote {
+  font-size: 9px;
+  padding-left: 44px;
+}
+
+.superindex 
+{vertical-align:super} 
+
+
+.download_manual {
+  font-size: 11px;
+  color: grey;
+  font-weight: italic;
+  text-align: center;
+}
+
+img.resize {
+  height: 36px;
+  width: auto;
+}
+
+.ui-resizable-helper { border: 2px dotted red; }
+
+
+/*autocomplete list menu*/
+
+.ui-autocomplete > li > div {
+  display: block;
+  padding: 3px 20px;
+  clear: both;
+  font-weight: normal;
+  font-size: 13px;
+  line-height: 1.75;
+  color: #333333;
+  white-space: nowrap;
+}
+
+.align_to_left{
+	text-align: left !important;
+}
+.align_to_right{
+	text-align: right !important;
+}
+
+.textUnderTable {
+  padding-left: 44px;
+	font-size: 9px;
+}
+
+/* separates items by ;*/ 
+.textUnderTable span:not(:first-of-type):before {content:"; ";}
+.textUnderTable span:empty:before{content:"";}
+
+.fraction_text{
+  font-size: 10px;
+  vertical-align:middle;
+}
+
+.prev_fraction {
+  padding-right: 10px;
+  vertical-align:middle;
+}
+
+/* lines for tables */
+
+thead > tr:nth-child(even) {background: #daeaf9}
+/* thead > tr:nth-child(odd) {background: #FFFFFF} background already white */
+/* tbody > tr:nth-child(even) {background: #FFFFFF} background already white */
+tbody > tr:nth-child(odd) {background: #daeaf9}
+
+#cgiTable thead tr th:first-child {
+  width: 456px;
+}
+
+/* emphasizes total number of cases row */
+#epiTable tbody tr:nth-child(4) {
+	color: #029ADE;
+	font-weight: bold;
+}
+
+#epiTable tbody tr td:first-child {
+  width: 333px;
+}
+
+#monthlyTable{
+	margin-top: 0px; /* removes the margin since the title is outside the table*/
+}
+
+#monthlyTableTitle{
+  margin-top: 10px;
+  padding-left: 44px;
+  padding-bottom: 5px;
+  font-size: 14px !important;
+}
+
+#monthlyTable thead tr th:first-child {
+  font-size: 11px !important;   /* sets the year size  to the same as other th headers */
+}
+
+/* removes zebra lines for monthly tables since some are hidden*/
+#monthlyTable tr {
+	background: none;
+}
+
+/* adds first zebra lines to first header row*/
+#monthlyTable thead > tr:nth-child(odd) {background: #daeaf9 !important}
+
+/* sets fixed zebra lines only for visible rows */
+#monthlyTable tbody {
+    padding: 0px;
+    margin: 0px;
+    border: none;
+    width: 100%;
+    background-image:
+    repeating-linear-gradient(white, white 17px, #daeaf9 17px, #daeaf9 34px);
+    border-collapse: collapse;
+}
+
+#monthlyTable tbody td, #monthlyTable tbody tr {
+    border: none;
+    line-height: 13px;
+    margin: 0px;
+    border-collapse: collapse;
+}
+
+/* keeps global values for first column*/
+#monthlyTable td:first-child {
+  text-align: left;
+  padding-left: 44px;
+}    
+
+#monthlyTable th, #monthlyTable td {
+  text-align: center;
+}
+
+#casTable tbody tr td:first-child {
+  width: 432px;
+}
+
+#diagTable tbody tr td:first-child {
+  width: 432px;
+}
+
+/*removes zebra lines from this table */
+#tamTable tr {
+  background: none;
+}
+
+/* compacts the table rows */
+#tamTable td {
+  background: none;
+  padding-top: 0px;
+  padding-bottom: 0px;
+}
+
+#tamTable tbody tr td:first-child {
+  width: 380px;
+}
+
+/* emphasizes second column */
+#tamTable tbody tr td:nth-child(2) {
+ color: #029ADE;
+}
+
+/* emphasizes arrow icon */
+#tamTable td:first-letter {
+  color: #029ADE;
+ }
+
+#toutcomeTable tbody tr td:first-child {
+  width: 432px;
+}
+
+.lastTableColumn{
+  padding-right: 30px;
+}
+
+th {
+  text-align: left;
+}
+
+/* for graphs */
+.sameLine
+{
+	display: inline-block !important;
+}
+.newLine
+{
+	display: block !important;
+}
+.notShown
+{
+	display: none !important;
+}
+
+#maps_section {
+  padding-top: 20px;
+}
+
+#maps_section .titlesBlue {
+	margin-bottom: 5px;
+}
+
+#maps_section {
+  margin-left: 44px; /* using margin so resize respects the margins  */
+}
+
+.map {
+    border: 0;
+    padding-right: 6px;
+    padding-bottom: 2px;
+}
+
+#charts_section {
+  padding-left: 44px; 
+}
+
+.chart {
+    border: 0;
+    margin: 5px 8px 0px 0px;
+    position: relative;
+}
+
+/* inputs */
+.chartParams {
+  width: 100px;
+  text-align: right; 
+}
+
+#tabs {
+	height:fit-content;
+}
+
+.configuration-section {
+    counter-reset: footNoteListCounter;
+}
+
+#sortable2 li:before, #sortable3 li:before{
+  	content: counter(footNoteListCounter); 
+	counter-increment: footNoteListCounter;
+    font-weight: bold;
+    background: #007FFF;
+    color:white;
+    border-radius: 2px 6px;
+    padding: 2px;
+    padding-right: 5px;
+    padding-left: 5px;
+    margin-right: 8px;
+}
+
+#sortable1, #sortable2, #sortable3 {
+    border: 1px solid #eee;
+    min-height: 50px;
+    list-style-type: none;
+    margin: 0px;
+    padding: 5px 0 0 0;
+    float: left;
+    margin-right: 10px;
+	  min-width: 200px;
+  }
+
+  #sortable1 li, #sortable2 li, #sortable3 li {
+    margin: 0 5px 5px 5px;
+    padding: 5px;
+    font-size: 1em;
+  }
+
+.FixedHeightContainer
+{
+  width:fit-content;
+  padding:0px; 
+}
+.Content
+{
+  display:inline-block;
+  max-width: 32.9%;
+}
+
+/* maps slider */
+div.col {
+    float: left;
+    width: fit-content;
+    padding-right: 20px;
+}
+div.row { /* makes notabene controls to appear at left in a new row */
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.ui-slider-horizontal {
+    height: 8px;
+    width: 300px;
+}
+#font_size_slider {
+    height: 8px;
+    width: 166px;
+}
+.ui-slider .ui-slider-handle {
+    height: 15px;
+    width: 25px;
+    padding-left: 5px;
+}
+
+
+/* legend maps*/
+
+.legendRectangle{
+    width:20px;
+    height:11px;
+	border-style: solid;
+    border-width: thin;
+}
+
+.legendSet{
+	width:120px;
+    height:120px;
+	border-style: solid;
+    border-width: thin;
+	padding: 4px;
+	background:white;
+}
+
+#chartPreview{
+  position: relative;
+}
+
+.legendChart{
+	/*width:280px;*/
+	height:60px;
+	background:transparent;
+	display: flex;
+	position:absolute;
+	top:35px;
+	left:65px;
+}
+
+#legendmonthlychart2 > div {
+  width: 90px;	
+}
+
+#legendyearlychart2 > div {
+  width: 150px;	/* to avoid 4 legends overflow the page limit */
+}
+
+.oneLegendChart{
+  font-family:'Century Gothic',san-serif !important;
+  font-size:11px;
+  padding-right: 10px;
+}
+
+.oneLegendChart div:first-child {
+  width: 20px;
+  margin-right: 0px;
+  margin-left: 0px;
+}
+
+.oneLegendChart .bar {
+    height: 8px;
+    border: 1px solid #999;
+  }
+  
+  .oneLegendChart .line {
+    height: 2px;
+    width: 30px;
+    border: 1px solid white;
+  }
+
+
+.legentSetElementText{
+	font-size:10px;
+	padding-left: 4px;
+}
+.legentSetTitle{
+	font-size:12px;
+}
+
+#notaBeneMaps{
+  font-size: 8px;
+  text-align:justify;
+  width: 720px; /*To initialy align with 2 maps */
+}
+
+#notaBene {
+  float: right;
+  display:flex;
+  height:100%;
+  padding-right: 30px;
+  margin-left: auto;
+  font-size: 11px;
+}
+
+#footer
+{
+	text-align:right;
+	color: #4CAF50;
+	font-style: italic;
+	font-family:'Open Sans', verdana;
+  margin: 20px 4px 4px 4px;
+  font-size:11px;
+}
+
+input {
+  width:224px;
+}
+
+#progressbar {
+  margin-top: 20px;
+}
+
+.progress-label {
+  font-weight: bold;
+  text-shadow: 1px 1px 0 #fff;
+}
+
+/* dialogs */
+.ui-dialog { z-index: 10000 !important ;}
+
+/* editor */
+
+.jqte{
+  margin: 0px !important;
+}
+
+.jqte_editor, .jqte_source {
+  min-height: 50px !important;
+}
+
+.formTitle {
+  text-align:center;
+  color: grey;
+}
+
+/* The popup form - hidden by default */
+.form-popup {
+  display: none;
+  z-index: 9;
+  font-family: Arial, Helvetica, sans-serif;
+  background: white;
+}
+
+#country-selector{
+  top: 25%;
+  left: 25%;
+  border: 3px solid #4CAF50;
+  position: fixed;
+
+}
+
+#error-report{
+  top: 5%;
+  left: 20%;
+  border: 3px solid #F44336;
+  padding: 10px;
+  position: fixed;
+}
+
+/* Add styles to the form container */
+.form-container {
+  max-width: 300px;
+  padding: 10px;
+  background-color: white;
+  font-size:12px;
+}
+
+/* Full-width input fields */
+.form-container input[type=text], .form-container input[type=password] {
+  width: 100%;
+  max-width: 270px;
+  padding: 15px;
+  margin: 5px 0 22px 0;
+  border: none;
+  background: #f1f1f1;
+}
+
+/* When the inputs get focus, do something */
+.form-container input[type=text]:focus, .form-container input[type=password]:focus {
+  background-color: #ddd;
+  outline: none;
+}
+
+/* Set a style for the submit/login button */
+.btn {
+  color: white;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  padding:16px;
+  margin-top: 10px;
+  opacity: 0.8;
+}
+
+.btnSafeOption {
+  background-color: #4CAF50;
+}
+
+.btnRiskyOption {
+  background-color: #F44336;
+}
+
+/* Add some hover effects to buttons */
+.btn:hover, .open-button:hover {
+  opacity: 1;
+}
