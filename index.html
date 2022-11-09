@@ -56,9 +56,9 @@
  -->
  <script type="text/javascript" src ="js/pace.min.js"></script>
  <script
- src="https://code.jquery.com/jquery-2.2.4.js"
- integrity="sha256-iT6Q9iMJYuQiMWNd9lDyBUStIq/8PuOW33aOqmvFpqI="
- crossorigin="anonymous"></script>
+  src="https://code.jquery.com/jquery-2.2.4.min.js"
+  integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+  crossorigin="anonymous"></script>
  <script type="text/javascript" src ="js/jquery-te-1.4.0-oms.js"></script>
  <script type="text/javascript" src ="js/tools.js"></script>
  <script type="text/javascript" src ="js/largestRemainderRound.js"></script>
@@ -66,18 +66,15 @@
   src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
   integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
   crossorigin="anonymous"></script>
-<script type="text/javascript" src="../../../dhis-web-visualizer/chart.js"></script>
-<script type="text/javascript" src="js/Chart-2.7.3.js"></script>
-<!--<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.js"></script>-->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.min.js"></script>
 
 <script type="text/javascript" src="../../../dhis-web-commons/javascripts/dhis2/dhis2.util.js"></script>
-<!--<script type="text/javascript" src="../../../dhis-web-mapping/extjs/ext-all.js"></script>-->
 
 <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/7.8.3/polyfill.min.js"></script>
 <script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
 
-<script type="text/javascript" src="../../../dhis-web-maps/map.js"></script>
+<script type="text/javascript" src="js/map.js"></script>
 
 <script type="text/javascript" src="../../../dhis-web-commons/javascripts/dhis2/dhis2.storage.ss.js"></script>
 <script type="text/javascript" src="../../../dhis-web-commons/javascripts/dhis2/dhis2.storage.ls.js"></script>
@@ -90,12 +87,6 @@
 <script type="text/javascript" src="commons/tools.js"></script>
 <script type="text/javascript" src="commons/analytics_tools.js"></script>
 
-
-
-<!--
-<script type="text/javascript" src="https://dhis2-cdn.org/v222/openlayers/OpenLayers.js"></script>
-<script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false"></script>
--->
 
 <script type="text/javascript">
 
@@ -464,9 +455,9 @@
 	var TOP_RIGHT = 1;
 	var BOTTOM_LEFT = 2;
 	var BOTTOM_RIGHT = 3;
+	var LEGEND_TO_LEGEND_POOL = 4;
 
-	var LEGEND_TO_REPORT = 0;
-	var LEGEND_TO_LEGEND_POOL = 1;
+	var LEGEND_TO_REPORT = 0; // Only for charts. 
 
 	var LEGEND_POSITION_LABELS = new Array(4);
 	var LEGEND_POSITIONS = new Array(4);
@@ -476,10 +467,10 @@
 	LEGEND_POSITION_LABELS[BOTTOM_LEFT] = "Bottom left corner";
 	LEGEND_POSITION_LABELS[BOTTOM_RIGHT] = "Bottom right corner";
 
-	LEGEND_POSITIONS[TOP_LEFT] = ".leaflet-top.leaflet-left";
-	LEGEND_POSITIONS[TOP_RIGHT] = ".leaflet-top.leaflet-right";
-	LEGEND_POSITIONS[BOTTOM_LEFT] = ".leaflet-bottom.leaflet-left";
-	LEGEND_POSITIONS[BOTTOM_RIGHT] = ".leaflet-bottom.leaflet-right";
+	LEGEND_POSITIONS[TOP_LEFT] = ".mapboxgl-ctrl-top-left";
+	LEGEND_POSITIONS[TOP_RIGHT] = ".mapboxgl-ctrl-top-right";
+	LEGEND_POSITIONS[BOTTOM_LEFT] = ".mapboxgl-ctrl-bottom-left";
+	LEGEND_POSITIONS[BOTTOM_RIGHT] = ".mapboxgl-ctrl-bottom-right";
 
 	var editingLegend;
 
@@ -614,6 +605,9 @@
 	var SQL_DE_DS = "oQdIVqkVlxC";
 	var SQL_DE_P = "IrawAndH02Y";
 
+	var SQL_PROGRAMS = "hz6DwDb7jtp";
+	var SQL_DATASETS = "KtTtDsGuEPf";
+
 	var SQL_OU_LEVELS = "ly3JqHMcHyk";
 	var infoTable = "";
 	
@@ -633,20 +627,6 @@
 	var VL_MONTHLY = "i5JSf4ffFl2";
 	var FOOTNOTES = "NVUlJzIakuO";
 	var SUBN_ENDEMCTY = "Jd8gnEIt8uT";
-
-	dsinfo[CL_DETAILED] = ["Cutaneous Leishmaniasis - Detailed - Annual", false];
-	dsinfo[CL_SIMPLE] = ["CL - Simple - Annual", false];
-	dsinfo[VL_DETAILED] = ["VL - Detailed - Annual", false];
-	dsinfo[VL_SIMPLE] = ["VL - Simple - Annual", false];
-	dsinfo[AZCL_DETAILED] = ["ACL/ZCL - Detailed - Annual", false];
-	dsinfo[AZCL_SIMPLE] = ["ACL/ZCL - - Simple aggregated - Annual", false];
-	dsinfo[GI] = ["General information", false];
-	dsinfo[POPULATION_DATA] = ["Population data", false];
-	dsinfo[GHO_NTDS] = ["GHO indicators for NTDs", false];
-	pinfo[CL_MONTHLY] = ["CL_cases_by provenance", false];
-	pinfo[VL_MONTHLY] = ["VL_cases_by provenance", false];
-	pinfo[FOOTNOTES] = ["Footnotes for Report Generator", false];
-	pinfo[SUBN_ENDEMCTY] = ["Leishmaniasis endemicity", false];
 	
 	// DATA_ELEMENTS
 	var DE = {
@@ -1243,13 +1223,20 @@
 		var index = parseInt(id.slice(-1));
 
 		// hides default legend button
-		$('#' + MAP_PREFIX + index).find(".leaflet-control-legend").hide();
+		//$('#' + MAP_PREFIX + index).find(".leaflet-control-legend").hide();
+	    $('#' + MAP_PREFIX + index + " .dhis2-map-legend").remove();
+		// selects map by id, and a descentant whose class is like map-plugin-.*-2
+		$('[id="'+ MAP_PREFIX + index +'"] [class*="map-plugin-"][class$="-2"]').remove();		
+	//	$('#' + MAP_PREFIX + index + " .mapboxgl-ctrl-fullscreen").remove();
+		$('#' + MAP_PREFIX + index + " .mapboxgl-ctrl-group:has(> .mapboxgl-ctrl-fullscreen)").remove();
+		
+		
 
 		// removes spinner in case it is still there
-		$('#' + MAP_PREFIX + index + " div.spinner").remove();
+		// $('#' + MAP_PREFIX + index + " div.spinner").remove();
 
 		// moves custom legend on top of the map
-		moveLegend(index, $('#'+id).find(LEGEND_POSITIONS[BOTTOM_RIGHT]), LEGEND_TO_REPORT);
+		moveLegend(index, BOTTOM_RIGHT);
 	}
 
 	function prepareMapListeners() {
@@ -2696,6 +2683,22 @@
 
 	}
 
+	function resetDSandPInfo(){
+		dsinfo[CL_DETAILED] = ["Cutaneous Leishmaniasis - Detailed - Annual", false];
+		dsinfo[CL_SIMPLE] = ["CL - Simple - Annual", false];
+		dsinfo[VL_DETAILED] = ["VL - Detailed - Annual", false];
+		dsinfo[VL_SIMPLE] = ["VL - Simple - Annual", false];
+		dsinfo[AZCL_DETAILED] = ["ACL/ZCL - Detailed - Annual", false];
+		dsinfo[AZCL_SIMPLE] = ["ACL/ZCL - - Simple aggregated - Annual", false];
+		dsinfo[GI] = ["General information", false];
+		dsinfo[POPULATION_DATA] = ["Population data", false];
+		dsinfo[GHO_NTDS] = ["GHO indicators for NTDs", false];
+		pinfo[CL_MONTHLY] = ["CL_cases_by provenance", false];
+		pinfo[VL_MONTHLY] = ["VL_cases_by provenance", false];
+		pinfo[FOOTNOTES] = ["Footnotes for Report Generator", false];
+		pinfo[SUBN_ENDEMCTY] = ["Leishmaniasis endemicity", false];
+	}
+
 	function resetVariables(){
 		
 		map_levels[VL_INDEX] =  DEFAULT_MAP_LEVELS;
@@ -2736,7 +2739,20 @@
 		
 		infoTable = "";
 
+		de_assigned = new Map();
+		coc_assigned = new Map();
+		indicators_info = new Map();
+
+		for (var uid in dsinfo) {
+			dsinfo[uid][ASSG] = false;
+		}
+
+		for (var uid in pinfo) {
+			pinfo[uid][ASSG] = false;
+		}
+ 
 		disableResizes();
+		disableDragging();
 
 	}
 
@@ -3033,21 +3049,49 @@
 		charts_array[chart].update();
 	}
 
+	function disableDragging(){
+		$( ".draggable" ).draggable().draggable( "destroy" );	
+	}
+
+	function enableDragging(){
+		var gridValue =  Number($("#dragGridSize").val());
+		// Dragable activation
+		$( ".draggable" ).draggable({ grid: [ gridValue, gridValue ] });	
+	}
+
 	/****************************************************************************************************
 	 **********                               MAPS functions                                 **********
 	 ****************************************************************************************************/
 
-	 function moveLegend(index, destination, destinationCode){
+	 function moveLegend(index, destinationCode){
 		var legendObject = $('#' + LEGENDSET_PREFIX + index);
+		var destination;
+		console.log("moveLegend "+ LEGENDSET_PREFIX + index + " to " + destinationCode);
 
-		if (destinationCode == LEGEND_TO_REPORT){
+		if (destinationCode < LEGEND_TO_LEGEND_POOL){
+			console.log ("  destination CP");
 			legendObject.resizable({ disabled: true });
 			legendObject.removeClass("resizable");
+
+			destination = $('#'+MAP_PREFIX + index).find(LEGEND_POSITIONS[destinationCode]);
+			if (destinationCode == TOP_RIGHT){
+				console.log ("  moving zoom controls to left");
+				zoomDestination = $('#'+MAP_PREFIX + index).find(LEGEND_POSITIONS[TOP_LEFT]);
+				zoomDestination.append(destination.contents());
+			} else if (destinationCode == TOP_LEFT){
+				console.log ("  moving zoom controls to right");
+				zoomDestination = $('#'+MAP_PREFIX + index).find(LEGEND_POSITIONS[TOP_RIGHT]);
+				zoomDestination.append(destination.contents());
+			}
 		} else {
+			console.log ("  destination legendSetPool");
 			editingLegend = legendObject;
 			editingLegend.resizable('destroy'); // prevents bug on last elements
 			editingLegend.resizable();
+
+			destination = $("#" + LEGENDSET_POOL);
 		}
+
 		destination.append(legendObject);
 	 }
 
@@ -3069,7 +3113,7 @@
 		var legend_index =   parseInt($('#legendSelector').val()) -1 ; //first option is the "select text"
 		var position_index =  $('#positionLegendSelector').val();
 
-		moveLegend(legend_index, $('#'+MAP_PREFIX+ legend_index).find(LEGEND_POSITIONS[position_index]), LEGEND_TO_REPORT);
+		moveLegend(legend_index, position_index);
 
 		cleanUpdateLegendForm();
 	}
@@ -3087,7 +3131,7 @@
 		map_width[selected_map_index] = parseInt($( "#width_slider" ).slider( "option", "value"));
 
 		// saves the legend in the pool
-		moveLegend(selected_map_index, $("#" + LEGENDSET_POOL), LEGEND_TO_LEGEND_POOL);
+		moveLegend(selected_map_index, LEGEND_TO_LEGEND_POOL);
 
 		// removes the loaded map
 		mapPlugin.unmount(MAP_PREFIX + selected_map_index);
@@ -3213,7 +3257,7 @@
 		for (var i=0; i<MAP_CHECKBOXES_LABELS.length; i++){
 			if ( $('#'+ MAP_PREFIX+BUTTON_PREFIX + i ).prop( "checked") && 
 			$("#" + LEGENDSET_POOL).find('#' + LEGENDSET_PREFIX + i).length > 0) {
-				moveLegend(i, $('#' + MAP_PREFIX + i).find(LEGEND_POSITIONS[BOTTOM_RIGHT]), LEGEND_TO_REPORT);	
+				moveLegend(i, BOTTOM_RIGHT);	
 			}
 		}
 
@@ -3228,6 +3272,7 @@
 			mapPlugin.unmount(MAP_PREFIX + CL_INDEX),
 			mapPlugin.unmount(MAP_PREFIX + ACL_INDEX),
 			mapPlugin.unmount(MAP_PREFIX + ZCL_INDEX),
+			resetLegends(),
 			generateMap(VL_INDEX, "INDICATOR", ds.countryID, ds.year, "thematic"),
 			generateMap(CL_INDEX, "INDICATOR", ds.countryID, ds.year, "thematic"),
 			generateMap(ACL_INDEX, "INDICATOR", ds.countryID, ds.year, "thematic"),
@@ -3326,7 +3371,7 @@
 
 	function country_selector_relocate(){
 		//Pace.restart();
-		document.getElementById('tabs-6').appendChild(
+		document.getElementById('tabs-7').appendChild(
 			document.getElementById("country-selector")
 		);
 		$("#country-selector").css({width: 'fit-content', position: 'relative'});
@@ -3533,6 +3578,12 @@
 					});
 					resizeMode = RESIZESECTIONS;
 					break;
+				case "disableDragging":
+					disableDragging();
+					break;
+				case "enableDragging":
+					enableDragging();
+					break;
 					 
 			}
 
@@ -3656,7 +3707,7 @@
 			var position_index =  $('#positionLegendSelector').val();
 			for (var i=0; i<MAP_CHECKBOXES_LABELS.length; i++){
 				if ( $("#" + LEGENDSET_POOL).find('#' + LEGENDSET_PREFIX + i).length > 0) {
-					moveLegend(i, $('#' + MAP_PREFIX + i).find(LEGEND_POSITIONS[position_index]), LEGEND_TO_REPORT);	
+					moveLegend(i, position_index);	
 				}
 			}
 
@@ -3667,7 +3718,7 @@
 				lastLegendPosition = getLastPosition(selected_legend);
 				setOptionSelectMenu("positionLegendSelector", lastLegendPosition);
 
-				moveLegend(selected_legend, $("#" + LEGENDSET_POOL), LEGEND_TO_LEGEND_POOL);
+				moveLegend(selected_legend, LEGEND_TO_LEGEND_POOL);
 
 				legendSetFontSize = parseInt($("#legendPool .legentSetElementText:first").css('font-size'));//.replace(/[^-\d\.]/g, ''); // removes px from number
 				$( "#font_size_slider" ).slider( "option", "value", legendSetFontSize );
@@ -3738,10 +3789,7 @@
 	/* AFTER AND BEFORE printing actions */
 	var beforePrint = function() {
 		// hides zoom buttons on maps
-		$('#' + MAP_PREFIX + VL_INDEX).find(".leaflet-control-zoom").hide();
-		$('#' + MAP_PREFIX + CL_INDEX).find(".leaflet-control-zoom").hide();
-		$('#' + MAP_PREFIX + ACL_INDEX).find(".leaflet-control-zoom").hide();
-		$('#' + MAP_PREFIX + ZCL_INDEX).find(".leaflet-control-zoom").hide();
+		$('.map').find(".mapboxgl-ctrl-group:has(> .mapboxgl-ctrl-zoom-in)").hide();
 		
 		var width = $(document).width();
 		var cmtoinch = width / 210;
@@ -3765,14 +3813,10 @@
 
 	var afterPrint = function() {
 		// restores zoom buttons on maps
-		$('#' + MAP_PREFIX + VL_INDEX).find(".leaflet-control-zoom").show();
-		$('#' + MAP_PREFIX + CL_INDEX).find(".leaflet-control-zoom").show();
-		$('#' + MAP_PREFIX + ACL_INDEX).find(".leaflet-control-zoom").show();
-		$('#' + MAP_PREFIX + ZCL_INDEX).find(".leaflet-control-zoom").show();
+		$('.map').find(".mapboxgl-ctrl-group:has(> .mapboxgl-ctrl-zoom-in)").show();
 
 		$("#toutcomeTable").css("margin-bottom", "0px");
 		$("#charts_section").css("margin-bottom", "0px");
-
 	};
 
 	if (window.matchMedia) {
@@ -3909,41 +3953,31 @@
 
 	function checkMetadataAssignedToThisCountry(){
 		saveSelectedYearAndCountry();
+		resetDSandPInfo();
+		cleanErrorFeedback();
+		resetVariables();
+		resetMapsAndChartsVisibility();
 
-		var datasets = [];
-		datasets.push(CL_DETAILED, CL_SIMPLE, VL_DETAILED, VL_SIMPLE, 
-						AZCL_DETAILED, AZCL_SIMPLE, GI, POPULATION_DATA, GHO_NTDS);
+		var ou_uid = {
+				var: "ouuid:" + ds.countryID
+		};
 
-		var programs = [];
-		programs.push(CL_MONTHLY, VL_MONTHLY, FOOTNOTES, SUBN_ENDEMCTY);
-
-		var datasetFilter = "id:in:["+datasets+"]";
-		var programFilter = "id:in:["+programs+"]";
-		var ouFilter = "organisationUnits.id:in:["+ ds.countryID +"]";
-		var FILTER = "&filter=";
-		var ds_filters = FILTER + datasetFilter + FILTER + ouFilter;
-		var p_filters = FILTER + programFilter + FILTER + ouFilter;
-	
-		var params = {
-			fields: "id",
-			paging: false
-		}
-	
-		return $.when(getv3(DATASETS, params, ds_filters), getv3(PROGRAMS, params, p_filters))
+		return $.when(getv3(SQLVIEWS + "/" + SQL_DATASETS + "/data", ou_uid), 
+						getv3(SQLVIEWS + "/" + SQL_PROGRAMS + "/data", ou_uid))	
 		.done(function(dataSetResult, programResult){
-			if (typeof  dataSetResult.dataSets != 'undefined') {
-				var dsRes = dataSetResult.dataSets;
+			if (dataSetResult.listGrid.rows.length > 0) {
+				var dsRes = dataSetResult.listGrid.rows;
 				for (var i=0; i < dsRes.length; i++){
-					if (dsRes[i].id in dsinfo){
-						dsinfo[dsRes[i].id][ASSG] = true;
+					if (dsRes[i][0] in dsinfo){
+						dsinfo[dsRes[i][0]][ASSG] = true;
 					}
 				}
 			}
-			if (typeof  programResult.programs != 'undefined') {
-				var pRes = programResult.programs;
+			if (programResult.listGrid.rows.length > 0) {
+				var pRes = programResult.listGrid.rows;
 				for (var i=0; i < pRes.length; i++){
-					if (pRes[i].id in pinfo){
-						pinfo[pRes[i].id][ASSG] = true;
+					if (pRes[i][0] in pinfo){
+						pinfo[pRes[i][0]][ASSG] = true;
 					}
 				}
 			}
@@ -4020,10 +4054,6 @@
 
 	function startPreparingReport() {
 	
-		cleanErrorFeedback();
-		resetVariables();
-		resetMapsAndChartsVisibility();
-
 		$( "#country_name" ).text(ds.countryName);
 		$( "#year" ).text(ds.year);
 		$( "#published_date").text(getDatePublished());
@@ -4207,12 +4237,6 @@
 		fillTableHead(TAM_TABLE_NAME, "Head", TABLE_TITLE_TAM, []);
 		fillTableHead(TOUTCOME_TABLE_NAME, "Head", TABLE_TITLE_TOUTCOME, COLUMNS_LABELS.slice(0,4));
 
-
-		// Dragable activation
-		$( ".draggable" ).draggable({ grid: [ 2, 2 ] });	
-		//$( ".resizable" ).resizable();
-
-
 		// fillCountryGeneralInformation(LEVEL2); //TODO: Manage error when not level 2
 
 		// Code to execute after API calls have been done.
@@ -4283,7 +4307,6 @@
 		.then( function(){
 	
 			return $.when( 
-				generateLegends(),
 				generateMaps(),
 				get_gho_ntds(),
 				getAnalyticsDataForDX(INCIDENCE_FOR_CHARTS[VL_INDEX], historicLength, fillIncidenceChartArray, [VL_COLUMN]),
@@ -4303,7 +4326,7 @@
 				get_monthly_cases_for(CL_MONTHLY, ds.year, DE_MONTHLY.ZCL_CASES, ZCL_ROW),
 				get_monthly_cases_for(CL_MONTHLY, ds.year-1, DE_MONTHLY.ZCL_CASES, ZCL_PREVIOUS_YEAR_ROW),
 				getFootnotes(defaultSubnationalLevel))
-				.done(function(lgds,mps,gho,dx1,dx2,dx3,dx4,dx5,dx6,dx7,dx8,
+				.done(function(mps,gho,dx1,dx2,dx3,dx4,dx5,dx6,dx7,dx8,
 								m1,m2,m3,m4,m5,m6,m7,m8,fndata){
 			// the code here will be executed when all four ajax requests resolve.
 			// a1, a2, a3 and a4 are lists of length 3 containing the response text,
@@ -4331,6 +4354,7 @@
 				hideNoRelevantContent();
 
 				$("#disableResize").prop('checked', true);
+				$("#disableDragging").prop('checked', true);
 				$( ".radioButton" ).checkboxradio("refresh");
 
 				document.getElementById("country_profile_and_panel").style.display = "block";
@@ -4377,10 +4401,7 @@
 		<link rel="stylesheet" href="https://jqueryui.com/resources/demos/style.css" type="text/css" />
 		<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400" />
 		<link rel="stylesheet" href="css/style.css" type="text/css" />
-	
-	
-		<!-- <link rel="stylesheet" href="../../../dhis-web-commons/javascripts/ext/resources/css/ext-plugin-gray.css" type="text/css" />-->
-		<!---<link rel="stylesheet" href="../../../dhis-web-mapping/extjs/resources/css/ext-all-gray.css" type="text/css" />-->
+		
 </head>
 
 <body>
@@ -4393,9 +4414,10 @@
 					<li><a href="#tabs-1">General</a></li>
 					<li><a href="#tabs-2">Charts</a></li>
 					<li><a href="#tabs-3">Maps</a></li>
-					<li><a href="#tabs-4">Footnotes</a></li>
-					<li><a href="#tabs-5">Help</a></li>
-					<li><a href="#tabs-6">New CP</a></li>
+					<li><a href="#tabs-4">Move and resize</a></li>
+					<li><a href="#tabs-5">Footnotes</a></li>
+					<li><a href="#tabs-6">Help</a></li>
+					<li><a href="#tabs-7">New CP</a></li>
 				</ul>
 				<div id="tabs-1">		
 					<fieldset id="leish_detail_checkboxes"></fieldset>
@@ -4493,24 +4515,34 @@
 								<p><button id="updateLegendButton" class="ui-button ui-widget ui-corner-all">Update Legend</button></p>
 								<p><button id="resetLegendButton" class="ui-button ui-widget ui-corner-all" title="Use if legends didn't load properly or dissapeared">Recreate all legends</button></p>
 							</div>
-							<div class="col">
-								<p>
-									<fieldset>
-										<legend>Resize elements: </legend>
-										<label for="disableResize">Disabled</label>
-										<input type="radio" name="Resizes" class="radioButton" id="disableResize">
-										<label for="resizeNotasBene">Resize Notas Bene</label>
-										<input type="radio" name="Resizes" class="radioButton" id="resizeNotasBene">
-										<label for="resizeSections">Resize Sections <i>(Maps and Charts)</i></label>
-										<input type="radio" name="Resizes" class="radioButton" id="resizeSections">
-									</fieldset>
-								</p>			
-							</div>	
 						</div>
-
 					</fieldset>
 				</div>
 				<div id="tabs-4">
+					<p>					
+						<fieldset>
+								<legend>Enable maps, charts and <i>Notate Bene</i> dragging</legend>
+								<label for="disableDragging">Disabled</label>
+								<input type="radio" name="Drag" class="radioButton" id="disableDragging">								
+								<label for="dragGridSize">Size of dragging grid</label>
+								<input type="number" class="gridParams" step="1" id="dragGridSize" min="0" max="50" value="2" />
+								<label for="enableDragging">Enable dragging</label>
+								<input type="radio" name="Drag" class="radioButton" id="enableDragging">
+						</fieldset>
+					</p>			
+					<p>
+						<fieldset>
+							<legend>Resize elements: </legend>
+							<label for="disableResize">Disabled</label>
+							<input type="radio" name="Resizes" class="radioButton" id="disableResize">
+							<label for="resizeNotasBene">Resize <i>Notate Bene</i></label>
+							<input type="radio" name="Resizes" class="radioButton" id="resizeNotasBene">
+							<label for="resizeSections">Resize Sections <i>(Maps and Charts)</i></label>
+							<input type="radio" name="Resizes" class="radioButton" id="resizeSections">
+						</fieldset>	
+					</p>
+				</div>
+				<div id="tabs-5">
 					<div class="FixedHeightContainer">
 						<div class="Content">
 							<h6 class="subHeader">Stored footnotes</h6>
@@ -4534,7 +4566,7 @@
 					<div id="newFootnoteText" style="display:none"></div>
 
 				</div>
-				<div id="tabs-5">
+				<div id="tabs-6">
 					<div class="comment">
 						This Configuration Area wont be printed<br>
 						- Left click to add a footnote number.<br>
@@ -4547,7 +4579,7 @@
 					Guide to generate LCP: 
 					<a target="_blank" href="https://docs.google.com/document/d/1umecgF-AEG_CkLN3EAF3N5IGa6By9U_HbNXZKuIl4aI/edit?usp=sharing"><img class="resize" src="img/icons/googledocs.png" border=0></a>
 				</div>
-				<div id="tabs-6">
+				<div id="tabs-7">
 
 				</div>
 			</div>
@@ -4702,7 +4734,7 @@
 	<div class="form-popup" id="error-report">
 		<div id="errorFeedbackTitle">There was a problem retrieving the following information: </div><br>
 		<div id= "errorFeedback"></div>
-		<button class="btn btnSafeOption" onclick="error_report_close(); startPreparingReport();" >Relaunch</button>	
+		<button class="btn btnSafeOption" onclick="error_report_close(); checkMetadataAssignedToThisCountry();" >Relaunch</button>	
 		<button class="btn btnRiskyOption" onclick="error_report_close()">Close this window</button>
 	</div>
 
@@ -4724,7 +4756,7 @@
 				<a class="usermanual" target="_blank"><img class="resize" src="img/icons/pdf.png" border=0></a>
 		  </div>
 		</form>
-		<div id="footer"> LCPG v0.47 - 2020.11.06</div>
+		<div id="footer"> LCPG v0.50 - 01.02.2021</div>
 	</div>
 </body>
 </html>
